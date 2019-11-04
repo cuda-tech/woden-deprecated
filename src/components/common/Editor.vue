@@ -1,6 +1,10 @@
+<style scoped>
+
+</style>
+
 <template>
-    <div class="hello">
-        <div id="editor" style="height: 600px"></div>
+    <div class="hello" style="margin-right: 30px">
+        <div id="editor" style="height: 1000px;"></div>
     </div>
 </template>
 
@@ -24,6 +28,4 @@
     }
 </script>
 
-<style scoped>
 
-</style>
