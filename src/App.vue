@@ -153,7 +153,7 @@
                         </MenuItem>
                     </Menu>
                 </Sider>
-                <router-view/>
+                <router-view style="width: 100%"/>
 
 
             </Layout>
