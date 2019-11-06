@@ -1,23 +1,45 @@
-<style scoped>
-    .buttons {
+<style>
+    .toolbar-button {
         font-size: large;
+        border-radius: 0 !important;
+        margin-bottom: -1px;
+        margin-right: -5px;
     }
 
 </style>
 <template>
-    <ButtonGroup>
-        <Button class="buttons" icon="md-play"></Button>
-        <Button class="buttons" icon="md-remove-circle"></Button>
-        <Button class="buttons" icon="md-lock"></Button>
-        <Button class="buttons" icon="md-cloud-upload"></Button>
-        <Button class="buttons" icon="md-paper-plane"></Button>
-        <Button class="buttons" icon="md-alarm"></Button>
-        <Button class="buttons" icon="md-git-branch"></Button>
-        <Button class="buttons" icon="ios-albums"></Button>
-    </ButtonGroup>
+    <div class="toolbar-buttons-group">
+        <RunButton/>
+        <StopButton/>
+        <UnlockButton/>
+        <SubmitButton/>
+        <ReleaseButton/>
+        <SchedulerButton/>
+        <DependencyButton/>
+        <VersionButton/>
+    </div>
 </template>
 <script>
+    import SchedulerButton from './SchedulerButton';
+    import RunButton from './RunButton';
+    import StopButton from './StopButton';
+    import UnlockButton from './UnlockButton';
+    import SubmitButton from './SubmitButton';
+    import ReleaseButton from './ReleaseButton';
+    import VersionButton from './VersionButton';
+    import DependencyButton from './DependencyButton';
+
     export default {
+        components: {
+            SchedulerButton: SchedulerButton,
+            RunButton: RunButton,
+            StopButton: StopButton,
+            UnlockButton: UnlockButton,
+            SubmitButton: SubmitButton,
+            ReleaseButton: ReleaseButton,
+            VersionButton: VersionButton,
+            DependencyButton: DependencyButton
+        },
         data() {
             return {}
         },
