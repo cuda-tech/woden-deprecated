@@ -16,3 +16,16 @@
         <Button class="buttons" icon="ios-albums"></Button>
     </ButtonGroup>
 </template>
+<script>
+    export default {
+        data() {
+            return {}
+        },
+        methods: {
+            openSchedulerDrawer() {
+
+            }
+        }
+
+    }
+</script>
