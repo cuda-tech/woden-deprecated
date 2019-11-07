@@ -70,18 +70,13 @@
         border-radius: 4px;
         overflow: hidden;
     }
-
-
-    .layout-footer-center {
-        text-align: center;
-    }
 </style>
 
 <template>
     <div class="layout">
         <Layout>
-            <Header style="height: 50px">
-                <Menu mode="horizontal" theme="dark" active-name="1" style="height: 50px">
+            <Header style="height: 60px">
+                <Menu mode="horizontal" theme="dark" active-name="1" style="height: 60px">
                     <div style="float: right;">
                         <Submenu name="user">
                             <template slot="title">
@@ -95,7 +90,7 @@
                     </div>
                 </Menu>
             </Header>
-            <Layout :style="{minHeight: '100vh'}">
+            <Layout :style="{minHeight: '90vh'}">
                 <Sider collapsible :collapsed-width="50" v-model="isCollapsed" :width="180">
                     <Menu active-name="1-2" theme="dark" width="auto" :class="menuitemClasses">
                         <MenuItem name="DataDevelopment">
