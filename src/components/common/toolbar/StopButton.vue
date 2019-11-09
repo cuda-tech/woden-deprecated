@@ -2,9 +2,8 @@
 
 </style>
 <template>
-    <Tooltip content="停止执行">
+    <Tooltip content="停止执行" placement="top" theme="light">
         <Button class="toolbar-button" icon="md-remove-circle" @click="confirm"/>
-
     </Tooltip>
 </template>
 <script>
@@ -16,7 +15,6 @@
             confirm() {
                 this.$Modal.confirm({
                     title: '确认停止执行？',
-                    content: '<p>Content of dialog</p><p>Content of dialog</p>',
                     onOk: () => {
                         this.$Message.info('Clicked ok');
                     },
