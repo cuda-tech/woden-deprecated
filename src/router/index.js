@@ -1,15 +1,24 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Editor from '@/components/Editor';
+import DataDevelopment from './data-development';
+import TempQuery from './temp-query';
+import ReleaseCenter from './release-center';
 
 Vue.use(Router);
 
 export default new Router({
+    mode: 'history',
     routes: [
         {
             path: '/',
-            name: 'Editor',
-            component: Editor
-        }
+            name: 'Layout',
+            component: resolve => require(['../Layout.vue'], resolve),
+            children: [
+                ...DataDevelopment,
+                ...TempQuery,
+                ...ReleaseCenter
+            ]
+        },
+
     ]
 });
