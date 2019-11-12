@@ -70,7 +70,8 @@
         border-radius: 4px;
         overflow: hidden;
     }
-    .logo{
+
+    .logo {
         color: white;
         font-size: 1.8em;
         font-weight: bolder;
@@ -119,8 +120,16 @@
                                 <Icon type="md-paper-plane"></Icon>
                                 <span>发布中心</span>
                             </template>
-                            <MenuItem name="CreatePackage">创建发布包</MenuItem>
-                            <MenuItem name="ListPackage">发布包列表</MenuItem>
+                            <MenuItem name="CreatePackage">
+                                <div @click="$router.push({name: 'ReleaseCenterCreatePackage'})">
+                                    创建发布包
+                                </div>
+                            </MenuItem>
+                            <MenuItem name="ListPackage">
+                                <div @click="$router.push({name: 'ReleaseCenterListPackage'})">
+                                    发布包列表
+                                </div>
+                            </MenuItem>
                         </Submenu>
 
                         <MenuItem name="DataQuality">
