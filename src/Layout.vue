@@ -70,6 +70,11 @@
         border-radius: 4px;
         overflow: hidden;
     }
+    .logo{
+        color: white;
+        font-size: 1.8em;
+        font-weight: bolder;
+    }
 </style>
 
 <template>
@@ -77,29 +82,36 @@
         <Layout>
             <Header style="height: 60px">
                 <Menu mode="horizontal" theme="dark" active-name="1" style="height: 60px">
-                    <div style="float: right;">
+                    <span class="logo">
+                        DataHub
+                    </span>
+                    <span style="float: right;">
                         <Submenu name="user">
                             <template slot="title">
-                                <Avatar icon="ios-person" style="margin-bottom: 10px"/>
+                                <Avatar icon="ios-person" style="margin-bottom: 5px"/>
                             </template>
                             <MenuItem name="my_table">我的资产</MenuItem>
                             <MenuItem name="my_album">我的专辑</MenuItem>
                             <MenuItem name="user_guide">用户手册</MenuItem>
                             <MenuItem name="logout">退出</MenuItem>
                         </Submenu>
-                    </div>
+                    </span>
                 </Menu>
             </Header>
             <Layout :style="{minHeight: '90vh'}">
                 <Sider collapsible :collapsed-width="50" v-model="isCollapsed" :width="180">
                     <Menu active-name="1-2" theme="dark" width="auto" :class="menuitemClasses">
                         <MenuItem name="DataDevelopment">
-                            <Icon type="md-construct"></Icon>
-                            <span>数据开发</span>
+                            <div @click="$router.push({name: 'DataDevelopment'})">
+                                <Icon type="md-construct"></Icon>
+                                <span>数据开发</span>
+                            </div>
                         </MenuItem>
                         <MenuItem name="TempQuery">
-                            <Icon type="md-search"></Icon>
-                            <span>临时查询</span>
+                            <div @click="$router.push({name: 'TempQuery'})">
+                                <Icon type="md-search"></Icon>
+                                <span>临时查询</span>
+                            </div>
                         </MenuItem>
 
                         <Submenu name="ReleaseCenter">
