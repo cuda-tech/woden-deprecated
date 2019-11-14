@@ -133,8 +133,10 @@
                         </Submenu>
 
                         <MenuItem name="DataQuality">
-                            <Icon type="md-bug"/>
-                            <span>质量监控</span>
+                            <div @click="$router.push({name: 'DataQuality'})">
+                                <Icon type="md-bug"/>
+                                <span>质量监控</span>
+                            </div>
                         </MenuItem>
 
                         <Submenu name="OpsCenter">
@@ -142,9 +144,21 @@
                                 <Icon type="md-pulse"></Icon>
                                 <span>运维中心</span>
                             </template>
-                            <MenuItem name="OpsOverview">运维大屏</MenuItem>
-                            <MenuItem name="OpsRuntime">实时运维</MenuItem>
-                            <MenuItem name="OpsRoutine">周期运维</MenuItem>
+                            <MenuItem name="OpsOverview">
+                                <div @click="$router.push({name: 'OpsCenterOverview'})">
+                                    运维大屏
+                                </div>
+                            </MenuItem>
+                            <MenuItem name="OpsRuntime">
+                                <div @click="$router.push({name: 'OpsCenterRuntime'})">
+                                    实时运维
+                                </div>
+                            </MenuItem>
+                            <MenuItem name="OpsRoutine">
+                                <div @click="$router.push({name: 'OpsCenterRoutine'})">
+                                    周期运维
+                                </div>
+                            </MenuItem>
                         </Submenu>
 
 
@@ -153,31 +167,41 @@
                                 <Icon type="md-map"></Icon>
                                 <span>数据地图</span>
                             </template>
-                            <MenuItem name="TableList">数据资产</MenuItem>
-                            <MenuItem name="TableDependence">血缘分析</MenuItem>
-                            <MenuItem name="TableAlbum">数据专辑</MenuItem>
+                            <MenuItem name="TableList">
+                                <div @click="$router.push({name: 'DataMapTables'})">
+                                    数据资产
+                                </div>
+                            </MenuItem>
+                            <MenuItem name="TableDependence">
+                                <div @click="$router.push({name: 'DataMapDependence'})">
+                                    血缘分析
+                                </div>
+                            </MenuItem>
+                            <MenuItem name="TableAlbum">
+                                <div @click="$router.push({name: 'DataMapAlbums'})">
+                                    数据专辑
+                                </div>
+                            </MenuItem>
                         </Submenu>
 
                         <MenuItem name="FunctionCenter">
-                            <Icon type="logo-foursquare"/>
-                            <span>函数中心</span>
+                            <div @click="$router.push({name: 'FunctionCenter'})">
+                                <Icon type="logo-foursquare"/>
+                                <span>函数中心</span>
+                            </div>
                         </MenuItem>
 
                         <MenuItem name="Trash">
-                            <Icon type="md-trash"></Icon>
-                            <span>回收站</span>
+                            <div @click="$router.push({name: 'Trash'})">
+                                <Icon type="md-trash"></Icon>
+                                <span>回收站</span>
+                            </div>
                         </MenuItem>
                     </Menu>
                 </Sider>
                 <router-view style="width: 100%"/>
-
-
             </Layout>
-
-
         </Layout>
-
-
     </div>
 </template>
 
