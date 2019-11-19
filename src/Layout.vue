@@ -7,7 +7,7 @@
     }
 
     /*去掉左边子菜单在收起时，以及顶部菜单的展开箭头*/
-    .collapsed-menu i.ivu-icon-ios-arrow-down, .ivu-layout-header i.ivu-icon-ios-arrow-down {
+    .collapsed-menu i.ivu-icon-ios-arrow-down, .ivu-layout-header .ivu-menu-submenu-title i.ivu-icon-ios-arrow-down {
         display: none !important;
     }
 
@@ -76,6 +76,18 @@
         font-size: 1.8em;
         font-weight: bolder;
     }
+
+    /* 项目空间下拉框样式 */
+    .ivu-layout-header .ivu-select-selection{
+        padding-top: 15px;
+        text-align: center;
+        font-size: 1.5em;
+        font-weight: bolder;
+        background: #5b6270;
+        border: 0;
+        color: white;
+        height: 60px !important;
+    }
 </style>
 
 <template>
@@ -85,6 +97,13 @@
                 <Menu mode="horizontal" theme="dark" active-name="1" style="height: 60px">
                     <span class="logo">
                         DataHub
+                    </span>
+                    <span>
+                        <Select style="width:100px;margin-top: -10px;margin-left: 20px">
+                            <Option value="project1">project1</Option>
+                            <Option value="project2">project2</Option>
+                            <Option value="project3">project3</Option>
+                        </Select>
                     </span>
                     <span style="float: right;">
                         <Submenu name="user">

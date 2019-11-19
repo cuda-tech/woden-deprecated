@@ -16,7 +16,8 @@
         "vue": "^2.5.2",
         "vue-router": "^3.0.1",
         "monaco-editor": "^0.18.1",
-        "view-design": "^4.0.2"
+        "view-design": "^4.0.2",
+        "@xunlei/vue-context-menu": "^1.0.2"
     },
     "devDependencies": {
         "autoprefixer": "^7.1.2",

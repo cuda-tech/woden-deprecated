@@ -1,10 +1,11 @@
 <style scoped>
 
+
 </style>
 
 <template>
     <div class="hello" style="margin-right: 30px">
-        <div id="editor" style="height: 1000px;"></div>
+        <div :id="'editor'+node" :style="{height: height}"></div>
     </div>
 </template>
 
@@ -12,18 +13,31 @@
     import * as monaco from 'monaco-editor'
 
     export default {
+        props: ['node'],
         name: 'HelloWorld',
+        beforeMount(){
+            this.height = document.documentElement.clientHeight;
+            this.height -= 65; // 头部高度
+            this.height -= 65; // 头部 & 工具栏高度
+            this.height -= 20; // 日志栏高度
+            this.height += 'px';
+        },
+
         mounted() {
-            monaco.editor.create(document.getElementById('editor'), {
-                value: 'console.log("Hello, world")',
+            monaco.editor.create(document.getElementById('editor' + this.node), {
+                value: 'console.log("Hello, world")' + this.node,
                 language: 'javascript',
-                theme: 'vs-dark'
+                theme: 'vs-dark',
+                contextmenu: false
             });
         },
         data() {
             return {
-                msg: 'Welcome to Your Vue.js App'
+                height: '10px'
             }
+        },
+        methods:{
+
         }
     }
 </script>
