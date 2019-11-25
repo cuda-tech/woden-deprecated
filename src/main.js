@@ -5,8 +5,10 @@ import App from './App'
 import router from './router'
 import ViewUI from 'view-design';
 import 'view-design/dist/styles/iview.css';
+import Plotly from 'plotly.js';
 
 Vue.use(ViewUI);
+Vue.prototype.$Plotly = Plotly;
 
 Vue.config.productionTip = false;
 
