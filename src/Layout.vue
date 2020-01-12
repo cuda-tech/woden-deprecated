@@ -78,7 +78,7 @@
     }
 
     /* 项目空间下拉框样式 */
-    .ivu-layout-header .ivu-select-selection{
+    .ivu-layout-header thu.ivu-select-selection{
         padding-top: 15px;
         text-align: center;
         font-size: 1.5em;
