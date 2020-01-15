@@ -1,0 +1,6 @@
+[submodule "datahub-frontend"]
+	path = datahub-frontend
+	url = https://github.com/cuda-tech/datahub-frontend
+[submodule "datahub-scheduler"]
+	path = datahub-scheduler
+	url = https://github.com/cuda-tech/datahub-scheduler
