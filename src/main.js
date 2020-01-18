@@ -10,6 +10,12 @@ import 'view-design/dist/styles/iview.css';
 import Plotly from 'plotly.js';
 
 axios.defaults.baseURL = '/api/';
+axios.interceptors.request.use(config => {
+    if (localStorage.token) {
+        config.headers.token = localStorage.token
+    }
+    return config
+});
 Vue.use(VueAxios, axios);
 Vue.use(ViewUI);
 Vue.prototype.$Plotly = Plotly;
