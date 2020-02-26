@@ -16,7 +16,7 @@ export default new Router({
     routes: [
         {
             path: '/',
-            name: 'Layout',
+            name: 'Home',
             component: resolve => require(['../Layout.vue'], resolve),
             children: [
                 ...DataDevelopment,
