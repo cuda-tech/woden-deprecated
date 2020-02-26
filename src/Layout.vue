@@ -78,7 +78,7 @@
     }
 
     /* 项目空间下拉框样式 */
-    .ivu-layout-header thu.ivu-select-selection{
+    .ivu-layout-header thu.ivu-select-selection {
         padding-top: 15px;
         text-align: center;
         font-size: 1.5em;
@@ -99,11 +99,7 @@
                         DataHub
                     </span>
                     <span>
-                        <Select style="width:100px;margin-top: -10px;margin-left: 20px">
-                            <Option value="project1">project1</Option>
-                            <Option value="project2">project2</Option>
-                            <Option value="project3">project3</Option>
-                        </Select>
+                        <GroupSelection/>
                     </span>
                     <span style="float: right;">
                         <Submenu name="user">
@@ -113,7 +109,7 @@
                             <MenuItem name="my_table">我的资产</MenuItem>
                             <MenuItem name="my_album">我的专辑</MenuItem>
                             <MenuItem name="user_guide">用户手册</MenuItem>
-                            <MenuItem name="logout">退出</MenuItem>
+                            <MenuItem name="logout"><div @click="logout">退出</div></MenuItem>
                         </Submenu>
                     </span>
                 </Menu>
@@ -225,7 +221,12 @@
 </template>
 
 <script>
+    import GroupSelection from "./components/common/selections/GroupSelection";
+
     export default {
+        components: {
+            GroupSelection: GroupSelection
+        },
         data() {
             return {
                 isCollapsed: true,
@@ -239,7 +240,12 @@
                 ]
             }
         },
-        methods: {}
+        methods: {
+            logout() {
+                window.localStorage["token"] = null;
+                this.$router.push({name: 'Login'});
+            }
+        }
     }
 </script>
 
