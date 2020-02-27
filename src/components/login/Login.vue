@@ -12,7 +12,7 @@
                 </Input>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="login">Signin</Button>
+                <Button type="primary" @click="login">登录</Button>
             </FormItem>
         </Form>
     </div>
@@ -35,9 +35,9 @@
                 let data = new FormData();
                 data.set("username", this.user.name);
                 data.set("password", this.user.password);
-                this.axios.post("/user/login", data).then(res => {
-                    console.log(res.data)
-                    window.localStorage["token"] = res.data
+                this.axios.post("/login", data).then(data => {
+                    window.localStorage["token"] = data.token;
+                    this.$router.push({name: 'Home'})
                 })
             }
         }
