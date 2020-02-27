@@ -179,7 +179,7 @@
 
                         <Submenu name="DataMap">
                             <template slot="title">
-                                <Icon type="md-map"></Icon>
+                                <Icon type="md-map"/>
                                 <span>数据地图</span>
                             </template>
                             <MenuItem name="TableList">
@@ -206,6 +206,28 @@
                             </div>
                         </MenuItem>
 
+                        <Submenu name="ManagerCenter">
+                            <template slot="title">
+                                <Icon type="md-settings"/>
+                                <span>管理中心</span>
+                            </template>
+                            <MenuItem name="UserManager">
+                                <div @click="$router.push({name: 'UserManager'})">
+                                    用户管理
+                                </div>
+                            </MenuItem>
+                            <MenuItem name="GroupManager">
+                                <div @click="$router.push({name: 'GroupManager'})">
+                                    项目组管理
+                                </div>
+                            </MenuItem>
+                            <MenuItem name="MachineManager">
+                                <div @click="$router.push({name: 'MachineManager'})">
+                                    机器管理
+                                </div>
+                            </MenuItem>
+                        </Submenu>
+
                         <MenuItem name="Trash">
                             <div @click="$router.push({name: 'Trash'})">
                                 <Icon type="md-trash"></Icon>
@@ -214,7 +236,9 @@
                         </MenuItem>
                     </Menu>
                 </Sider>
-                <router-view style="width: 100%"/>
+                <Content>
+                    <router-view/>
+                </Content>
             </Layout>
         </Layout>
     </div>
@@ -229,7 +253,7 @@
         },
         data() {
             return {
-                isCollapsed: true,
+                isCollapsed: false,
             };
         },
         computed: {
