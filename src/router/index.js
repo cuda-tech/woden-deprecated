@@ -7,6 +7,7 @@ import DataQuality from './data-quality';
 import OpsCenter from './ops-center';
 import DataMap from './data-map';
 import FunctionCenter from './function-center';
+import ManagerCenter from './manager-center';
 import Trash from './trash'
 
 Vue.use(Router);
@@ -26,6 +27,7 @@ export default new Router({
                 ...OpsCenter,
                 ...DataMap,
                 ...FunctionCenter,
+                ...ManagerCenter,
                 ...Trash
             ]
         },
