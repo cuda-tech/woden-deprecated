@@ -29,213 +29,132 @@
     <div>
         <Select placeholder="搜索文件" filterable remote> </Select>
 
-<!--        <ContextMenu-->
-<!--            :show="contextMenuVisible"-->
-<!--            class="right-menu"-->
-<!--            :target="contextMenuTarget"-->
-<!--            @update:show="(show) => contextMenuVisible = show"-->
-<!--        >-->
-<!--            <a href="javascript:;">创建子目录</a>-->
-<!--            <a href="javascript:;">创建文件</a>-->
-<!--            <a href="javascript:;">重命名</a>-->
-<!--            <a href="javascript:;">移到回收站</a>-->
-<!--        </ContextMenu>-->
-
         <Scroll :height="height">
-            <Tree :data="data5" :render="renderContent"></Tree>
+            <Tree :data="files"
+                  :load-data="getChild"
+                  :render="renderContent"/>
         </Scroll>
     </div>
 </template>
 
 <script>
-    import {component as VueContextMenu} from '@xunlei/vue-context-menu'
+    import '../../../assets/icons/iconfont.css'
 
     export default {
-        components: {
-            ContextMenu: VueContextMenu
+
+
+        created() {
+            this.getRoot();
         },
+
         mounted() {
             this.height = document.documentElement.clientHeight - 95;
         },
+
         data() {
             return {
                 height: 600,
                 // contextMenuVisible: false,
                 // contextMenuTarget: document.body,
 
-                data5: [
-                    {
-                        title: 'parent 1',
-                        expand: true,
-                        render: (h, {root, node, data}) => {
-                            return h('span', {
-                                style: {
-                                    display: 'inline-block',
-                                    width: '100%'
-                                }
-                            }, [
-                                h('span', [
-                                    h('Icon', {
-                                        props: {
-                                            type: 'ios-folder-outline'
-                                        },
-                                        style: {
-                                            marginRight: '8px'
-                                        }
-                                    }),
-                                    h('span', data.title)
-                                ]),
-                                h('span', {
-                                    style: {
-                                        display: 'inline-block',
-                                        float: 'right',
-                                        marginRight: '32px'
-                                    }
-                                }, [
-                                    h('Button', {
-                                        props: Object.assign({}, this.buttonProps, {
-                                            icon: 'ios-add',
-                                            type: 'primary'
-                                        }),
-                                        style: {
-                                            width: '64px'
-                                        },
-                                        on: {
-                                            click: () => {
-                                                this.append(data)
-                                            }
-                                        }
-                                    })
-                                ])
-                            ]);
-                        },
-                        children: [
-                            {
-                                title: 'child 1-1',
-                                expand: true,
-                                children: [
-                                    {
-                                        title: 'leaf 1-1-1',
-                                        expand: true,
-                                        children: [
-                                            {
-                                                title: 'leaf 1-1-1',
-                                                expand: true,
-                                                children: [
-                                                    {
-                                                        title: 'leaf 1-1-1',
-                                                        expand: true,
-                                                        children: [
-                                                            {
-                                                                title: 'leaf 1-1-1',
-                                                                expand: true,
-                                                                children: [
-                                                                    {
-                                                                        title: 'leaf 1-1-1',
-                                                                        expand: true,
-                                                                        children: [
-                                                                            {
-                                                                                title: 'leaf 1-1-1',
-                                                                                expand: true,
-                                                                                children: [
-                                                                                    {
-                                                                                        title: 'leaf 1-1-1',
-                                                                                        expand: true
-                                                                                    },
-                                                                                    {
-                                                                                        title: 'leaf 1-1-2',
-                                                                                        expand: true
-                                                                                    }
-                                                                                ]
-                                                                            },
-                                                                            {
-                                                                                title: 'leaf 1-1-2',
-                                                                                expand: true
-                                                                            }
-                                                                        ]
-                                                                    },
-                                                                    {
-                                                                        title: 'leaf 1-1-2',
-                                                                        expand: true
-                                                                    }
-                                                                ]
-                                                            },
-                                                            {
-                                                                title: 'leaf 1-1-2',
-                                                                expand: true
-                                                            }
-                                                        ]
-                                                    },
-                                                    {
-                                                        title: 'leaf 1-1-2',
-                                                        expand: true
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                title: 'leaf 1-1-2',
-                                                expand: true
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        title: 'leaf 1-1-2',
-                                        expand: true
-                                    }
-                                ]
-                            },
-                            {
-                                title: 'child 1-2',
-                                expand: true,
-                                children: [
-                                    {
-                                        title: 'leaf 1-2-1',
-                                        expand: true
-                                    },
-                                    {
-                                        title: 'leaf 1-2-1',
-                                        expand: true
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ],
-                buttonProps: {
-                    type: 'default',
-                    size: 'small',
-                }
+                files: [],
+
             }
         },
         methods: {
+
+            getRoot() {
+                this.axios.get('/file/root', {
+                    params: {
+                        groupId: 1
+                    }
+                }).then(data => {
+                    let rootDir = data.file;
+                    rootDir.children = [];
+                    rootDir.loading = false;
+                    this.files = [rootDir];
+                })
+
+            },
+
+            getChild(node, callback) {
+                this.axios.get('/file', {
+                    params: {
+                        parentId: node.id
+                    }
+                }).then(data => {
+                    data.files.forEach(file => {
+                        if (file.type === 'DIR') {
+                            file.children = [];
+                            file.loading = false;
+                        }
+                    });
+                    callback(data.files);
+                })
+            },
+
             renderContent(h, {root, node, data}) {
+                let file = data;
+                let icon = {
+                    'DIR': h('Icon', {props: {type: 'md-folder'}, style: {marginRight: '8px', color: '#0099FF'}}),
+                    'SQL': h('Icon', {
+                        props: {custom: 'iconfont icon-sql-file'},
+                        style: {marginRight: '8px', color: 'green'}
+                    }),
+                    'DDL': h('Icon', {
+                        props: {custom: 'iconfont icon-ddl-file'},
+                        style: {marginRight: '8px', color: '#FF9933'}
+                    }),
+                }[file.type];
+                let contextMenuItems = [
+                    h('DropdownItem', '重命名'),
+                    h('DropdownItem', '删除'),
+                ];
+                if (file.type === 'DIR') {
+                    contextMenuItems.splice(0, 0, h('DropdownItem', '新建文件'));
+                    contextMenuItems.splice(0, 0, h('DropdownItem', '新建文件夹'))
+                }
+
+                let elementID = `file_${file.id}`;
+
                 return h('span', {
                     style: {
                         display: 'inline-block',
                         width: '100%'
                     }
                 }, [
-                    h('span', [
-                        h('Icon', {
-                            props: {
-                                type: 'ios-paper-outline'
-                            },
-                            style: {
-                                marginRight: '8px'
+                    h('Dropdown', {
+                        props: {
+                            trigger: 'contextMenu',
+                            placement: 'right-start',
+                            refs: 'dropdown',
+                        },
+                        on: {
+
+                            'on-visible-change': (visible) => {
+                                if (visible) { // 这里是为了修复 iView 多个 context menu 存在时不会自动关闭其他的 menu 问题
+                                    document.getElementById(elementID).dispatchEvent(new MouseEvent('click', {
+                                        view: window,
+                                        bubbles: true,
+                                        cancelable: true
+                                    }));
+                                }
                             }
-                        }),
-                        h('span', data.title)
-                    ]),
+
+                        }
+
+                    }, [
+                        icon,
+                        h('span', {
+                            props: {id: 'yyyy'}, domProps: {
+                                id: elementID
+                            }
+                        }, file.name),
+                        h('DropdownMenu', {slot: "list"}, contextMenuItems)
+                    ])
                 ]);
             },
-            append(data) {
-                const children = data.children || [];
-                children.push({
-                    title: 'appended node',
-                    expand: true
-                });
-                this.$set(data, 'children', children);
-            },
+
             remove(root, node, data) {
                 const parentKey = root.find(el => el === node).parent;
                 const parent = root.find(el => el.nodeKey === parentKey).node;
