@@ -14,4 +14,9 @@ export default [
         name: 'DataMapAlbums',
         component: resolve => require(['../components/data-map/TableAlbum.vue'], resolve)
     },
+    {
+        path: '/function_center',
+        name: 'FunctionCenter',
+        component: resolve => require(['../components/data-map/FunctionCenter.vue'], resolve)
+    }
 ]

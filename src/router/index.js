@@ -6,7 +6,6 @@ import ReleaseCenter from './release-center';
 import DataQuality from './data-quality';
 import OpsCenter from './ops-center';
 import DataMap from './data-map';
-import FunctionCenter from './function-center';
 import ManagerCenter from './manager-center';
 import Trash from './trash'
 
@@ -26,7 +25,6 @@ export default new Router({
                 ...DataQuality,
                 ...OpsCenter,
                 ...DataMap,
-                ...FunctionCenter,
                 ...ManagerCenter,
                 ...Trash
             ]
