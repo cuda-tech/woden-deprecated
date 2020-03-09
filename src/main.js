@@ -16,13 +16,14 @@ axios.interceptors.request.use(config => {
 });
 axios.interceptors.response.use(response => {
     if (response.data.status !== 'success') {
-        console.log("error")
+        ViewUI.Notice.error({
+            title: '请求错误',
+            desc: response.data.error
+        });
+        throw response.data.error
     } else {
         return response.data.data;
     }
-}, error => {
-    console.log(error)
-    return Promise.reject(error);
 });
 
 Vue.use(VueAxios, axios);
