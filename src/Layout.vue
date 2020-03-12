@@ -99,7 +99,7 @@
                         DataHub
                     </span>
                     <span>
-                        <GroupSelection/>
+                        <GroupSelection style="width:120px;margin-top: -10px;margin-left: 20px" v-model="selectedGroup"/>
                     </span>
                     <span style="float: right;">
                         <Submenu name="user">
@@ -197,14 +197,13 @@
                                     数据专辑
                                 </div>
                             </MenuItem>
+                            <MenuItem name="FunctionCenter">
+                                <div @click="$router.push({name: 'FunctionCenter'})">
+                                    函数中心
+                                </div>
+                            </MenuItem>
                         </Submenu>
 
-                        <MenuItem name="FunctionCenter">
-                            <div @click="$router.push({name: 'FunctionCenter'})">
-                                <Icon type="logo-foursquare"/>
-                                <span>函数中心</span>
-                            </div>
-                        </MenuItem>
 
                         <Submenu name="ManagerCenter">
                             <template slot="title">
@@ -251,9 +250,15 @@
         components: {
             GroupSelection: GroupSelection
         },
+        mounted() {
+            this.axios.get("/user/current").then(data => {
+                this.selectedGroup = data.user.groupIds[0];
+            })
+        },
         data() {
             return {
                 isCollapsed: false,
+                selectedGroup: null
             };
         },
         computed: {
