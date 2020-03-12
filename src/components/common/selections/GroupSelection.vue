@@ -3,7 +3,7 @@
 </style>
 
 <template>
-    <Select style="width:120px;margin-top: -10px;margin-left: 20px" v-model="selectedGroup">
+    <Select :value="value" :multiple="multiple" @on-change="val => this.$emit('input', val)">
         <Option v-for="group in groups" :value="group.id">
             {{ group.name }}
         </Option>
@@ -11,22 +11,30 @@
 </template>
 
 <script>
+    /**
+     * 项目组选择菜单
+     */
     export default {
         name: "GroupSelection",
+        props: {
+            value: {
+                default: null,
+            },
+            multiple: {
+                type: Boolean,
+                default: false
+            }
+        },
         beforeMount() {
             this.axios.get("/group").then(data => {
                 this.groupsCount = data.count;
                 this.groups = data.groups;
-                if (this.groups.length > 0) {
-                    this.selectedGroup = this.groups[0].id
-                }
             })
         },
         data() {
             return {
                 groupsCount: 0,
-                groups: [],
-                selectedGroup: null
+                groups: []
             }
         }
     }
