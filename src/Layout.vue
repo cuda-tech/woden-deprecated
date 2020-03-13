@@ -23,12 +23,14 @@
 
     /*头部菜单背景色*/
     .ivu-layout-header, .ivu-menu-horizontal {
-        background: #515a6e;
+        background-color: #3C3F41;
+        border-bottom: 2px solid #515151
     }
 
     /*左边菜单背景色*/
     .ivu-layout-sider, .ivu-menu-vertical, .ivu-layout-sider-trigger {
-        background: #5b6270;
+        background-color: #3C3F41;
+        border-right: 1px solid #323232;
     }
 
 
@@ -77,24 +79,13 @@
         font-weight: bolder;
     }
 
-    /* 项目空间下拉框样式 */
-    .ivu-layout-header thu.ivu-select-selection {
-        padding-top: 15px;
-        text-align: center;
-        font-size: 1.5em;
-        font-weight: bolder;
-        background: #5b6270;
-        border: 0;
-        color: white;
-        height: 60px !important;
-    }
 </style>
 
 <template>
     <div class="layout">
         <Layout>
-            <Header style="height: 60px">
-                <Menu mode="horizontal" theme="dark" active-name="1" style="height: 60px">
+            <Header style="height: 60px; ">
+                <Menu mode="horizontal" theme="dark" active-name="1" style="height: 60px;">
                     <span class="logo">
                         DataHub
                     </span>
@@ -118,12 +109,6 @@
                             <div @click="$router.push({name: 'DataDevelopment'})">
                                 <Icon type="md-construct"></Icon>
                                 <span>数据开发</span>
-                            </div>
-                        </MenuItem>
-                        <MenuItem name="TempQuery">
-                            <div @click="$router.push({name: 'TempQuery'})">
-                                <Icon type="md-search"></Icon>
-                                <span>临时查询</span>
                             </div>
                         </MenuItem>
 
@@ -234,7 +219,7 @@
         },
         data() {
             return {
-                isCollapsed: false,
+                isCollapsed: true,
             };
         },
         computed: {
