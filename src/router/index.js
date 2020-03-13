@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import DataDevelopment from './data-development';
-import TempQuery from './temp-query';
 import DataQuality from './data-quality';
 import OpsCenter from './ops-center';
 import DataMap from './data-map';
@@ -19,7 +18,6 @@ export default new Router({
             component: resolve => require(['../Layout.vue'], resolve),
             children: [
                 ...DataDevelopment,
-                ...TempQuery,
                 ...DataQuality,
                 ...OpsCenter,
                 ...DataMap,
