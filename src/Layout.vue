@@ -98,10 +98,6 @@
                     <span class="logo">
                         DataHub
                     </span>
-                    <span>
-                        <GroupSelection style="width:120px;margin-top: -10px;margin-left: 20px"
-                                        v-model="selectedGroup"/>
-                    </span>
                     <span style="float: right;">
                         <Submenu name="user">
                             <template slot="title">
@@ -233,21 +229,12 @@
 </template>
 
 <script>
-    import GroupSelection from "./components/common/selections/GroupSelection";
-
     export default {
-        components: {
-            GroupSelection: GroupSelection
-        },
         mounted() {
-            this.axios.get("/user/current").then(data => {
-                this.selectedGroup = data.user.groupIds[0];
-            })
         },
         data() {
             return {
                 isCollapsed: false,
-                selectedGroup: null
             };
         },
         computed: {
