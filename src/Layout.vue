@@ -99,7 +99,8 @@
                         DataHub
                     </span>
                     <span>
-                        <GroupSelection style="width:120px;margin-top: -10px;margin-left: 20px" v-model="selectedGroup"/>
+                        <GroupSelection style="width:120px;margin-top: -10px;margin-left: 20px"
+                                        v-model="selectedGroup"/>
                     </span>
                     <span style="float: right;">
                         <Submenu name="user">
@@ -130,23 +131,6 @@
                             </div>
                         </MenuItem>
 
-                        <Submenu name="ReleaseCenter">
-                            <template slot="title">
-                                <Icon type="md-paper-plane"></Icon>
-                                <span>发布中心</span>
-                            </template>
-                            <MenuItem name="CreatePackage">
-                                <div @click="$router.push({name: 'ReleaseCenterCreatePackage'})">
-                                    创建发布包
-                                </div>
-                            </MenuItem>
-                            <MenuItem name="ListPackage">
-                                <div @click="$router.push({name: 'ReleaseCenterListPackage'})">
-                                    发布包列表
-                                </div>
-                            </MenuItem>
-                        </Submenu>
-
                         <MenuItem name="DataQuality">
                             <div @click="$router.push({name: 'DataQuality'})">
                                 <Icon type="md-bug"/>
@@ -162,6 +146,11 @@
                             <MenuItem name="OpsOverview">
                                 <div @click="$router.push({name: 'OpsCenterOverview'})">
                                     运维大屏
+                                </div>
+                            </MenuItem>
+                            <MenuItem name="TaskList">
+                                <div @click="$router.push({name: 'OpsCenterTaskList'})">
+                                    任务列表
                                 </div>
                             </MenuItem>
                             <MenuItem name="OpsRuntime">

@@ -5,6 +5,11 @@ export default [
         component: resolve => require(['../components/ops-center/Overview.vue'], resolve)
     },
     {
+        path: '/ops_center/tasks',
+        name: 'OpsCenterTaskList',
+        component: resolve => require(['../components/ops-center/TaskList.vue'], resolve)
+    },
+    {
         path: '/ops_center/routine',
         name: 'OpsCenterRoutine',
         component: resolve => require(['../components/ops-center/Routine.vue'], resolve)
