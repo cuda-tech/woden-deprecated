@@ -1,11 +1,84 @@
-<style scoped>
+<style>
+
+    /*滚动条样式*/
+    .file-manager .ivu-scroll-container {
+        overflow-x: hidden;
+    }
+
+    .file-manager ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    /*滚动槽*/
+    .file-manager ::-webkit-scrollbar-track {
+        border-radius: 10px;
+        background-color: #3C3F41;
+    }
+
+    /*滚动块*/
+    .file-manager ::-webkit-scrollbar-thumb {
+        background-color: #595B5D;
+        border-radius: 6px;
+    }
+
+    /*文件项*/
+    .file-manager .ivu-tree-title {
+        width: 100%;
+    }
+
+    .file-manager .ivu-tree-title:hover {
+        background-color: #0D293E;
+    }
+
+    .ivu-tree-title-selected, .ivu-tree-title-selected:hover {
+        background-color: #0D293E;
+    }
+
+    /*右键菜单*/
+    .file-manager .ivu-select-dropdown {
+        width: 100px;
+        background-color: #3C3F41;
+        border: 1px solid #515151;
+        border-radius: 2px;
+    }
+
+    .file-manager .ivu-dropdown-item {
+        color: #BBBBBB;
+    }
+
+    .file-manager .ivu-dropdown-item:hover {
+        background-color: #4B6EAF;
+    }
+
+    /*项目组选择下拉框*/
+    .file-manager .ivu-select-selection {
+        background-color: #3C3F41;
+        border: none;
+        color: #BABABA;
+    }
+
+    .file-manager .ivu-select-item {
+        color: #BABABA;
+    }
+
+    .file-manager .ivu-select-item-selected {
+        background-color: #4B6EAF;
+    }
+
+    .file-manager .ivu-select-item:hover {
+        background-color: #4B6EAF;
+    }
+
+
 
 </style>
 
 <template>
-    <div>
-        <Select placeholder="搜索文件" filterable remote/>
-
+    <div class="file-manager" style="background-color: #3C3F41; color: #BABABA; border-bottom: 1px solid #323232">
+        <div style="border-bottom: solid 1px #323232; border-right: solid 1px #323232;">
+            <GroupSelection style="width: 120px;"/>
+            <FileManagerToolBar style="float: right"/>
+        </div>
         <Modal v-model="createFileModal.visible" @on-ok="createFile" @on-cancel="createFileModal.visible = false">
             <div>
                 <Icon type="md-alert" style="font-size: x-large; color: #2db7f5"/>
@@ -53,17 +126,23 @@
 </template>
 
 <script>
+    import GroupSelection from "../../common/selections/GroupSelection";
+    import FileManagerToolBar from "../toolbars/FileManagerToolBar";
     import '../../../assets/icons/iconfont.css'
 
     export default {
 
+        components: {
+            GroupSelection: GroupSelection,
+            FileManagerToolBar: FileManagerToolBar
+        },
 
         created() {
             this.getRoot();
         },
 
         mounted() {
-            this.height = document.documentElement.clientHeight - 95;
+            this.height = document.documentElement.clientHeight - 96;
         },
 
         data() {
@@ -154,18 +233,18 @@
             renderContent(h, {root, node, data}) {
                 let file = data;
                 let icon = {
-                    'DIR': h('Icon', {props: {type: 'md-folder'}, style: {marginRight: '8px', color: '#515a6e'}}),
+                    'DIR': h('Icon', {props: {type: 'md-folder'}, style: {marginRight: '8px', color: '#87939A'}}),
                     'SQL': h('Icon', {
                         props: {custom: 'iconfont icon-sql-file'},
-                        style: {marginRight: '8px', color: '#19be6b'}
+                        style: {marginRight: '8px', color: '#579242'}
                     }),
                     'SPARK': h('Icon', {
                         props: {custom: 'iconfont icon-spark'},
-                        style: {marginRight: '8px', color: '#ed4014'}
+                        style: {marginRight: '8px', color: '#BC5A2B'}
                     }),
                     'MR': h('Icon', {
                         props: {custom: 'iconfont icon-hadoop'},
-                        style: {marginRight: '8px', color: '#ff9900'}
+                        style: {marginRight: '8px', color: '#BD8E3E'}
                     }),
                 }[file.type];
                 let contextMenuItems = node === root[0] ? [] : [
@@ -197,8 +276,12 @@
                     h('Dropdown', {
                         props: {
                             trigger: 'contextMenu',
-                            placement: 'right-start',
+                            placement: 'bottom-start',
                             refs: 'dropdown',
+                        },
+                        style: {
+                            width: '100%',
+                            padding: '0'
                         },
                         on: {
                             'on-visible-change': (visible) => {
@@ -235,7 +318,7 @@
 
                     }, [
                         icon,
-                        h('span', {domProps: {id: elementID}}, file.name),
+                        h('span', {domProps: {id: elementID}, style: {color: '#BABABA'}}, file.name),
                         h('DropdownMenu', {slot: "list"}, contextMenuItems)
                     ])
                 ]);

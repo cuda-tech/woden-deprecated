@@ -4,12 +4,20 @@
         font-weight: bold;
     }
 
-
+    .btn {
+        width: 100%;
+        margin: 0 auto;
+        line-height: 100%;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
 
 </style>
 <template>
-    <Tooltip content="历史版本" placement="top" theme="light">
-        <Button class="toolbar-button" icon="ios-albums" @click="drawerIsOpen=true"/>
+    <div class="btn" @click="drawerIsOpen=true">
+        <Icon type="ios-albums" style="margin-bottom: 8px"/>
+        <br>
+        版本控制
         <Drawer title="历史版本" :closable="false" v-model="drawerIsOpen" width="20">
             <Timeline>
                 <TimelineItem>
@@ -38,7 +46,7 @@
                 </TimelineItem>
             </Timeline>
         </Drawer>
-    </Tooltip>
+    </div>
 </template>
 <script>
     export default {

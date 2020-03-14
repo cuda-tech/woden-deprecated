@@ -1,9 +1,11 @@
 <style scoped>
-
+    .btn:hover {
+        background-color: #4C5052;
+    }
 </style>
 <template>
-    <Tooltip content="发布" placement="top" theme="light">
-        <Button class="toolbar-button" icon="md-paper-plane" @click="modalIsOpen=true"/>
+    <Tooltip content="发布" placement="top" theme="dark" transfer :delay="1000">
+        <Button class="btn" icon="md-paper-plane" @click="modalIsOpen=true" type="text" style="color: #3592C0"/>
         <Modal
             v-model="modalIsOpen"
             title="节点参数确认"

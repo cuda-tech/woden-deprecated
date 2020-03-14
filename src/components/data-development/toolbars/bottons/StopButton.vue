@@ -1,9 +1,11 @@
 <style scoped>
-
+    .btn:hover {
+        background-color: #4C5052;
+    }
 </style>
 <template>
-    <Tooltip content="停止执行" placement="top" theme="light">
-        <Button class="toolbar-button" icon="md-remove-circle" @click="confirm"/>
+    <Tooltip content="停止执行" placement="top" theme="dark" transfer :delay="1000">
+        <Button class="btn" icon="md-remove-circle" @click="confirm" style="color:#C75450" type="text"/>
     </Tooltip>
 </template>
 <script>

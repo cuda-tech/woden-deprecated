@@ -1,9 +1,11 @@
 <style scoped>
-
+    .btn:hover{
+        background-color: #4C5052;
+    }
 </style>
 <template>
-    <Tooltip content="执行" placement="top" theme="light">
-        <Button class="toolbar-button" icon="md-play" @click="modalIsOpen=true"/>
+    <Tooltip content="执行" placement="top" theme="dark" transfer :delay="1000">
+        <Button class="btn" icon="md-play" @click="modalIsOpen=true" type="text" style="color: #499C54;" />
         <Modal
             v-model="modalIsOpen"
             title="执行参数"
