@@ -70,7 +70,6 @@
     }
 
 
-
 </style>
 
 <template>
@@ -128,13 +127,17 @@
 <script>
     import GroupSelection from "../../common/selections/GroupSelection";
     import FileManagerToolBar from "../toolbars/FileManagerToolBar";
+    import FileItem from "./FileItem";
     import '../../../assets/icons/iconfont.css'
+    import EventBus from "../EventBus";
+    import {findComponentUpward} from "view-design/src/utils/assist";
 
     export default {
 
         components: {
             GroupSelection: GroupSelection,
-            FileManagerToolBar: FileManagerToolBar
+            FileManagerToolBar: FileManagerToolBar,
+            FileItem: FileItem
         },
 
         created() {
@@ -231,97 +234,64 @@
              * @returns 渲染后的节点
              */
             renderContent(h, {root, node, data}) {
-                let file = data;
-                let icon = {
-                    'DIR': h('Icon', {props: {type: 'md-folder'}, style: {marginRight: '8px', color: '#87939A'}}),
-                    'SQL': h('Icon', {
-                        props: {custom: 'iconfont icon-sql-file'},
-                        style: {marginRight: '8px', color: '#579242'}
-                    }),
-                    'SPARK': h('Icon', {
-                        props: {custom: 'iconfont icon-spark'},
-                        style: {marginRight: '8px', color: '#BC5A2B'}
-                    }),
-                    'MR': h('Icon', {
-                        props: {custom: 'iconfont icon-hadoop'},
-                        style: {marginRight: '8px', color: '#BD8E3E'}
-                    }),
-                }[file.type];
-                let contextMenuItems = node === root[0] ? [] : [
-                    h('DropdownItem', {props: {name: 'rename'}}, '重命名'),
-                    h('DropdownItem', {props: {name: 'remove'}}, '删除'),
-                ]; // 根节点不允许重命名 & 删除
-                if (file.type === 'DIR') {
-                    contextMenuItems.splice(0, 0, h('Dropdown', {props: {placement: 'right-start'}}, [
-                        h('DropdownItem', ['新建节点', h('Icon', {props: {type: 'ios-arrow-forward'}})]),
-                        h('DropdownMenu', {slot: 'list'}, [
-                            h('DropdownItem', {props: {name: 'createSQL'}}, 'SQL'),
-                            h('DropdownItem', {props: {name: 'createSpark'}}, 'Spark'),
-                            h('DropdownItem', {props: {name: 'createMR'}}, 'MR'),
-
-                        ])
-
-                    ]));
-                    contextMenuItems.splice(0, 0, h('DropdownItem', {props: {name: 'createDir'}}, '新建文件夹'))
-                }
-
-                let elementID = `file_${file.id}`;
-
-                return h('span', {
-                    style: {
-                        display: 'inline-block',
-                        width: '100%'
-                    }
-                }, [
-                    h('Dropdown', {
-                        props: {
-                            trigger: 'contextMenu',
-                            placement: 'bottom-start',
-                            refs: 'dropdown',
+                return h(FileItem, {
+                    props: {
+                        file: data,
+                        with: 'context'
+                    },
+                    on: {
+                        remove: () => {
+                            this.removeFileModal.id = data.id;
+                            this.removeFileModal.treeRoot = root;
+                            this.removeFileModal.treeNode = node;
+                            this.removeFileModal.visible = true;
                         },
-                        style: {
-                            width: '100%',
-                            padding: '0'
+                        rename: () => {
+                            this.updateFileModal.id = data.id;
+                            this.updateFileModal.name = data.name;
+                            this.updateFileModal.treeNode = node;
+                            this.updateFileModal.treeRoot = root;
+                            this.updateFileModal.visible = true;
                         },
-                        on: {
-                            'on-visible-change': (visible) => {
-                                if (visible) { // 这里是为了修复 iView 存在多个 context menu 时不自动关闭其他的 menu 问题
-                                    document.getElementById(elementID).dispatchEvent(new MouseEvent('click', {
-                                        view: window,
-                                        bubbles: true,
-                                        cancelable: true
-                                    }));
-                                }
-                            },
-                            'on-click': (name) => {
-                                if (name === 'rename') {
-                                    this.updateFileModal.id = file.id;
-                                    this.updateFileModal.name = file.name;
-                                    this.updateFileModal.treeNode = node;
-                                    this.updateFileModal.treeRoot = root;
-                                    this.updateFileModal.visible = true;
-                                } else if (name === 'remove') {
-                                    this.removeFileModal.id = file.id;
-                                    this.removeFileModal.treeRoot = root;
-                                    this.removeFileModal.treeNode = node;
-                                    this.removeFileModal.visible = true;
-                                } else if (['createSQL', 'createSpark', 'createMR', 'createDir'].includes(name)) {
-                                    this.createFileModal.type = name.substring(6);
-                                    this.createFileModal.parentId = file.id;
-                                    this.createFileModal.treeNode = node;
-                                    this.createFileModal.visible = true;
+                        create: (type) => {
+                            this.createFileModal.type = type;
+                            this.createFileModal.parentId = data.id;
+                            this.createFileModal.treeNode = node;
+                            this.createFileModal.visible = true;
+                        },
+                        'db-click': () => {
+                            // 因为无法拦截 iView 对两次点击事件的处理，导致文件节点的 selected 变化轨迹为
+                            // false(初始) -> true(我们设置) -> true(iView 处理第一次点击) -> false(iView 处理第二次点击)
+                            // 所以这里弄了个 1 毫秒的延迟，使得变化轨迹为
+                            // false(初始) -> true(iView 处理第一次点击) -> false(iView 处理第二次点击) -> true(我们的延迟设置)
+                            setTimeout(() => node.node.selected = true, 100);
+
+                            if (data.type === 'DIR') { // 对于文件夹节点，执行展开 or 折叠操作
+                                const dir = node.node;
+                                if (dir.expand) {
+                                    dir.expand = false;
+                                    dir.children = []
                                 } else {
-                                    // nothing to do
+                                    dir.loading = true;
+                                    this.getChild(dir, files => {
+                                        dir.loading = false;
+                                        if (files.length) {
+                                            dir.children = files;
+                                            this.$nextTick(() => {
+                                                if (dir.children.length) {
+                                                    // 因为 expand 不是默认存在的，所以注意这里需要强制刷新一下双向绑定
+                                                    this.$set(dir, 'expand', true);
+                                                }
+                                            });
+                                        }
+                                    });
                                 }
+                            } else {
+                                EventBus.$emit("select-file", data);
                             }
                         }
-
-                    }, [
-                        icon,
-                        h('span', {domProps: {id: elementID}, style: {color: '#BABABA'}}, file.name),
-                        h('DropdownMenu', {slot: "list"}, contextMenuItems)
-                    ])
-                ]);
+                    }
+                });
             },
 
             createFile() {
