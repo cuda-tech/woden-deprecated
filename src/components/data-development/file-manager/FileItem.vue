@@ -33,8 +33,9 @@
         </Clicker>
 
     </Dropdown>
-    <span v-else class="filename">
-        <FileIcon :type="file.type" style="margin-right: 5px"/>{{ file.name}}
+    <span v-else class="filename" @click="handleSingleClick">
+        <FileIcon :type="file.type" style="margin-right: 5px"/>
+        {{ file.name}}
     </span>
 </template>
 
@@ -109,6 +110,10 @@
 
             handleDoubleClick() {
                 this.$emit("db-click");
+            },
+
+            handleSingleClick() {
+                this.$emit("click");
             }
 
         }
