@@ -130,7 +130,6 @@
     import FileItem from "./FileItem";
     import '../../../assets/icons/iconfont.css'
     import EventBus from "../EventBus";
-    import {findComponentUpward} from "view-design/src/utils/assist";
 
     export default {
 
