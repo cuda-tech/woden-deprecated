@@ -3,7 +3,8 @@
 </style>
 
 <template>
-    <Select :value="value" :multiple="multiple" @on-change="val => this.$emit('input', val)">
+    <Select :value="value" :multiple="multiple" @on-change="val => this.$emit('input', val)" placeholder="项目组">
+        <Icon custom="iconfont icon-project" slot="prefix"/>
         <Option v-for="group in groups" :value="group.id">
             {{ group.name }}
         </Option>
