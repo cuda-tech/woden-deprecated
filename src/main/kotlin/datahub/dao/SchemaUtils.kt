@@ -100,7 +100,7 @@ object SchemaUtils {
             this.ownerId = user.id
             this.name = "${user.name}_project"
             this.type = FileType.DIR
-            this.version = null
+            this.content = null
             this.parentId = null
             this.isRemove = false
             this.createTime = LocalDateTime.now()
@@ -140,7 +140,7 @@ object SchemaUtils {
             line.split("\t").mapIndexed { i, value ->
                 val type = types[i]
                 if (type.contains("CHAR") || type.contains("DATE") || type.contains("TEXT")) {
-                    "'$value'"
+                    if (value == "NULL") null else "'$value'"
                 } else {
                     value
                 }
