@@ -125,7 +125,7 @@ class GroupController {
             this.ownerId = Jwt.currentUser.id
             this.name = group.name
             this.type = FileType.DIR
-            this.version = null
+            this.content = null
             this.parentId = null
             this.isRemove = false
             this.createTime = LocalDateTime.now()

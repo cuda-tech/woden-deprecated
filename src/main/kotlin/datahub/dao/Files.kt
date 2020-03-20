@@ -22,16 +22,16 @@ import me.liuwj.ktorm.schema.*
  * @since 1.0.0
  */
 @ColumnsDef("""
-    id              bigint unsigned comment 'file ID' auto_increment primary key,
-    group_id        int unsigned    comment 'group ID',
-    owner_id        int unsigned    comment 'owner user ID',
-    name            varchar(128)    comment 'file name',
-    type            varchar(32)     comment 'file type',
-    version         bigint unsigned comment 'current version, null if type is dir',
-    parent_id       bigint unsigned comment 'parent ID, null if it is root dir',
-    is_remove       bool            comment 'whether group is removed',
-    create_time     datetime        comment 'task create time',
-    update_time     datetime        comment 'last update time',
+    id              bigint unsigned comment '文件 ID' auto_increment primary key,
+    group_id        int unsigned    comment '项目组 ID',
+    owner_id        int unsigned    comment '创建者 ID',
+    name            varchar(128)    comment '文件名',
+    type            varchar(32)     comment '文件类型',
+    parent_id       bigint unsigned comment '父节点 ID，如果为根目录则为 null',
+    content         text            comment '文件目录',
+    is_remove       bool            comment '是否逻辑删除',
+    create_time     datetime        comment '创建时间',
+    update_time     datetime        comment '更新时间',
     key idx_group(is_remove, group_id, type),
     key idx_parent(is_remove, parent_id)
 """)
@@ -41,8 +41,8 @@ object Files : Table<File>("files") {
     val ownerId by int("owner_id").bindTo { it.ownerId }
     val name by varchar("name").bindTo { it.name }
     val type by enum("type", typeRef<FileType>()).bindTo { it.type }
-    val version by int("version").bindTo { it.version }
     val parentId by int("parent_id").bindTo { it.parentId }
+    val content by text("content").bindTo { it.content }
     val isRemove by boolean("is_remove").bindTo { it.isRemove }
     val createTime by datetime("create_time").bindTo { it.createTime }
     val updateTime by datetime("update_time").bindTo { it.updateTime }

@@ -41,7 +41,7 @@ class FileControllerTest : RestfulTestToolbox() {
         postman.get("/api/file").shouldSuccess.thenGetData.andCheckCount(rootDirCount)
             .thenGetListOf("files").andCheckSize(rootDirCount).forEach {
                 it["type"] shouldBe FileType.DIR.toString()
-                it["version"] shouldBe null
+                it["content"] shouldBe null
             }
     }
 
@@ -112,7 +112,7 @@ class FileControllerTest : RestfulTestToolbox() {
             it["name"] shouldBe "test create"
             it["type"] shouldBe "DIR"
             it["parentId"] shouldBe 38324
-            it["version"] shouldBe null
+            it["content"] shouldBe null
         }
 
         postman.get("/api/file", mapOf("like" to "test create")).shouldSuccess.thenGetData.andCheckCount(1)
@@ -144,7 +144,7 @@ class FileControllerTest : RestfulTestToolbox() {
             it["name"] shouldBe "test create"
             it["type"] shouldBe "SQL"
             it["parentId"] shouldBe 38324
-            it["version"] shouldNotBe null
+            it["content"] shouldNotBe null
         }
 
         postman.get("/api/file", mapOf("like" to "test create")).shouldSuccess.thenGetData.andCheckCount(1)
@@ -171,19 +171,17 @@ class FileControllerTest : RestfulTestToolbox() {
         postman.get("/api/file", mapOf("like" to "test update")).shouldSuccess.thenGetData.andCheckCount(1)
             .thenGetListOf("files").first().withExpect { it["ownerId"] shouldBe 1 }
 
-        postman.put("/api/file/28", mapOf("version" to 38324)).shouldSuccess.withMessage("file 28 has been update")
-        postman.get("/api/file", mapOf("like" to "test update")).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").first().withExpect { it["version"] shouldBe 38324 }
+
 
         postman.put("/api/file/28", mapOf("parentId" to 38324)).shouldSuccess.withMessage("file 28 has been update")
         postman.get("/api/file", mapOf("parentId" to 38324)).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").first().withExpect { it["version"] shouldBe 38324 }
+            .thenGetListOf("files").first().withExpect { it["id"] shouldBe 28 }
     }
 
     @Test
     fun updateMoreThanOneArgument() {
         postman.put("/api/file/3", mapOf("ownerId" to 1, "name" to "test update")).shouldFailed
-            .withIllegalArgumentError("ownerId, name, version, parentId must only one not null")
+            .withIllegalArgumentError("ownerId, name, content, parentId must only one not null")
     }
 
     @Test

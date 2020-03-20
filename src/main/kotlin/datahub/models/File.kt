@@ -29,8 +29,8 @@ interface File : Entity<File> {
     var ownerId: Int
     var name: String
     var type: FileType
-    var version: Int? // content version, (i.e FileContent.id, null if type is dir)
-    var parentId: Int? // parent file node ID, null if type is root dir
+    var parentId: Int?
+    var content: String?
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime

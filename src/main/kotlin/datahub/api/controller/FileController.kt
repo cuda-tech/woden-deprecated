@@ -139,25 +139,13 @@ class FileController {
             this.ownerId = currentUser.id
             this.name = name
             this.type = type
-            this.version = null
+            this.content = if (type == FileType.DIR) null else ""
             this.parentId = parentId
             this.isRemove = false
             this.createTime = LocalDateTime.now()
             this.updateTime = LocalDateTime.now()
         }
         Files.add(file)
-        if (type != FileType.DIR) {
-            val content = FileContent {
-                this.fileId = file.id
-                this.content = ""
-                this.isRemove = false
-                this.updateTime = LocalDateTime.now()
-                this.updateTime = LocalDateTime.now()
-            }
-            FileContents.add(content)
-            file.version = content.id
-            file.flushChanges()
-        }
         return Response.Success.WithData(mapOf("file" to file))
     }
 
@@ -182,10 +170,10 @@ class FileController {
     fun update(@PathVariable id: Int,
                @RequestParam(required = false) ownerId: Int?,
                @RequestParam(required = false) name: String?,
-               @RequestParam(required = false) version: Int?,
+               @RequestParam(required = false) content: String?,
                @RequestParam(required = false) parentId: Int?): ResponseData {
-        if (listOfNotNull(ownerId, name, version, parentId).size != 1) {
-            return Response.Failed.IllegalArgument("ownerId, name, version, parentId must only one not null")
+        if (listOfNotNull(ownerId, name, content, parentId).size != 1) {
+            return Response.Failed.IllegalArgument("ownerId, name, content, parentId must only one not null")
         }
         val file = Files.findById(id)
         return if (file == null || file.isRemove) {
@@ -196,7 +184,7 @@ class FileController {
             when {
                 ownerId != null -> file.ownerId = ownerId
                 name != null -> file.name = name
-                version != null -> file.version = version
+                content != null -> file.content = content
                 parentId != null -> file.parentId = parentId
             }
             file.updateTime = LocalDateTime.now()
@@ -229,6 +217,7 @@ class FileController {
      */
     @DeleteMapping("{id}")
     fun remove(@PathVariable id: Int): ResponseData {
+        // todo: 删除其内容
         val file = Files.findById(id)
         return if (file == null || file.isRemove) {
             Response.Failed.DataNotFound("file $id")
