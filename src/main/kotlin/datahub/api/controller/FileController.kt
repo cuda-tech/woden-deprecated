@@ -49,7 +49,7 @@ class FileController {
      * @apiParam {Number} [parentId = null] 父节点 ID
      * @apiParam {String} [like = null] 文件名模糊匹配，多个词用空格分隔，null 字符串会被忽略
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"count":3,"files":[{"id":27,"groupId":1,"ownerId":19,"name":"zvdjsdhz","type":"DIR","parentId":4,"isRemove":false,"createTime":"2028-06-08 05:25:18","updateTime":"2029-07-07 15:07:21"},{"id":55,"groupId":1,"ownerId":44,"name":"yijlstlq","type":"SQL","version":41,"parentId":4,"isRemove":false,"createTime":"2008-04-13 07:17:42","updateTime":"2011-01-27 21:49:43"},{"id":42,"groupId":1,"ownerId":40,"name":"yzhamcqc","type":"SPARK","version":23,"parentId":4,"isRemove":false,"createTime":"2017-09-18 02:08:21","updateTime":"2020-08-30 13:28:13"}]}}
+     * {"status":"success","data":{"count":5,"files":[{"id":4,"groupId":1,"ownerId":26,"name":"zwgjydgn","type":"DIR","parentId":1,"isRemove":false,"createTime":"2002-05-14 08:16:08","updateTime":"2004-04-17 08:43:14"},{"id":43,"groupId":1,"ownerId":140,"name":"kniovyqn","type":"SQL","parentId":1,"content":"zozhbwftgaapvfdvcvvqfoorqttkplueaxxufrfzpvzgjlbymwgwqzyrclqfriob","isRemove":false,"createTime":"2009-09-17 00:47:55","updateTime":"2011-11-10 01:43:32"}]}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
@@ -120,7 +120,7 @@ class FileController {
      * @apiParam {Enum} type 文件类型，可选 DIR、 SQL、 SPARK、 MR
      * @apiParam {Number} parentId 父节点 ID
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"file":{"groupId":1,"ownerId":1,"name":"aaa","type":"SPARK","version":1,"parentId":1,"isRemove":false,"createTime":"2020-03-07 23:36:34","updateTime":"2020-03-07 23:36:34","id":71}}}
+     * {"status":"success","data":{"file":{"groupId":1,"ownerId":1,"name":"xxx","type":"DIR","content":null,"parentId":1,"isRemove":false,"createTime":"2020-03-22 01:35:18","updateTime":"2020-03-22 01:35:18","id":70}}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
