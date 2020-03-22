@@ -17,10 +17,8 @@ import com.google.common.collect.Lists
 import datahub.api.Response
 import datahub.api.ResponseData
 import datahub.api.auth.Jwt
-import datahub.dao.FileContents
 import datahub.dao.Files
 import datahub.models.File
-import datahub.models.FileContent
 import datahub.models.dtype.FileType
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.*
