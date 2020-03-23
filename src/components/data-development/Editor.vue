@@ -6,14 +6,16 @@
 </template>
 
 <script>
-    import * as monaco from 'monaco-editor'
+    import * as monaco from 'monaco-editor';
+    import EventBus from "./EventBus";
 
     export default {
+        name: 'Editor',
+
         props: [
             'height'
         ],
 
-        name: 'HelloWorld',
         watch: {
             height: function (newHeight, oldHeight) {
                 if (newHeight < oldHeight) { // 缩小编辑框貌似会触发 monaco 的 bug，先这样处理
@@ -31,9 +33,14 @@
             }
         },
 
+        created() {
+            EventBus.$on("switch-file", this.fetchContent);
+            document.addEventListener('keydown', this.shortcutHandler);
+        },
+
         mounted() {
             this.editor = monaco.editor.create(document.getElementById('editor'), {
-                value: 'console.log("Hello, world")',
+                value: '',
                 language: 'javascript',
                 theme: 'vs-dark',
                 contextmenu: true
@@ -42,12 +49,49 @@
                 this.editor.layout()
             });
         },
+
+        beforeDestroy() {
+            document.removeEventListener('keydown', this.shortcutHandler);
+        },
+
         data() {
             return {
-                editor: null
+                editor: null,
+                file: null
             }
         },
-        methods: {}
+
+        methods: {
+            fetchContent(file) {
+                this.axios.get(`/file/${file.id}/content`).then(data => {
+                    let lang = {
+                        SQL: 'sql',
+                        SPARK: 'shell'
+                    }[file.type];
+                    this.editor.setValue(data.content);
+                    monaco.editor.setModelLanguage(this.editor.getModel(), lang);
+                    this.file = file;
+                });
+            },
+
+            shortcutHandler(event) {
+                if (event.keyCode === 83 && event.ctrlKey) {
+                    this.save();
+                    event.preventDefault();
+                    event.returnValue = false;
+                    return false;
+                }
+            },
+
+            save() {
+                let params = new FormData();
+                params.set("id", this.file.id);
+                params.set("content", this.editor.getValue());
+                this.axios.put(`/file/${this.file.id}`, params).then(data => {
+                    this.$Message.success('已保存');
+                });
+            }
+        }
     }
 </script>
 
