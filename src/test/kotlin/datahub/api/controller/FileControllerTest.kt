@@ -89,6 +89,18 @@ class FileControllerTest : RestfulTestToolbox() {
     }
 
     @Test
+    fun getContent() {
+        postman.get("/api/file/2/content").shouldSuccess.thenGetData["content"]
+            .shouldBe("xwuocwyldfswbdwbnkpizvuhokfhhbwrmykqlgtpqkrzuatixnavciilmbkyxnuw")
+        // 已删除的文件
+        postman.get("/api/file/5/content").shouldFailed.withNotFoundError("file 5")
+        // 不存在的文件
+        postman.get("/api/file/70/content").shouldFailed.withNotFoundError("file 70")
+        // 目录
+        postman.get("/api/file/4/content").shouldFailed.withIllegalArgumentError("dir has not content")
+    }
+
+    @Test
     fun search() {
         val files = postman.get("/api/file", mapOf("like" to " a  b   c    "))
             .shouldSuccess.thenGetData.andCheckCount(2).thenGetListOf("files").andCheckSize(2)

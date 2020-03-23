@@ -38,6 +38,8 @@ import java.time.LocalDateTime
 @RequestMapping("/api/file")
 class FileController {
 
+    // todo: 获取文件列表不应把 content 也查出来
+
     /**
      * @api {get} /api/file 获取文件列表
      * @apiDescription 获取指定父节点的文件列表，或全局模糊查找
@@ -105,6 +107,30 @@ class FileController {
             return Response.Failed.DataNotFound("root in $groupId")
         }
         return Response.Success.WithData(mapOf("file" to file.first()))
+    }
+
+
+    /**
+     * @api {get} /api/file/{id}/content 获取内容
+     * @apiDescription 获取指定文件的内容，如果文件不存在或被删除，则返回错误；如果文件是目录，则返回错误
+     * @apiGroup File
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"content":"upkyslvcuaejueqvyokchqrtftdqgkuwifdazcsugjcavoqqhckdamkspijxmoda"}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"错误信息"}
+     */
+    @GetMapping("/{id}/content")
+    fun getContent(@PathVariable id: Int): ResponseData {
+        val file = Files.findById(id);
+        return if (file == null || file.isRemove) {
+            Response.Failed.DataNotFound("file $id")
+        } else if (file.type == FileType.DIR) {
+            Response.Failed.IllegalArgument("dir has not content")
+        } else {
+            Response.Success.WithData(mapOf("content" to file.content))
+        }
     }
 
     /**
