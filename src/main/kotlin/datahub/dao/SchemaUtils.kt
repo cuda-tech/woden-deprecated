@@ -84,7 +84,7 @@ object SchemaUtils {
         logger.info("group root created")
 
         val user = User {
-            this.groupIds = setOf(group.id)
+            this.groups = setOf(group.id)
             this.name = "root"
             this.email = "root@datahub.com"
             this.password = MD5.encrypt("root")
@@ -139,7 +139,7 @@ object SchemaUtils {
         val values = file.joinToString(",") { line ->
             line.split("\t").mapIndexed { i, value ->
                 val type = types[i]
-                if (type.contains("CHAR") || type.contains("DATE") || type.contains("TEXT")) {
+                if (type.contains("CHAR") || type.contains("DATE") || type.contains("TEXT") || type == "UNKNOWN") {
                     if (value == "NULL") null else "'$value'"
                 } else {
                     value
