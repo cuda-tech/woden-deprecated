@@ -42,7 +42,7 @@ class UserController {
     private fun User.wipeOutPassword(): LinkedHashMap<String, Any> {
         val responseData = LinkedHashMap<String, Any>()
         responseData["id"] = this.id
-        responseData["groupIds"] = this.groupIds
+        responseData["groupIds"] = this.groups
         responseData["name"] = this.name
         responseData["email"] = this.email
         responseData["createTime"] = this.createTime
@@ -148,7 +148,7 @@ class UserController {
         }
         val user = User {
             this.name = name
-            this.groupIds = groupIds.toSet()
+            this.groups = groupIds.toSet()
             this.password = MD5.encrypt(password)
             this.email = email
             this.isRemove = false
@@ -195,7 +195,7 @@ class UserController {
                 update = true
             }
             if (groupIds != null) {
-                user.groupIds = groupIds.toSet()
+                user.groups = groupIds.toSet()
                 update = true
             }
             if (email != null) {

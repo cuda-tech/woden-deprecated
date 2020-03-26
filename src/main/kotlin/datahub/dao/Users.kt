@@ -23,19 +23,19 @@ import me.liuwj.ktorm.schema.*
  * @since 1.0.0
  */
 @ColumnsDef("""
-    id              int unsigned    comment 'user ID' auto_increment primary key,
-    group_ids       text            comment 'list of group ID which user affiliate',
-    name            varchar(256)    comment 'user name',
-    email           varchar(256)    comment 'email, also use for login',
-    password        varchar(256)    comment 'encrypted password for login',
-    is_remove       bool            comment 'whether user is removed',
-    create_time     datetime        comment 'user create time',
-    update_time     datetime        comment 'last update time',
+    id              int unsigned    comment '用户 ID' auto_increment primary key,
+    groups          json            comment '项目组 ID',
+    name            varchar(256)    comment '用户名',
+    email           varchar(256)    comment '登录名',
+    password        varchar(256)    comment '登录密码密文',
+    is_remove       bool            comment '逻辑删除',
+    create_time     datetime        comment '创建时间',
+    update_time     datetime        comment '更新时间',
     key idx_name(is_remove, name)
 """)
 object Users : Table<User>("users") {
     val id by int("id").primaryKey().bindTo { it.id }
-    val groupIds by json("group_ids", typeRef<Set<Int>>()).bindTo { it.groupIds }
+    val groups by json("groups", typeRef<Set<Int>>()).bindTo { it.groups }
     val name by varchar("name").bindTo { it.name }
     val email by varchar("email").bindTo { it.email }
     val password by varchar("password").bindTo { it.password }

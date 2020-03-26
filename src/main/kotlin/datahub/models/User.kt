@@ -24,7 +24,7 @@ interface User : Entity<User> {
     companion object : Entity.Factory<User>()
 
     val id: Int
-    var groupIds: Set<Int>
+    var groups: Set<Int>
     var name: String
     var email: String
     var password: String

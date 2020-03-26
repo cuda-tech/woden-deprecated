@@ -14,11 +14,9 @@
 package datahub.api.auth
 
 import datahub.dao.Users
-import datahub.models.User
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.entity.findOne
 import org.apache.shiro.authc.AuthenticationException
-import org.apache.shiro.authc.AuthenticationInfo
 import org.apache.shiro.authc.AuthenticationToken
 import org.apache.shiro.authc.SimpleAuthenticationInfo
 import org.apache.shiro.authz.AuthorizationInfo
@@ -43,7 +41,7 @@ class ShiroRealm : AuthorizingRealm() {
 
     override fun doGetAuthorizationInfo(token: PrincipalCollection?): AuthorizationInfo {
         val user = Users.findOne { it.name eq Jwt.getUserName(token.toString()).orEmpty() }
-        val isRootGroup = user?.groupIds?.contains(1) ?: false
+        val isRootGroup = user?.groups?.contains(1) ?: false
         return if (isRootGroup) {
             SimpleAuthorizationInfo().also {
                 it.roles = setOf("root")
