@@ -111,6 +111,40 @@ class FileController {
 
 
     /**
+     * @api {get} /api/file/{id}/parent 获取文件父节点
+     * @apiDescription 获取指定文件的父节点，如果文件不存在或被删除则返回错误；如果文件的任何一个父节点不存在或被删除则返回错误；根节点返回空数组
+     * @apiGroup File
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"parent":[{"id":1,"groupId":1,"ownerId":1,"name":"root_project","type":"DIR","isRemove":false,"createTime":"2037-05-20 14:58:39","updateTime":"2040-02-04 21:46:36"},{"id":4,"groupId":1,"ownerId":26,"name":"zwgjydgn","type":"DIR","parentId":1,"isRemove":false,"createTime":"2002-05-14 08:16:08","updateTime":"2004-04-17 08:43:14"}]}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"file 70 not found"}
+     */
+    @GetMapping("/{id}/parent")
+    fun getParent(@PathVariable id: Int): ResponseData {
+        var currentFile = Files.findById(id)
+        if (currentFile == null || currentFile.isRemove) {
+            return Response.Failed.DataNotFound("file $id")
+        } else {
+            val parentList = mutableListOf<File>()
+            while (!currentFile!!.isRootDir()) { // kotlin 的类型推断有点问题，这里需要强制声明 currentFile 非 NULL
+                val parent = Files.findById(currentFile.parentId!!) // 非根节点一定有 parent ID
+                when {
+                    parent == null || parent.isRemove -> return Response.Failed.DataNotFound("file $id")
+                    parent.type != FileType.DIR -> return Response.Failed.IllegalArgument("parent must be DIR")
+                    else -> {
+                        parentList.add(0, parent)
+                        currentFile = parent
+                    }
+                }
+            }
+            return Response.Success.WithData(mapOf("parent" to parentList))
+        }
+    }
+
+
+    /**
      * @api {get} /api/file/{id}/content 获取内容
      * @apiDescription 获取指定文件的内容，如果文件不存在或被删除，则返回错误；如果文件是目录，则返回错误
      * @apiGroup File
@@ -123,7 +157,7 @@ class FileController {
      */
     @GetMapping("/{id}/content")
     fun getContent(@PathVariable id: Int): ResponseData {
-        val file = Files.findById(id);
+        val file = Files.findById(id)
         return if (file == null || file.isRemove) {
             Response.Failed.DataNotFound("file $id")
         } else if (file.type == FileType.DIR) {

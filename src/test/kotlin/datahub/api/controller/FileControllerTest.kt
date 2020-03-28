@@ -89,6 +89,48 @@ class FileControllerTest : RestfulTestToolbox() {
     }
 
     @Test
+    fun getParent() {
+        // 三层父节点
+        var parentNames = listOf("root_project", "zwgjydgn", "zvdjsdhz")
+        postman.get("/api/file/28/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
+            .andCheckSize(3).forEachIndexed { idx, file ->
+                file["name"] shouldBe parentNames[idx]
+            }
+
+        // 两层父节点
+        parentNames = listOf("root_project", "zwgjydgn")
+        postman.get("/api/file/42/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
+            .andCheckSize(2).forEachIndexed { idx, file ->
+                file["name"] shouldBe parentNames[idx]
+            }
+        postman.get("/api/file/27/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
+            .andCheckSize(2).forEachIndexed { idx, file ->
+                file["name"] shouldBe parentNames[idx]
+            }
+
+
+        // 一层父节点
+        parentNames = listOf("root_project")
+        postman.get("/api/file/6/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
+            .andCheckSize(1).forEachIndexed { idx, file ->
+                file["name"] shouldBe parentNames[idx]
+            }
+        postman.get("/api/file/4/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
+            .andCheckSize(1).forEachIndexed { idx, file ->
+                file["name"] shouldBe parentNames[idx]
+            }
+
+        // 根目录
+        postman.get("/api/file/1/parent").shouldSuccess.thenGetData.thenGetListOf("parent").andCheckSize(0)
+
+        // 已删除的文件
+        postman.get("/api/file/5/parent").shouldFailed.withNotFoundError("file 5")
+
+        // 不存在的文件
+        postman.get("/api/file/70/parent").shouldFailed.withNotFoundError("file 70")
+    }
+
+    @Test
     fun getContent() {
         postman.get("/api/file/2/content").shouldSuccess.thenGetData["content"]
             .shouldBe("xwuocwyldfswbdwbnkpizvuhokfhhbwrmykqlgtpqkrzuatixnavciilmbkyxnuw")
