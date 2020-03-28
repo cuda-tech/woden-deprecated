@@ -13,7 +13,7 @@
  */
 package datahub.models
 
-import datahub.scheduler.ops.OperatorType
+import datahub.models.dtype.SchedulePeriod
 import me.liuwj.ktorm.entity.Entity
 import java.time.LocalDateTime
 
@@ -25,12 +25,21 @@ interface Task : Entity<Task> {
     companion object : Entity.Factory<Task>()
 
     val id: Int
-    var type: OperatorType
+    var mirrorId: Int
     var name: String
-    var command: String
-    var ownerId: Int
-    var parentIds: Set<Int>
-    var childrenIds: Set<Int>
+    var owners: Set<Int>
+    var args: String
+    var softFail: Boolean
+    var period: SchedulePeriod
+    var queue: String
+    var priority: Int
+    var pendingTimeout: Int
+    var runningTimeout: Int
+    var parent: Map<Int, Map<String, String>>
+    var children: Map<Int, Map<String, String>>
+    var retries: Int
+    var retryDelay: Int
+    var valid: Boolean
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime
