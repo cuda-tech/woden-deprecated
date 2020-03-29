@@ -1,30 +1,25 @@
-# datahub-frontend
 
-> A Vue.js project
-
-## Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-
-# run unit tests
-npm run unit
-
-# run e2e tests
-npm run e2e
-
-# run all tests
-npm test
+### 代码结构
 ```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+.
+├── README.md
+├── build                   # build 脚本
+├── config                  # prod/dev build config 文件
+├── hera                    # 代码发布上线
+├── index.html              # 前端入口
+├── package.json
+├── src                     # 前端核心业务
+│   ├── App.vue             # Vue 根组件
+│   ├── api                 # 网络请求
+│   ├── assets              # 静态文件
+│   ├── components          # 通用组件
+│   ├── event-bus           # 事件总线
+│   ├── main.js             # Vue 入口文件
+│   ├── router              # 前端路由
+│   ├── service             # 服务层，用于处理服务端返回的数据, 整合到 store 中
+│   ├── store               # Vuex 状态管理
+│   ├── util                # 项目全局的工具函数
+│   └── view                # 业务页面
+├── static                  # DevServer 静态文件
+└── test                    # 测试
+```
