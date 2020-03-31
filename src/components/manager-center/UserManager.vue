@@ -80,6 +80,7 @@
      */
     import '../../assets/icons/iconfont.css'
     import GroupSelection from "../../components/common/selections/GroupSelection";
+    import UserAPI from "../../api/UserAPI";
 
     export default {
         name: "UserManager",
@@ -155,7 +156,7 @@
                                         },
                                         on: {
                                             'on-ok': () => {
-                                                this.axios.delete(`/user/${row.id}`).then(data => {
+                                                UserAPI.delete(row.id, () => {
                                                     this.users.splice(index, 1);
                                                     //todo: 向下补全
                                                 });
@@ -216,16 +217,10 @@
             },
 
             createUser() {
-                let params = new FormData();
-                params.set("name", this.createUserModal.name);
-                params.set("password", this.createUserModal.password);
-                params.set("groupIds", this.createUserModal.groupIds);
-                params.set("email", this.createUserModal.email);
-
-                this.axios.post("/user", params).then(data => {
+                UserAPI.create(this.createUserModal, user => {
                     this.userCount += 1;
                     if (this.users.length < this.pageSize) {
-                        this.users.push(data.user)
+                        this.users.push(user)
                     }
                     this.createUserModal = {
                         visible: false,
@@ -238,15 +233,8 @@
             },
 
             updateUser() {
-                let params = new FormData();
-                params.set("id", this.updateUserModal.id);
-                params.set("name", this.updateUserModal.name);
-                params.set("password", this.updateUserModal.password);
-                params.set("groupIds", this.updateUserModal.groupIds);
-                params.set("email", this.updateUserModal.email);
-
-                this.axios.put(`/user/${this.updateUserModal.id}`, params).then(data => {
-                    this.$set(this.users, this.updateUserModal.rowIndex, data.user);
+                UserAPI.update(this.updateUserModal, user => {
+                    this.$set(this.users, this.updateUserModal.rowIndex, user);
                     this.updateUserModal = {
                         visible: false,
                         rowIndex: null,
@@ -257,28 +245,16 @@
                         groupIds: null,
                     }
                 });
-
             },
 
             changePage(pageId) {
                 this.loading = true;
-                let params = {
-                    page: pageId,
-                    pageSize: this.pageSize
-                };
-                if (this.search.key !== null && this.search.key.trim() !== "") {
-                    params['like'] = this.search.key;
-                }
-                this.axios.get("/user", {
-                    params: params
-                }).then(data => {
-                    this.userCount = data.count;
-                    this.users = data.users;
+                UserAPI.listing(pageId, this.pageSize, this.search.key, (count, users) => {
+                    this.userCount = count;
+                    this.users = users;
                     this.pageId = pageId;
                     this.loading = false;
-                }).catch(err => {
-                    this.loading = false;
-                })
+                });
             },
 
             changePageSize(pageSize) {

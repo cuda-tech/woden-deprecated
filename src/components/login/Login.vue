@@ -20,6 +20,8 @@
 </template>
 
 <script>
+    import UserAPI from "../../api/UserAPI";
+
     export default {
         name: "Login",
         data() {
@@ -32,13 +34,10 @@
         },
         methods: {
             login() {
-                let data = new FormData();
-                data.set("username", this.user.name);
-                data.set("password", this.user.password);
-                this.axios.post("/login", data).then(data => {
-                    window.localStorage["token"] = data.token;
+                UserAPI.login(this.user.name, this.user.password, token => {
+                    window.localStorage["token"] = token;
                     this.$router.push({name: 'Home'})
-                })
+                });
             }
         }
     }
