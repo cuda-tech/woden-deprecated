@@ -24,7 +24,8 @@
                 </Modal>
             </Button>
 
-            <Modal v-model="updateMachineModal.visible" @on-ok="updateMachine" @on-cancel="updateMachineModal.visible = false">
+            <Modal v-model="updateMachineModal.visible" @on-ok="updateMachine"
+                   @on-cancel="updateMachineModal.visible = false">
                 <div>
                     <Icon type="md-alert" style="font-size: x-large; color: #2db7f5"/>
                     <span style="font-size: large; margin-left: 5px"> 更新服务器信息 </span>
@@ -56,6 +57,8 @@
 </template>
 
 <script>
+    import MachineAPI from "../../api/MachineAPI";
+
     /**
      * 机器管理
      * 普通用户：无权查看
@@ -140,7 +143,7 @@
                                         },
                                         on: {
                                             'on-ok': () => {
-                                                this.axios.delete(`/machine/${row.id}`).then(data => {
+                                                MachineAPI.delete(row.id, () => {
                                                     this.machines.splice(index, 1);
                                                     //todo: 向下补全
                                                 });
@@ -189,22 +192,12 @@
         methods: {
             changePage(pageId) {
                 this.loading = true;
-                let params = {
-                    page: pageId,
-                    pageSize: this.pageSize
-                };
-                if (this.search.key !== null && this.search.key.trim() !== "") {
-                    params['like'] = this.search.key;
-                }
-
-                this.axios.get("/machine", {params: params}).then(data => {
-                    this.machineCount = data.count;
-                    this.machines = data.machines;
+                MachineAPI.listing(pageId, this.pageSize, this.search.key, (count, machines) => {
+                    this.machineCount = count;
+                    this.machines = machines;
                     this.pageId = pageId;
                     this.loading = false;
-                }).catch(err => {
-                    this.loading = false;
-                })
+                });
             },
 
             changePageSize(pageSize) {
@@ -213,14 +206,10 @@
             },
 
             createMachine() {
-                let params = new FormData();
-                params.set("hostname", this.createMachineModal.hostname);
-                params.set("ip", this.createMachineModal.ip);
-
-                this.axios.post("/machine", params).then(data => {
+                MachineAPI.create(this.createMachineModal, machine => {
                     this.machineCount += 1;
                     if (this.machines.length < this.pageSize) {
-                        this.machines.push(data.machine);
+                        this.machines.push(machine);
                     }
                     this.createMachineModal = {
                         visible: false,
@@ -228,16 +217,11 @@
                         ip: null
                     };
                 });
-
             },
 
             updateMachine() {
-                let params = new FormData();
-                params.set("hostname", this.updateMachineModal.hostname);
-                params.set("ip", this.updateMachineModal.ip);
-
-                this.axios.put(`/machine/${this.updateMachineModal.id}`, params).then(data => {
-                    this.$set(this.machines, this.updateMachineModal.rowIndex, data.machine);
+                MachineAPI.update(this.updateMachineModal, machine => {
+                    this.$set(this.machines, this.updateMachineModal.rowIndex, machine);
                     this.updateMachineModal = {
                         visible: false,
                         id: null,
@@ -246,7 +230,6 @@
                         ip: null
                     }
                 });
-
             }
         }
     }
