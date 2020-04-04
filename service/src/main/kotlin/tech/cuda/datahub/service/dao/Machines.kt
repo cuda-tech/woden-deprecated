@@ -11,29 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.dao
+package tech.cuda.datahub.service.dao
 
-import datahub.models.Machine
+import tech.cuda.datahub.service.model.Machine
 import me.liuwj.ktorm.schema.*
 
-
 /**
- * @author Jensen Qi
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@ColumnsDef("""
-    id              int unsigned    comment 'machine ID' auto_increment primary key,
-    hostname        varchar(128)    comment 'hostname',
-    mac             varchar(17)     comment 'MAC address',
-    ip              varchar(15)     comment 'IP address',
-    cpu_load        tinyint         comment 'cpu load, range [0, 100]%',
-    mem_load        tinyint         comment 'memory load, range [0, 100]%',
-    disk_usage       tinyint         comment 'disk usage, range [0, 100]%',
-    is_remove       bool            comment 'whether machine is removed',
-    create_time     datetime        comment 'task create time',
-    update_time     datetime        comment 'last update time',
-    key idx_type(is_remove, hostname)
-""")
 object Machines : Table<Machine>("machines") {
     val id by int("id").primaryKey().bindTo { it.id }
     val hostname by varchar("hostname").bindTo { it.hostname }

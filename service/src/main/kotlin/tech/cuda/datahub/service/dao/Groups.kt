@@ -11,12 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.dao
+package tech.cuda.datahub.service.dao
+
+import tech.cuda.datahub.service.model.Group
+import me.liuwj.ktorm.schema.*
 
 /**
- * @author Jensen Qi
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@Target(AnnotationTarget.CLASS)
-@Retention(value = AnnotationRetention.RUNTIME)
-annotation class ColumnsDef(val columns: String)
+object Groups : Table<Group>("groups") {
+    val id by int("id").primaryKey().bindTo { it.id }
+    val name by varchar("name").bindTo { it.name }
+    val isRemove by boolean("is_remove").bindTo { it.isRemove }
+    val createTime by datetime("create_time").bindTo { it.createTime }
+    val updateTime by datetime("update_time").bindTo { it.updateTime }
+}
+

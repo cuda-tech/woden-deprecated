@@ -11,27 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.dao
+package tech.cuda.datahub.service.dao
 
-import datahub.models.Group
-import me.liuwj.ktorm.schema.*
+import tech.cuda.datahub.service.model.Instance
+import me.liuwj.ktorm.schema.Table
+import me.liuwj.ktorm.schema.boolean
+import me.liuwj.ktorm.schema.datetime
+import me.liuwj.ktorm.schema.int
 
 /**
- * @author Jensen Qi
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@ColumnsDef("""
-    id              int unsigned    comment 'group ID' auto_increment primary key,
-    name            varchar(64)     comment 'group name',
-    is_remove       bool            comment 'whether group is removed',
-    create_time     datetime        comment 'task create time',
-    update_time     datetime        comment 'last update time'
-""")
-object Groups : Table<Group>("groups") {
+object Instances : Table<Instance>("instances") {
     val id by int("id").primaryKey().bindTo { it.id }
-    val name by varchar("name").bindTo { it.name }
+    val jobId by int("job_id").bindTo { it.jobId }
     val isRemove by boolean("is_remove").bindTo { it.isRemove }
     val createTime by datetime("create_time").bindTo { it.createTime }
     val updateTime by datetime("update_time").bindTo { it.updateTime }
 }
-

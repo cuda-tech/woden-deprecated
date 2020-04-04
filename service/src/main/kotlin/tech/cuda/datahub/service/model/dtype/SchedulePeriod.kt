@@ -11,25 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.models
-
-import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.schema.*
-import java.time.LocalDateTime
+package tech.cuda.datahub.service.model.dtype
 
 /**
- * @author Jensen Qi
+ * 调度周期
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface Instance : Entity<Instance> {
-    companion object : Entity.Factory<Instance>()
-
-    val id: Int
-    var jobId: Int
-    var isRemove: Boolean
-    var createTime: LocalDateTime
-    var updateTime: LocalDateTime
+enum class SchedulePeriod {
+    ONCE,
+    HOUR,
+    DAY,
+    WEEK,
+    MONTH,
+    YEAR
 }
-
-
-

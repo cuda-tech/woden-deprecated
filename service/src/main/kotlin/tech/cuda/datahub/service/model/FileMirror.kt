@@ -11,24 +11,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.models
+package tech.cuda.datahub.service.model
 
 import me.liuwj.ktorm.entity.Entity
+import tech.cuda.datahub.annotation.mysql.*
 import java.time.LocalDateTime
 
 /**
  * 文件镜像，当对文件执行提交操作后，生成一个文件镜像
- * @author Jensen Qi 2020/03/22
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@STORE_IN_MYSQL
 interface FileMirror : Entity<FileMirror> {
     companion object : Entity.Factory<FileMirror>()
 
+    @BIGINT
+    @UNSIGNED
+    @AUTO_INCREMENT
+    @PRIMARY_KEY
+    @COMMENT("镜像 ID")
     val id: Int
+
+    @BIGINT
+    @UNSIGNED
+    @COMMENT("文件 ID")
     var fileId: Int
+
+    @TEXT
+    @COMMENT("镜像内容")
     var content: String
+
+    @VARCHAR(512)
+    @COMMENT("镜像说明")
     var message: String
+
+    @BOOL
+    @COMMENT("逻辑删除")
     var isRemove: Boolean
+
+    @DATETIME
+    @COMMENT("创建时间")
     var createTime: LocalDateTime
+
+    @DATETIME
+    @COMMENT("更新时间")
     var updateTime: LocalDateTime
 }

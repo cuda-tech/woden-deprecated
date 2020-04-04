@@ -11,26 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.models
-
-import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.schema.*
-import java.time.LocalDateTime
+package tech.cuda.datahub.service.model.dtype
 
 /**
- * Table of privilege groups, a user might belong to a set of privilege groups
- * @author Jensen Qi
+ * 文件类型
+ * @author Jensen Qi  <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface Group : Entity<Group> {
-    companion object : Entity.Factory<Group>()
-
-    val id: Int
-    var name: String
-    var isRemove: Boolean
-    var createTime: LocalDateTime
-    var updateTime: LocalDateTime
+enum class FileType {
+    DIR, SQL, SPARK, MR
 }
-
-
-

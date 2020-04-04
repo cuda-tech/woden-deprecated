@@ -11,28 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.dao
+package tech.cuda.datahub.service.dao
 
-import datahub.models.User
+import tech.cuda.datahub.service.model.User
 import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
 
-
 /**
- * @author Jensen Qi
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@ColumnsDef("""
-    id              int unsigned    comment '用户 ID' auto_increment primary key,
-    groups          json            comment '项目组 ID',
-    name            varchar(256)    comment '用户名',
-    email           varchar(256)    comment '登录名',
-    password        varchar(256)    comment '登录密码密文',
-    is_remove       bool            comment '逻辑删除',
-    create_time     datetime        comment '创建时间',
-    update_time     datetime        comment '更新时间',
-    key idx_name(is_remove, name)
-""")
 object Users : Table<User>("users") {
     val id by int("id").primaryKey().bindTo { it.id }
     val groups by json("groups", typeRef<Set<Int>>()).bindTo { it.groups }

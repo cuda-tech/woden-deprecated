@@ -11,25 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.dao
+package tech.cuda.datahub.service.dao
 
-import datahub.models.Job
+import tech.cuda.datahub.service.model.Job
 import me.liuwj.ktorm.schema.Table
 import me.liuwj.ktorm.schema.boolean
 import me.liuwj.ktorm.schema.datetime
 import me.liuwj.ktorm.schema.int
 
 /**
- * @author Jensen Qi
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@ColumnsDef("""
-    id              bigint unsigned comment 'job ID' auto_increment primary key,
-    task_id         bigint unsigned comment 'task ID',
-    is_remove       bool            comment 'whether job is removed',
-    create_time     datetime        comment 'job create time',
-    update_time     datetime        comment 'last update time'
-""")
 object Jobs : Table<Job>("jobs") {
     val id by int("id").primaryKey().bindTo { it.id }
     val taskId by int("task_id").bindTo { it.taskId }

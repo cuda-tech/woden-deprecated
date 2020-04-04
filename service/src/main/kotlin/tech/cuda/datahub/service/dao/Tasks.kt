@@ -11,39 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.dao
+package tech.cuda.datahub.service.dao
 
-import datahub.models.Task
-import datahub.models.dtype.SchedulePeriod
+import tech.cuda.datahub.service.model.Task
 import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
-
+import tech.cuda.datahub.service.model.dtype.SchedulePeriod
 
 /**
- * @author Jensen Qi
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@ColumnsDef("""
-    id                  bigint unsigned     comment '任务 ID' auto_increment primary key,
-    mirror_id           bigint unsigned     comment '镜像 ID',
-    name                varchar(512)        comment '任务名',
-    owners              text                comment '负责人 ID 列表',
-    args                text                comment '执行参数',
-    soft_fail           bool                comment '执行失败是否跳过',
-    period              varchar(10)         comment '调度周期',
-    queue               varchar(32)         comment '执行队列',
-    priority            smallint unsigned   comment '优先级',
-    pending_timeout     int                 comment '最大等待时间（分钟）',
-    running_timeout     int                 comment '最大执行时间（分钟）',
-    parent              json                comment '父任务列表',
-    children            json                comment '子任务列表',
-    retries             smallint unsigned   comment '重试次数',
-    retry_delay         int                 comment '重试间隔（分钟）',
-    valid               bool                comment '是否生效',
-    is_remove           bool                comment '逻辑删除',
-    create_time         datetime            comment '创建时间',
-    update_time         datetime            comment '更新时间'
-""")
 object Tasks : Table<Task>("tasks") {
     val id by int("id").primaryKey().bindTo { it.id }
     val mirrorId by int("mirror_id").bindTo { it.mirrorId }

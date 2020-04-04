@@ -11,30 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.dao
+package tech.cuda.datahub.service.dao
 
-import datahub.models.File
-import datahub.models.dtype.FileType
+import tech.cuda.datahub.service.model.File
+import tech.cuda.datahub.service.model.dtype.FileType
 import me.liuwj.ktorm.schema.*
 
 /**
- * @author Jensen Qi
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@ColumnsDef("""
-    id              bigint unsigned comment '文件 ID' auto_increment primary key,
-    group_id        int unsigned    comment '项目组 ID',
-    owner_id        int unsigned    comment '创建者 ID',
-    name            varchar(128)    comment '文件名',
-    type            varchar(32)     comment '文件类型',
-    parent_id       bigint unsigned comment '父节点 ID，如果为根目录则为 null',
-    content         text            comment '文件目录',
-    is_remove       bool            comment '是否逻辑删除',
-    create_time     datetime        comment '创建时间',
-    update_time     datetime        comment '更新时间',
-    key idx_group(is_remove, group_id, type),
-    key idx_parent(is_remove, parent_id)
-""")
 object Files : Table<File>("files") {
     val id by int("id").primaryKey().bindTo { it.id }
     val groupId by int("group_id").bindTo { it.groupId }

@@ -11,17 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.models
+package tech.cuda.datahub.service.model
 
-import datahub.models.annotations.*
-import datahub.models.dtype.SchedulePeriod
 import me.liuwj.ktorm.entity.Entity
+import tech.cuda.datahub.annotation.mysql.*
+import tech.cuda.datahub.service.model.dtype.SchedulePeriod
 import java.time.LocalDateTime
 
 /**
- * @author Jensen Qi
+ * 调度任务
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@STORE_IN_MYSQL
 interface Task : Entity<Task> {
     companion object : Entity.Factory<Task>()
 
@@ -95,11 +97,11 @@ interface Task : Entity<Task> {
     @COMMENT("逻辑删除")
     var isRemove: Boolean
 
-    @DATE_TIME
+    @DATETIME
     @COMMENT("创建时间")
     var createTime: LocalDateTime
 
-    @DATE_TIME
+    @DATETIME
     @COMMENT("更新时间")
     var updateTime: LocalDateTime
 }

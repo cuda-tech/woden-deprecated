@@ -11,28 +11,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.models
+package tech.cuda.datahub.service.model
 
-import datahub.models.dtype.FileType
+import tech.cuda.datahub.service.model.dtype.FileType
 import me.liuwj.ktorm.entity.Entity
+import tech.cuda.datahub.annotation.mysql.*
 import java.time.LocalDateTime
 
 /**
- * @author Jensen Qi
+ * 数据开发中创建的文件或文件夹
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@STORE_IN_MYSQL
 interface File : Entity<File> {
     companion object : Entity.Factory<File>()
 
+    @BIGINT
+    @UNSIGNED
+    @AUTO_INCREMENT
+    @PRIMARY_KEY
+    @COMMENT("文件 ID")
     val id: Int
+
+    @INT
+    @UNSIGNED
+    @COMMENT("项目组 ID")
     var groupId: Int
+
+    @INT
+    @UNSIGNED
+    @COMMENT("创建者 ID")
     var ownerId: Int
+
+    @VARCHAR(128)
+    @COMMENT("文件名")
     var name: String
+
+    @VARCHAR(32)
+    @COMMENT("文件类型")
     var type: FileType
+
+    @BIGINT
+    @UNSIGNED
+    @COMMENT("父节点 ID")
     var parentId: Int?
+
+    @TEXT
+    @COMMENT("文件内容")
     var content: String?
+
+    @BOOL
+    @COMMENT("逻辑删除")
     var isRemove: Boolean
+
+    @DATETIME
+    @COMMENT("创建时间")
     var createTime: LocalDateTime
+
+    @DATETIME
+    @COMMENT("更新时间")
     var updateTime: LocalDateTime
 
 }

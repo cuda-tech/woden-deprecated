@@ -11,26 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.dao
+package tech.cuda.datahub.service.dao
 
-import datahub.dao.Users.bindTo
-import datahub.models.FileMirror
+import tech.cuda.datahub.service.model.FileMirror
 import me.liuwj.ktorm.schema.*
 
 /**
- * @author Jensen Qi
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@ColumnsDef("""
-    id              bigint unsigned comment '文件镜像 ID' auto_increment primary key,
-    file_id         bigint unsigned comment '文件 ID',
-    content         text            comment '文件内容',
-    message         varchar(512)    comment '镜像注释',
-    is_remove       bool            comment '是否逻辑删除',
-    create_time     datetime        comment '创建事件',
-    update_time     datetime        comment '更新事件',
-    key idx_file_id(is_remove, file_id)
-""")
 object FileMirrors : Table<FileMirror>("file_mirrors") {
     val id by int("id").primaryKey().bindTo { it.id }
     val fileId by int("file_id").bindTo { it.fileId }

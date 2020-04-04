@@ -11,28 +11,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.models
+package tech.cuda.datahub.service.model
 
 import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.schema.*
+import tech.cuda.datahub.annotation.mysql.*
 import java.time.LocalDateTime
 
 /**
- * @author Jensen Qi
+ * 调度服务器
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@STORE_IN_MYSQL
 interface Machine : Entity<Machine> {
     companion object : Entity.Factory<Machine>()
 
+    @BIGINT
+    @UNSIGNED
+    @AUTO_INCREMENT
+    @PRIMARY_KEY
+    @COMMENT("服务器 ID")
     val id: Int
+
+    @VARCHAR(128)
+    @COMMENT("服务器名称")
     var hostname: String
+
+    @VARCHAR(17)
+    @COMMENT("服务器 MAC 地址")
     var mac: String
+
+    @VARCHAR(15)
+    @COMMENT("服务器 IP 地址")
     var ip: String
+
+    @TINYINT(4)
+    @COMMENT("CPU 负载")
     var cpuLoad: Int
+
+    @TINYINT(4)
+    @COMMENT("内存负载")
     var memLoad: Int
+
+    @TINYINT(4)
+    @COMMENT("磁盘负载")
     var diskUsage: Int
+
+    @BOOL
+    @COMMENT("逻辑删除")
     var isRemove: Boolean
+
+    @DATETIME
+    @COMMENT("创建时间")
     var createTime: LocalDateTime
+
+    @DATETIME
+    @COMMENT("更新时间")
     var updateTime: LocalDateTime
 }
 
