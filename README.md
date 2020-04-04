@@ -6,5 +6,5 @@
 开发中
 
 ### 如何开发
-[生成api文档](./readme/generate-apidoc.md)
+[生成api文档](service/readme/generate-apidoc.md)
 
