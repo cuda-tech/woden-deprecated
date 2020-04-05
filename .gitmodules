@@ -1,3 +1,0 @@
-[submodule "datahub-frontend"]
-	path = datahub-frontend
-	url = https://github.com/cuda-tech/datahub-frontend
