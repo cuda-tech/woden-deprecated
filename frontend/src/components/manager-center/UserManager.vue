@@ -79,7 +79,7 @@
      * 超级管理员：增删改查所有组的用户
      */
     import '../../assets/icons/iconfont.css'
-    import GroupSelection from "../../components/common/selections/GroupSelection";
+    import GroupSelection from "../common/selections/GroupSelection";
     import UserAPI from "../../api/UserAPI";
 
     export default {
