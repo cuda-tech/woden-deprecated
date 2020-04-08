@@ -1,0 +1,18 @@
+apply plugin: 'kotlin'
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.2.0.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-devtools:2.2.0.RELEASE'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9'
+    implementation 'org.apache.shiro:shiro-spring:1.4.0'
+    implementation 'com.auth0:java-jwt:3.4.1'
+    implementation 'com.alibaba:druid:1.1.20'
+    implementation project(':service')
+
+    implementation 'me.liuwj.ktorm:ktorm-core:2.7'
+    implementation 'me.liuwj.ktorm:ktorm-jackson:2.7'
+    implementation 'me.liuwj.ktorm:ktorm-support-mysql:2.7'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.2.2.RELEASE'
+    testImplementation 'ch.vorburger.mariaDB4j:mariaDB4j:2.4.0'
+}

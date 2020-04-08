@@ -1,0 +1,55 @@
+allprojects {
+    group = 'tech.cuda'
+    version = '1.0.0-SNAPSHOT'
+    allprojects {
+        repositories {
+            maven { url 'https://maven.aliyun.com/repository/google/' }
+            maven { url 'https://maven.aliyun.com/repository/jcenter/' }
+        }
+    }
+}
+
+buildscript {
+    ext.kotlin_version = '1.3.61'
+
+    repositories {
+        jcenter()
+        mavenLocal()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+
+    dependencies {
+        implementation 'log4j:log4j:1.2.17'
+        implementation 'org.slf4j:slf4j-nop:1.7.2'
+        implementation 'org.apache.commons:commons-lang3:3.4'
+        implementation 'commons-io:commons-io:1.3.2'
+        implementation 'com.google.guava:guava:20.0'
+        implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.71'
+        implementation 'org.jetbrains.kotlin:kotlin-reflect:1.3.71'
+        implementation 'com.xenomachina:kotlin-argparser:2.0.7'
+        testImplementation 'com.nhaarman:mockito-kotlin:1.6.0'
+    }
+
+    sourceCompatibility = '1.8'
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from(components.java)
+            }
+        }
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+}

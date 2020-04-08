@@ -1,0 +1,13 @@
+apply plugin: 'kotlin'
+
+dependencies {
+    implementation 'org.quartz-scheduler:quartz:2.2.1'
+    implementation 'org.quartz-scheduler:quartz-jobs:2.2.1'
+    implementation 'org.apache.commons:commons-exec:1.3'
+    implementation project(':service')
+    implementation 'me.liuwj.ktorm:ktorm-core:2.7'
+    implementation 'me.liuwj.ktorm:ktorm-jackson:2.7'
+    implementation 'me.liuwj.ktorm:ktorm-support-mysql:2.7'
+}
+
+description = 'scheduler'

@@ -1,0 +1,5 @@
+rootProject.name = 'datahub'
+include(':scheduler')
+include(':service')
+include(':annotation-processor')
+include(':webserver')
