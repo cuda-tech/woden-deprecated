@@ -2,6 +2,8 @@
 .idea
 **target
 .tmp
+**build
+.gradle
 
 /frontend/test/unit/coverage/
 /frontend/test/e2e/reports/
