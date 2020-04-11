@@ -25,38 +25,13 @@ import java.time.LocalDateTime
 interface User : Entity<User> {
     companion object : Entity.Factory<User>()
 
-    @BIGINT
-    @COMMENT("用户 ID")
-    @PRIMARY_KEY
-    @AUTO_INCREMENT
     val id: Int
-
-    @JSON
-    @COMMENT("归属项目组 ID 列表")
     var groups: Set<Int>
-
-    @VARCHAR(256)
-    @COMMENT("用户名")
     var name: String
-
-    @VARCHAR(256)
-    @COMMENT("用户邮箱")
     var email: String
-
-    @VARCHAR(256)
-    @COMMENT("登录密码")
     var password: String
-
-    @BOOL
-    @COMMENT("逻辑删除")
     var isRemove: Boolean
-
-    @DATETIME
-    @COMMENT("创建时间")
     var createTime: LocalDateTime
-
-    @DATETIME
-    @COMMENT("更新时间")
     var updateTime: LocalDateTime
 }
 

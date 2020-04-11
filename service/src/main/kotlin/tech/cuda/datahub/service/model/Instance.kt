@@ -14,7 +14,6 @@
 package tech.cuda.datahub.service.model
 
 import me.liuwj.ktorm.entity.Entity
-import tech.cuda.datahub.annotation.mysql.*
 import java.time.LocalDateTime
 
 /**
@@ -22,32 +21,13 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@STORE_IN_MYSQL
 interface Instance : Entity<Instance> {
     companion object : Entity.Factory<Instance>()
 
-    @BIGINT
-    @UNSIGNED
-    @AUTO_INCREMENT
-    @PRIMARY_KEY
-    @COMMENT("实例 ID")
     val id: Int
-
-    @BIGINT
-    @UNSIGNED
-    @COMMENT("作业 ID")
     var jobId: Int
-
-    @BOOL
-    @COMMENT("逻辑删除")
     var isRemove: Boolean
-
-    @DATETIME
-    @COMMENT("创建时间")
     var createTime: LocalDateTime
-
-    @DATETIME
-    @COMMENT("更新时间")
     var updateTime: LocalDateTime
 }
 

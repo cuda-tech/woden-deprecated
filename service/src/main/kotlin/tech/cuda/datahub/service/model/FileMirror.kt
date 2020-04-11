@@ -22,20 +22,13 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@STORE_IN_MYSQL
 interface FileMirror : Entity<FileMirror> {
     companion object : Entity.Factory<FileMirror>()
 
-    @BIGINT
-    @UNSIGNED
-    @AUTO_INCREMENT
-    @PRIMARY_KEY
-    @COMMENT("镜像 ID")
+
     val id: Int
 
-    @BIGINT
-    @UNSIGNED
-    @COMMENT("文件 ID")
+
     var fileId: Int
 
     @TEXT
