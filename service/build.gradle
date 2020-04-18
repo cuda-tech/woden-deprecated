@@ -7,10 +7,14 @@ dependencies {
     implementation 'me.liuwj.ktorm:ktorm-jackson:2.7'
     implementation 'me.liuwj.ktorm:ktorm-support-mysql:2.7'
     implementation 'com.alibaba:druid:1.1.20'
+    implementation 'com.auth0:java-jwt:3.4.1'
     implementation 'org.reflections:reflections:0.9.12'
     compile project(':annotation-processor')
     kapt project(':annotation-processor')
 }
 
+test {
+    useJUnitPlatform()
+}
 
 description = 'service'
