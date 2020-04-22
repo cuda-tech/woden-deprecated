@@ -40,9 +40,6 @@ class UserServiceTest : TestWithMaria({
             updateTime shouldBe "2043-01-26 13:59:27".toLocalDateTime()
             password shouldBe ""
         }
-    }
-
-    "按 name 查找用户如果不存在或已被删除则返回 null" {
         UserService.findByName("someone did not exists") shouldBe null
         UserService.findByName("NCiUmXrvkC") shouldBe null
     }
@@ -58,9 +55,6 @@ class UserServiceTest : TestWithMaria({
             updateTime shouldBe "2043-01-26 13:59:27".toLocalDateTime()
             password shouldBe ""
         }
-    }
-
-    "按 id 查找用户如果不存在或已被删除则返回 null"{
         UserService.findById(67) shouldBe null
         UserService.findById(180) shouldBe null
     }
@@ -238,6 +232,8 @@ class UserServiceTest : TestWithMaria({
         newToken!!
         UserService.getUserByToken(newToken) shouldNotBe null
         UserService.verify(newToken) shouldBe true
+
+        UserService.findByName(newName)!!.updateTime shouldNotBe "2051-03-13 21:06:23".toLocalDateTime()
     }
 
     "更新密码" {
@@ -255,6 +251,8 @@ class UserServiceTest : TestWithMaria({
         newToken!!
         UserService.getUserByToken(newToken) shouldNotBe null
         UserService.verify(newToken) shouldBe true
+
+        UserService.findById(1)!!.updateTime shouldNotBe "2051-03-13 21:06:23".toLocalDateTime()
     }
 
     "更新权限组 & 邮箱" {
@@ -266,6 +264,7 @@ class UserServiceTest : TestWithMaria({
         user!!
         user.email shouldBe newEmail
         user.groups shouldContainExactlyInAnyOrder newGroupIds
+        user.updateTime shouldNotBe "2051-03-13 21:06:23".toLocalDateTime()
     }
 
     "更新不存在或已被删除用户时抛出异常" {
