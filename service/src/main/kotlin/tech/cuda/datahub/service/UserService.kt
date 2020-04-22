@@ -143,6 +143,7 @@ object UserService : Service(Users) {
     fun remove(id: Int) {
         val user = findById(id) ?: throw NotFoundException("用户 $id 不存在或已被删除")
         user.isRemove = true
+        user.updateTime = LocalDateTime.now()
         user.flushChanges()
     }
 }
