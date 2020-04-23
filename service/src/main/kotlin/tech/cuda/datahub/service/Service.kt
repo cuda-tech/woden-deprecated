@@ -13,7 +13,6 @@
  */
 package tech.cuda.datahub.service
 
-import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.expression.BinaryExpression
@@ -26,12 +25,12 @@ import kotlin.math.max
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-abstract class Service(val table: Table<*>) {
+abstract class Service(private val table: Table<*>) {
 
     /**
      * 生成字符串匹配过滤条件, 其中, [pattern] 是以空格(可连续)间隔的一个或多个字符串, NULL 字符串会被过滤掉
      */
-    fun Column<String>.match(pattern: String?): BinaryExpression<Boolean>? {
+    protected fun Column<String>.match(pattern: String?): BinaryExpression<Boolean>? {
         if (pattern.isNullOrBlank()) return null
         val filters = pattern.trim().split("\\s+".toRegex())
             .filter { it.toUpperCase() != "NULL" }
@@ -40,13 +39,22 @@ abstract class Service(val table: Table<*>) {
         return filters.reduce { a, b -> a and b }
     }
 
+    protected fun anyNotNull(vararg args: Any?): Any? {
+        for (arg in args) {
+            if (arg != null) {
+                return arg
+            }
+        }
+        return null
+    }
+
     /**
      * 计算页面大小为[pageSize]时，[pageId]的页面偏移量
      * 其中，[pageId] 以 1 开始计算（即，第一页是 [pageId] = 1 而不是 [pageId] = 0)
      */
     private fun offset(pageId: Int, pageSize: Int) = max(pageSize * (pageId - 1), 0)
 
-    operator fun List<Column<*>>.minus(col: Column<*>?): List<Column<*>> {
+    private operator fun List<Column<*>>.minus(col: Column<*>?): List<Column<*>> {
         return if (col == null) {
             this
         } else {
@@ -54,7 +62,7 @@ abstract class Service(val table: Table<*>) {
         }
     }
 
-    operator fun BinaryExpression<Boolean>?.plus(another: BinaryExpression<Boolean>?): BinaryExpression<Boolean>? {
+    private operator fun BinaryExpression<Boolean>?.plus(another: BinaryExpression<Boolean>?): BinaryExpression<Boolean>? {
         return when {
             this == null && another != null -> another
             this != null && another == null -> this
@@ -72,7 +80,7 @@ abstract class Service(val table: Table<*>) {
      * 最终返回类型为[T]，大小为[pageSize]的数组(如果不足则可能小于[pageSize])
      * 以及符合[filter]的总记录总数
      */
-    fun <T : Entity<*>> batch(
+    protected fun <T : Entity<*>> batch(
         pageId: Int,
         pageSize: Int,
         exclude: Column<*>? = null,
@@ -88,7 +96,7 @@ abstract class Service(val table: Table<*>) {
         return items.limit(offset(pageId, pageSize), pageSize).map { table.createEntity(it) as T } to count
     }
 
-    fun <T : Entity<*>> find(where: BinaryExpression<Boolean>, exclude: Column<*>? = null): T? {
+    protected fun <T : Entity<*>> find(where: BinaryExpression<Boolean>, exclude: Column<*>? = null): T? {
         return table.select(table.columns - exclude)
             .where { where }
             .map { table.createEntity(it) as T }
