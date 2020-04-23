@@ -236,6 +236,12 @@ class UserServiceTest : TestWithMaria({
         UserService.findByName(newName)!!.updateTime shouldNotBe "2051-03-13 21:06:23".toLocalDateTime()
     }
 
+    "更新同名用户抛异常" {
+        shouldThrow<DuplicateException> {
+            UserService.update(1, name = "guest")
+        }.message shouldBe "用户 guest 已存在"
+    }
+
     "更新密码" {
         val oldToken = UserService.sign("root", "root")
         oldToken shouldNotBe null

@@ -129,11 +129,14 @@ object UserService : Service(Users) {
 
     fun update(id: Int, name: String? = null, password: String? = null, groups: Set<Int>? = null, email: String? = null): User {
         val user = findById(id) ?: throw NotFoundException("用户 $id 不存在或已被删除")
-        name?.let { user.name = name }
+        name?.let {
+            findByName(name)?.let { throw DuplicateException("用户 $name 已存在") }
+            user.name = name
+        }
         password?.let { user.password = Encoder.md5(password) }
         groups?.let { user.groups = groups }
         email?.let { user.email = email }
-        if (name != null || password != null || groups != null || email != null) {
+        anyNotNull(name, password, groups, email)?.let {
             user.updateTime = LocalDateTime.now()
             user.flushChanges()
         }
