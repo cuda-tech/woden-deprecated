@@ -55,8 +55,11 @@ object GroupService : Service(Groups) {
 
     fun update(id: Int, name: String? = null): Group {
         val group = findById(id) ?: throw NotFoundException("项目组 $id 不存在或已被删除")
-        name?.let { group.name = name }
-        if (name != null) {
+        name?.let {
+            findByName(name)?.let { throw DuplicateException("项目组 $name 已存在") }
+            group.name = name
+        }
+        anyNotNull(name)?.let {
             group.updateTime = LocalDateTime.now()
             group.flushChanges()
         }

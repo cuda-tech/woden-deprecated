@@ -176,6 +176,12 @@ class GroupServiceTest : TestWithMaria({
         }.message shouldBe "项目组 98 不存在或已被删除"
     }
 
+    "更新同名项目组抛异常" {
+        shouldThrow<DuplicateException> {
+            GroupService.update(25, name = "root")
+        }.message shouldBe "项目组 root 已存在"
+    }
+
     "删除项目组" {
         GroupService.findById(2) shouldNotBe null
         GroupService.remove(2)
