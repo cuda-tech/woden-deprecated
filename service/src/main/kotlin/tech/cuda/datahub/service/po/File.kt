@@ -11,11 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.model
+package tech.cuda.datahub.service.po
 
-import tech.cuda.datahub.service.model.dtype.FileType
+import tech.cuda.datahub.service.po.dtype.FileType
 import me.liuwj.ktorm.entity.Entity
-import tech.cuda.datahub.annotation.mysql.*
 import java.time.LocalDateTime
 
 /**
