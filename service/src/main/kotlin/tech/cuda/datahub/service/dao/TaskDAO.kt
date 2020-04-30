@@ -13,18 +13,18 @@
  */
 package tech.cuda.datahub.service.dao
 
-import tech.cuda.datahub.service.model.Task
+import tech.cuda.datahub.service.po.TaskPO
 import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.annotation.mysql.*
-import tech.cuda.datahub.service.model.dtype.SchedulePeriod
+import tech.cuda.datahub.service.po.dtype.SchedulePeriod
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
 @STORE_IN_MYSQL
-object Tasks : Table<Task>("tasks") {
+internal object TaskDAO : Table<TaskPO>("tasks") {
     @BIGINT
     @COMMENT("任务 ID")
     @PRIMARY_KEY

@@ -13,9 +13,11 @@
  */
 package tech.cuda.datahub.service.dao
 
-import tech.cuda.datahub.service.model.File
-import tech.cuda.datahub.service.model.dtype.FileType
-import me.liuwj.ktorm.schema.*
+import tech.cuda.datahub.service.po.JobPO
+import me.liuwj.ktorm.schema.Table
+import me.liuwj.ktorm.schema.boolean
+import me.liuwj.ktorm.schema.datetime
+import me.liuwj.ktorm.schema.int
 import tech.cuda.datahub.annotation.mysql.*
 
 /**
@@ -23,57 +25,28 @@ import tech.cuda.datahub.annotation.mysql.*
  * @since 1.0.0
  */
 @STORE_IN_MYSQL
-object Files : Table<File>("files") {
+internal object JobDAO : Table<JobPO>("jobs") {
     @BIGINT
     @UNSIGNED
     @AUTO_INCREMENT
     @PRIMARY_KEY
-    @NOT_NULL
-    @COMMENT("文件 ID")
+    @COMMENT("作业 ID")
     val id by int("id").primaryKey().bindTo { it.id }
-
-
-    @INT
-    @UNSIGNED
-    @NOT_NULL
-    @COMMENT("项目组 ID")
-    val groupId by int("group_id").bindTo { it.groupId }
-
-    @INT
-    @UNSIGNED
-    @NOT_NULL
-    @COMMENT("创建者 ID")
-    val ownerId by int("owner_id").bindTo { it.ownerId }
-
-    @VARCHAR(128)
-    @COMMENT("文件名")
-    val name by varchar("name").bindTo { it.name }
-
-    @VARCHAR(32)
-    @COMMENT("文件类型")
-    val type by enum("type", typeRef<FileType>()).bindTo { it.type }
 
     @BIGINT
     @UNSIGNED
-    @COMMENT("父节点 ID")
-    val parentId by int("parent_id").bindTo { it.parentId }
-
-    @TEXT
-    @COMMENT("文件内容")
-    val content by text("content").bindTo { it.content }
+    @COMMENT("任务 ID")
+    val taskId by int("task_id").bindTo { it.taskId }
 
     @BOOL
-    @NOT_NULL
     @COMMENT("逻辑删除")
     val isRemove by boolean("is_remove").bindTo { it.isRemove }
 
     @DATETIME
-    @NOT_NULL
     @COMMENT("创建时间")
     val createTime by datetime("create_time").bindTo { it.createTime }
 
     @DATETIME
-    @NOT_NULL
     @COMMENT("更新时间")
     val updateTime by datetime("update_time").bindTo { it.updateTime }
 }

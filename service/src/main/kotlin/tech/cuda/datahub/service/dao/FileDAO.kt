@@ -13,8 +13,8 @@
  */
 package tech.cuda.datahub.service.dao
 
-import tech.cuda.datahub.service.model.User
-import me.liuwj.ktorm.jackson.json
+import tech.cuda.datahub.service.po.FilePO
+import tech.cuda.datahub.service.po.dtype.FileType
 import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.annotation.mysql.*
 
@@ -23,39 +23,57 @@ import tech.cuda.datahub.annotation.mysql.*
  * @since 1.0.0
  */
 @STORE_IN_MYSQL
-object Users : Table<User>("users") {
-
+internal object FileDAO : Table<FilePO>("files") {
     @BIGINT
-    @COMMENT("用户 ID")
-    @PRIMARY_KEY
+    @UNSIGNED
     @AUTO_INCREMENT
+    @PRIMARY_KEY
+    @NOT_NULL
+    @COMMENT("文件 ID")
     val id by int("id").primaryKey().bindTo { it.id }
 
-    @JSON
-    @COMMENT("归属项目组 ID 列表")
-    val groups by json("groups", typeRef<Set<Int>>()).bindTo { it.groups }
 
-    @VARCHAR(256)
-    @COMMENT("用户名")
+    @INT
+    @UNSIGNED
+    @NOT_NULL
+    @COMMENT("项目组 ID")
+    val groupId by int("group_id").bindTo { it.groupId }
+
+    @INT
+    @UNSIGNED
+    @NOT_NULL
+    @COMMENT("创建者 ID")
+    val ownerId by int("owner_id").bindTo { it.ownerId }
+
+    @VARCHAR(128)
+    @COMMENT("文件名")
     val name by varchar("name").bindTo { it.name }
 
-    @VARCHAR(256)
-    @COMMENT("用户邮箱")
-    val email by varchar("email").bindTo { it.email }
+    @VARCHAR(32)
+    @COMMENT("文件类型")
+    val type by enum("type", typeRef<FileType>()).bindTo { it.type }
 
-    @VARCHAR(256)
-    @COMMENT("登录密码")
-    val password by varchar("password").bindTo { it.password }
+    @BIGINT
+    @UNSIGNED
+    @COMMENT("父节点 ID")
+    val parentId by int("parent_id").bindTo { it.parentId }
+
+    @TEXT
+    @COMMENT("文件内容")
+    val content by text("content").bindTo { it.content }
 
     @BOOL
+    @NOT_NULL
     @COMMENT("逻辑删除")
     val isRemove by boolean("is_remove").bindTo { it.isRemove }
 
     @DATETIME
+    @NOT_NULL
     @COMMENT("创建时间")
     val createTime by datetime("create_time").bindTo { it.createTime }
 
     @DATETIME
+    @NOT_NULL
     @COMMENT("更新时间")
     val updateTime by datetime("update_time").bindTo { it.updateTime }
 }

@@ -13,7 +13,7 @@
  */
 package tech.cuda.datahub.service.dao
 
-import tech.cuda.datahub.service.model.Machine
+import tech.cuda.datahub.service.po.GroupPO
 import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.annotation.mysql.*
 
@@ -22,48 +22,33 @@ import tech.cuda.datahub.annotation.mysql.*
  * @since 1.0.0
  */
 @STORE_IN_MYSQL
-object Machines : Table<Machine>("machines") {
+internal object GroupDAO : Table<GroupPO>("groups") {
+
     @BIGINT
     @UNSIGNED
     @AUTO_INCREMENT
     @PRIMARY_KEY
-    @COMMENT("服务器 ID")
+    @NOT_NULL
+    @COMMENT("项目组 ID")
     val id by int("id").primaryKey().bindTo { it.id }
 
-    @VARCHAR(128)
-    @COMMENT("服务器名称")
-    val hostname by varchar("hostname").bindTo { it.hostname }
-
-    @VARCHAR(17)
-    @COMMENT("服务器 MAC 地址")
-    val mac by varchar("mac").bindTo { it.mac }
-
-
-    @VARCHAR(15)
-    @COMMENT("服务器 IP 地址")
-    val ip by varchar("ip").bindTo { it.ip }
-
-    @TINYINT(4)
-    @COMMENT("CPU 负载")
-    val cpuLoad by int("cpu_load").bindTo { it.cpuLoad }
-
-    @TINYINT(4)
-    @COMMENT("内存负载")
-    val memLoad by int("mem_load").bindTo { it.memLoad }
-
-    @TINYINT(4)
-    @COMMENT("磁盘负载")
-    val diskUsage by int("disk_usage").bindTo { it.diskUsage }
+    @VARCHAR(64)
+    @COMMENT("项目组名称")
+    val name by varchar("name").bindTo { it.name }
 
     @BOOL
+    @NOT_NULL
     @COMMENT("逻辑删除")
     val isRemove by boolean("is_remove").bindTo { it.isRemove }
 
     @DATETIME
+    @NOT_NULL
     @COMMENT("创建时间")
     val createTime by datetime("create_time").bindTo { it.createTime }
 
     @DATETIME
+    @NOT_NULL
     @COMMENT("更新时间")
     val updateTime by datetime("update_time").bindTo { it.updateTime }
 }
+

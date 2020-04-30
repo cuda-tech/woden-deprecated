@@ -13,11 +13,8 @@
  */
 package tech.cuda.datahub.service.dao
 
-import tech.cuda.datahub.service.model.Job
-import me.liuwj.ktorm.schema.Table
-import me.liuwj.ktorm.schema.boolean
-import me.liuwj.ktorm.schema.datetime
-import me.liuwj.ktorm.schema.int
+import tech.cuda.datahub.service.po.FileMirrorPO
+import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.annotation.mysql.*
 
 /**
@@ -25,28 +22,45 @@ import tech.cuda.datahub.annotation.mysql.*
  * @since 1.0.0
  */
 @STORE_IN_MYSQL
-object Jobs : Table<Job>("jobs") {
+internal object FileMirrorDAO : Table<FileMirrorPO>("file_mirrors") {
+
     @BIGINT
     @UNSIGNED
     @AUTO_INCREMENT
     @PRIMARY_KEY
-    @COMMENT("作业 ID")
+    @NOT_NULL
+    @COMMENT("镜像 ID")
     val id by int("id").primaryKey().bindTo { it.id }
 
     @BIGINT
     @UNSIGNED
-    @COMMENT("任务 ID")
-    val taskId by int("task_id").bindTo { it.taskId }
+    @NOT_NULL
+    @COMMENT("文件 ID")
+    val fileId by int("file_id").bindTo { it.fileId }
+
+    @TEXT
+    @NOT_NULL
+    @COMMENT("镜像内容")
+    val content by text("content").bindTo { it.content }
+
+    @VARCHAR(512)
+    @NOT_NULL
+    @COMMENT("镜像说明")
+    val message by varchar("message").bindTo { it.message }
 
     @BOOL
+    @NOT_NULL
     @COMMENT("逻辑删除")
     val isRemove by boolean("is_remove").bindTo { it.isRemove }
 
     @DATETIME
+    @NOT_NULL
     @COMMENT("创建时间")
     val createTime by datetime("create_time").bindTo { it.createTime }
 
     @DATETIME
+    @NOT_NULL
     @COMMENT("更新时间")
     val updateTime by datetime("update_time").bindTo { it.updateTime }
+
 }

@@ -13,7 +13,8 @@
  */
 package tech.cuda.datahub.service.dao
 
-import tech.cuda.datahub.service.model.Group
+import tech.cuda.datahub.service.po.UserPO
+import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.annotation.mysql.*
 
@@ -22,33 +23,39 @@ import tech.cuda.datahub.annotation.mysql.*
  * @since 1.0.0
  */
 @STORE_IN_MYSQL
-object Groups : Table<Group>("groups") {
+internal object UserDAO : Table<UserPO>("users") {
 
     @BIGINT
-    @UNSIGNED
-    @AUTO_INCREMENT
+    @COMMENT("用户 ID")
     @PRIMARY_KEY
-    @NOT_NULL
-    @COMMENT("项目组 ID")
+    @AUTO_INCREMENT
     val id by int("id").primaryKey().bindTo { it.id }
 
-    @VARCHAR(64)
-    @COMMENT("项目组名称")
+    @JSON
+    @COMMENT("归属项目组 ID 列表")
+    val groups by json("groups", typeRef<Set<Int>>()).bindTo { it.groups }
+
+    @VARCHAR(256)
+    @COMMENT("用户名")
     val name by varchar("name").bindTo { it.name }
 
+    @VARCHAR(256)
+    @COMMENT("用户邮箱")
+    val email by varchar("email").bindTo { it.email }
+
+    @VARCHAR(256)
+    @COMMENT("登录密码")
+    val password by varchar("password").bindTo { it.password }
+
     @BOOL
-    @NOT_NULL
     @COMMENT("逻辑删除")
     val isRemove by boolean("is_remove").bindTo { it.isRemove }
 
     @DATETIME
-    @NOT_NULL
     @COMMENT("创建时间")
     val createTime by datetime("create_time").bindTo { it.createTime }
 
     @DATETIME
-    @NOT_NULL
     @COMMENT("更新时间")
     val updateTime by datetime("update_time").bindTo { it.updateTime }
 }
-
