@@ -143,7 +143,7 @@ class DDLProcessor : AbstractProcessor() {
                         writeText("""
                         package tech.cuda.datahub.service.dao
                         import tech.cuda.datahub.service.dao.${clzz.name}
-                        val ${clzz.name}.DDL: String
+                        internal val ${clzz.name}.DDL: String
                             get() = $ddl
                     """.trimIndent())
                     }
