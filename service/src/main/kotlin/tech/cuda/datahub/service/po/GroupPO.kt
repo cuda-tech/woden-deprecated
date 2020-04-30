@@ -17,15 +17,15 @@ import me.liuwj.ktorm.entity.Entity
 import java.time.LocalDateTime
 
 /**
- * 任务例行作业
+ * 项目组，一个用户可以归属多个项目组，一个文件只能归属一个项目组
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface Job : Entity<Job> {
-    companion object : Entity.Factory<Job>()
+internal interface GroupPO : Entity<GroupPO> {
+    companion object : Entity.Factory<GroupPO>()
 
     val id: Int
-    var taskId: Int
+    var name: String
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime

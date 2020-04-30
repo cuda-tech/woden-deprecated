@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.model.dtype
+package tech.cuda.datahub.service.po.dtype
 
 /**
  * 文件类型

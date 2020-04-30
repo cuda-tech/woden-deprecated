@@ -13,23 +13,26 @@
  */
 package tech.cuda.datahub.service.po
 
+import tech.cuda.datahub.service.po.dtype.FileType
 import me.liuwj.ktorm.entity.Entity
 import java.time.LocalDateTime
 
 /**
- * 作业实例
+ * 数据开发中创建的文件或文件夹
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface Instance : Entity<Instance> {
-    companion object : Entity.Factory<Instance>()
+internal interface FilePO : Entity<FilePO> {
+    companion object : Entity.Factory<FilePO>()
 
     val id: Int
-    var jobId: Int
+    var groupId: Int
+    var ownerId: Int
+    var name: String
+    var type: FileType
+    var parentId: Int?
+    var content: String?
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime
 }
-
-
-

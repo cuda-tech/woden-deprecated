@@ -11,39 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.model
+package tech.cuda.datahub.service.po
 
 import me.liuwj.ktorm.entity.Entity
-import tech.cuda.datahub.service.model.dtype.SchedulePeriod
 import java.time.LocalDateTime
 
 /**
- * 调度任务
+ * 文件镜像，当对文件执行提交操作后，生成一个文件镜像
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface Task : Entity<Task> {
-    companion object : Entity.Factory<Task>()
+internal interface FileMirrorPO : Entity<FileMirrorPO> {
+    companion object : Entity.Factory<FileMirrorPO>()
 
     val id: Int
-    var mirrorId: Int
-    var name: String
-    var owners: Set<Int>
-    var args: String
-    var softFail: Boolean
-    var period: SchedulePeriod
-    var queue: String
-    var priority: Int
-    var pendingTimeout: Int
-    var runningTimeout: Int
-    var parent: Map<Int, Map<String, String>>
-    var children: Map<Int, Map<String, String>>
-    var retries: Int
-    var retryDelay: Int
-    var valid: Boolean
+    var fileId: Int
+    var content: String
+    var message: String
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime
 }
-
-

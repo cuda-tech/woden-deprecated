@@ -11,25 +11,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.model
+package tech.cuda.datahub.service.po
 
 import me.liuwj.ktorm.entity.Entity
-import tech.cuda.datahub.annotation.mysql.*
 import java.time.LocalDateTime
 
 /**
- * 用户
+ * 调度服务器
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface User : Entity<User> {
-    companion object : Entity.Factory<User>()
+internal interface MachinePO : Entity<MachinePO> {
+    companion object : Entity.Factory<MachinePO>()
 
     val id: Int
-    var groups: Set<Int>
-    var name: String
-    var email: String
-    var password: String
+    var hostname: String
+    var mac: String
+    var ip: String
+    var cpuLoad: Int
+    var memLoad: Int
+    var diskUsage: Int
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime

@@ -14,22 +14,36 @@
 package tech.cuda.datahub.service.po
 
 import me.liuwj.ktorm.entity.Entity
+import tech.cuda.datahub.service.po.dtype.SchedulePeriod
 import java.time.LocalDateTime
 
 /**
- * 项目组，一个用户可以归属多个项目组，一个文件只能归属一个项目组
+ * 调度任务
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface Group : Entity<Group> {
-    companion object : Entity.Factory<Group>()
+internal interface TaskPO : Entity<TaskPO> {
+    companion object : Entity.Factory<TaskPO>()
 
     val id: Int
+    var mirrorId: Int
     var name: String
+    var owners: Set<Int>
+    var args: String
+    var softFail: Boolean
+    var period: SchedulePeriod
+    var queue: String
+    var priority: Int
+    var pendingTimeout: Int
+    var runningTimeout: Int
+    var parent: Map<Int, Map<String, String>>
+    var children: Map<Int, Map<String, String>>
+    var retries: Int
+    var retryDelay: Int
+    var valid: Boolean
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime
 }
-
 
 

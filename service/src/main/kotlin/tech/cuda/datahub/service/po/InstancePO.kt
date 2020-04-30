@@ -17,23 +17,19 @@ import me.liuwj.ktorm.entity.Entity
 import java.time.LocalDateTime
 
 /**
- * 调度服务器
+ * 作业实例
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface Machine : Entity<Machine> {
-    companion object : Entity.Factory<Machine>()
+internal interface InstancePO : Entity<InstancePO> {
+    companion object : Entity.Factory<InstancePO>()
 
     val id: Int
-    var hostname: String
-    var mac: String
-    var ip: String
-    var cpuLoad: Int
-    var memLoad: Int
-    var diskUsage: Int
+    var jobId: Int
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime
 }
+
 
 

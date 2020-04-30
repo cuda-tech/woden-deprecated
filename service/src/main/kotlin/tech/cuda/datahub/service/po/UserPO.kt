@@ -13,26 +13,25 @@
  */
 package tech.cuda.datahub.service.po
 
-import tech.cuda.datahub.service.po.dtype.FileType
 import me.liuwj.ktorm.entity.Entity
 import java.time.LocalDateTime
 
 /**
- * 数据开发中创建的文件或文件夹
+ * 用户
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface File : Entity<File> {
-    companion object : Entity.Factory<File>()
+internal interface UserPO : Entity<UserPO> {
+    companion object : Entity.Factory<UserPO>()
 
     val id: Int
-    var groupId: Int
-    var ownerId: Int
+    var groups: Set<Int>
     var name: String
-    var type: FileType
-    var parentId: Int?
-    var content: String?
+    var email: String
+    var password: String
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime
 }
+
+
