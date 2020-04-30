@@ -18,10 +18,12 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTDecodeException
 import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.add
-import tech.cuda.datahub.service.dao.Users
+import tech.cuda.datahub.service.dao.UserDAO
+import tech.cuda.datahub.service.dto.UserDTO
+import tech.cuda.datahub.service.dto.toUserDTO
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
-import tech.cuda.datahub.service.model.User
+import tech.cuda.datahub.service.po.UserPO
 import tech.cuda.datahub.service.utils.Encoder
 import java.time.LocalDateTime
 import java.util.*
@@ -30,7 +32,7 @@ import java.util.*
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-object UserService : Service(Users) {
+object UserService : Service(UserDAO) {
 
     private const val EXPIRE_TIME = 86400000L // 默认 token 失效时间为 1 天
 
@@ -40,7 +42,7 @@ object UserService : Service(Users) {
      * 如果不匹配或生成失败，则返回 null
      */
     fun sign(username: String, password: String): String? {
-        val user = find<User>(where = Users.name eq username) ?: return null
+        val user = find<UserPO>(where = UserDAO.name eq username) ?: return null
         if (user.password != Encoder.md5(password)) return null
         return try {
             JWT.create().withClaim("username", user.name)
@@ -63,7 +65,7 @@ object UserService : Service(Users) {
     /**
      * 通过 token 获取用户信息
      */
-    fun getUserByToken(token: String): User? {
+    fun getUserByToken(token: String): UserDTO? {
         if (!verify(token)) return null
         val username = getUsername(token) ?: return null
         return findByName(username)
@@ -75,9 +77,9 @@ object UserService : Service(Users) {
      */
     fun verify(token: String): Boolean {
         val username = getUsername(token) ?: return false
-        val user = Users.select(Users.password)
-            .where { Users.isRemove eq false and (Users.name eq username) }
-            .map { Users.createEntity(it) }
+        val user = UserDAO.select(UserDAO.password)
+            .where { UserDAO.isRemove eq false and (UserDAO.name eq username) }
+            .map { UserDAO.createEntity(it) }
             .firstOrNull() ?: return false
         return try {
             JWT.require(Algorithm.HMAC256(user.password)).withClaim("username", username).build().verify(token)
@@ -90,31 +92,34 @@ object UserService : Service(Users) {
     /**
      * 分页查询用户列表，支持模糊搜索
      */
-    fun listing(page: Int, pageSize: Int, pattern: String? = null) = batch<User>(
-        page,
-        pageSize,
-        exclude = Users.password,
-        filter = Users.isRemove eq false,
-        like = Users.name.match(pattern),
-        orderBy = Users.id.asc()
-    )
+    fun listing(page: Int, pageSize: Int, pattern: String? = null): Pair<List<UserDTO>, Int> {
+        val (users, count) = batch<UserPO>(
+            page,
+            pageSize,
+            exclude = UserDAO.password,
+            filter = UserDAO.isRemove eq false,
+            like = UserDAO.name.match(pattern),
+            orderBy = UserDAO.id.asc()
+        )
+        return users.map { it.toUserDTO() } to count
+    }
 
     /**
      *
      */
-    fun findByName(name: String) = find<User>(
-        where = (Users.isRemove eq false) and (Users.name eq name),
-        exclude = Users.password
-    )
+    fun findByName(name: String) = find<UserPO>(
+        where = (UserDAO.isRemove eq false) and (UserDAO.name eq name),
+        exclude = UserDAO.password
+    )?.toUserDTO()
 
-    fun findById(id: Int) = find<User>(
-        where = (Users.isRemove eq false) and (Users.id eq id),
-        exclude = Users.password
-    )
+    fun findById(id: Int) = find<UserPO>(
+        where = (UserDAO.isRemove eq false) and (UserDAO.id eq id),
+        exclude = UserDAO.password
+    )?.toUserDTO()
 
-    fun create(name: String, password: String, groups: Set<Int>, email: String): User {
+    fun create(name: String, password: String, groups: Set<Int>, email: String): UserDTO {
         findByName(name)?.let { throw DuplicateException("用户 $name 已存在") }
-        val user = User {
+        val user = UserPO {
             this.name = name
             this.groups = groups
             this.password = Encoder.md5(password)
@@ -123,12 +128,15 @@ object UserService : Service(Users) {
             this.createTime = LocalDateTime.now()
             this.updateTime = LocalDateTime.now()
         }
-        Users.add(user)
-        return findById(user.id)!! // 这里重新查询一次时为了避免把 password 也带出去，下面的 update 同理
+        UserDAO.add(user)
+        return user.toUserDTO()
     }
 
-    fun update(id: Int, name: String? = null, password: String? = null, groups: Set<Int>? = null, email: String? = null): User {
-        val user = findById(id) ?: throw NotFoundException("用户 $id 不存在或已被删除")
+    fun update(id: Int, name: String? = null, password: String? = null, groups: Set<Int>? = null, email: String? = null): UserDTO {
+        val user = find<UserPO>(
+            where = (UserDAO.isRemove eq false) and (UserDAO.id eq id),
+            exclude = UserDAO.password
+        ) ?: throw NotFoundException("用户 $id 不存在或已被删除")
         name?.let {
             findByName(name)?.let { throw DuplicateException("用户 $name 已存在") }
             user.name = name
@@ -140,11 +148,14 @@ object UserService : Service(Users) {
             user.updateTime = LocalDateTime.now()
             user.flushChanges()
         }
-        return findById(id)!!
+        return user.toUserDTO()
     }
 
     fun remove(id: Int) {
-        val user = findById(id) ?: throw NotFoundException("用户 $id 不存在或已被删除")
+        val user = find<UserPO>(
+            where = (UserDAO.isRemove eq false) and (UserDAO.id eq id),
+            exclude = UserDAO.password
+        ) ?: throw NotFoundException("用户 $id 不存在或已被删除")
         user.isRemove = true
         user.updateTime = LocalDateTime.now()
         user.flushChanges()

@@ -17,44 +17,50 @@ import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.asc
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.entity.add
-import tech.cuda.datahub.service.dao.Groups
+import tech.cuda.datahub.service.dao.GroupDAO
+import tech.cuda.datahub.service.dto.GroupDTO
+import tech.cuda.datahub.service.dto.toGroupDTO
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
-import tech.cuda.datahub.service.model.Group
+import tech.cuda.datahub.service.po.GroupPO
 import java.time.LocalDateTime
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-object GroupService : Service(Groups) {
+object GroupService : Service(GroupDAO) {
 
-    fun listing(page: Int, pageSize: Int, pattern: String? = null) = batch<Group>(
-        pageId = page,
-        pageSize = pageSize,
-        filter = Groups.isRemove eq false,
-        like = Groups.name.match(pattern),
-        orderBy = Groups.id.asc()
-    )
+    fun listing(page: Int, pageSize: Int, pattern: String? = null): Pair<List<GroupDTO>, Int> {
+        val (groups, count) = batch<GroupPO>(
+            pageId = page,
+            pageSize = pageSize,
+            filter = GroupDAO.isRemove eq false,
+            like = GroupDAO.name.match(pattern),
+            orderBy = GroupDAO.id.asc()
+        )
+        return groups.map { it.toGroupDTO() } to count
+    }
 
-    fun findById(id: Int) = find<Group>(where = (Groups.isRemove eq false) and (Groups.id eq id))
+    fun findById(id: Int) = find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.id eq id))?.toGroupDTO()
 
-    fun findByName(name: String) = find<Group>(where = (Groups.isRemove eq false) and (Groups.name eq name))
+    fun findByName(name: String) = find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.name eq name))?.toGroupDTO()
 
-    fun create(name: String): Group {
-        findByName(name)?.let { throw DuplicateException("项目组 $name 已存在") }
-        val group = Group {
+    fun create(name: String): GroupDTO {
+        find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.name eq name))?.let { throw DuplicateException("项目组 $name 已存在") }
+        val group = GroupPO {
             this.name = name
             this.isRemove = false
             this.createTime = LocalDateTime.now()
             this.updateTime = LocalDateTime.now()
         }
-        Groups.add(group)
-        return group
+        GroupDAO.add(group)
+        return group.toGroupDTO()
     }
 
-    fun update(id: Int, name: String? = null): Group {
-        val group = findById(id) ?: throw NotFoundException("项目组 $id 不存在或已被删除")
+    fun update(id: Int, name: String? = null): GroupDTO {
+        val group = find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.id eq id))
+            ?: throw NotFoundException("项目组 $id 不存在或已被删除")
         name?.let {
             findByName(name)?.let { throw DuplicateException("项目组 $name 已存在") }
             group.name = name
@@ -63,11 +69,12 @@ object GroupService : Service(Groups) {
             group.updateTime = LocalDateTime.now()
             group.flushChanges()
         }
-        return group
+        return group.toGroupDTO()
     }
 
     fun remove(id: Int) {
-        val group = findById(id) ?: throw NotFoundException("项目组 $id 不存在或已被删除")
+        val group = find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.id eq id))
+            ?: throw NotFoundException("项目组 $id 不存在或已被删除")
         group.isRemove = true
         group.updateTime = LocalDateTime.now()
         group.flushChanges()
