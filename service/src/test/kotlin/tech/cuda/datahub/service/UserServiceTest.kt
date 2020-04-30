@@ -18,7 +18,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import tech.cuda.datahub.TestWithMaria
-import tech.cuda.datahub.service.dao.Users
+import tech.cuda.datahub.service.dao.UserDAO
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
 import tech.cuda.datahub.toLocalDateTime
@@ -38,7 +38,6 @@ class UserServiceTest : TestWithMaria({
             email shouldBe "WjWUMovObM@139.com"
             createTime shouldBe "2042-06-02 09:25:38".toLocalDateTime()
             updateTime shouldBe "2043-01-26 13:59:27".toLocalDateTime()
-            password shouldBe ""
         }
         UserService.findByName("someone did not exists") shouldBe null
         UserService.findByName("NCiUmXrvkC") shouldBe null
@@ -53,7 +52,6 @@ class UserServiceTest : TestWithMaria({
             email shouldBe "WjWUMovObM@139.com"
             createTime shouldBe "2042-06-02 09:25:38".toLocalDateTime()
             updateTime shouldBe "2043-01-26 13:59:27".toLocalDateTime()
-            password shouldBe ""
         }
         UserService.findById(67) shouldBe null
         UserService.findById(180) shouldBe null
@@ -68,9 +66,6 @@ class UserServiceTest : TestWithMaria({
             val (users, count) = UserService.listing(page, pageSize)
             count shouldBe validUserCount
             users.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
-            users.forEach {
-                it.password shouldBe ""
-            }
         }
     }
 
@@ -85,21 +80,18 @@ class UserServiceTest : TestWithMaria({
                 val (users, count) = this
                 users.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
                 count shouldBe validUserCount
-                users.forEach { it.password shouldBe "" }
             }
 
             with(UserService.listing(page, pageSize, "   ")) {
                 val (users, count) = this
                 users.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
                 count shouldBe validUserCount
-                users.forEach { it.password shouldBe "" }
             }
 
             with(UserService.listing(page, pageSize, " NULL  ")) {
                 val (users, count) = this
                 users.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
                 count shouldBe validUserCount
-                users.forEach { it.password shouldBe "" }
             }
         }
 
@@ -113,14 +105,12 @@ class UserServiceTest : TestWithMaria({
                 val (users, count) = this
                 users.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
                 count shouldBe validUserCount
-                users.forEach { it.password shouldBe "" }
             }
 
             with(UserService.listing(page, pageSize, "  a null")) {
                 val (users, count) = this
                 users.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
                 count shouldBe validUserCount
-                users.forEach { it.password shouldBe "" }
             }
         }
 
@@ -134,14 +124,12 @@ class UserServiceTest : TestWithMaria({
                 val (users, count) = this
                 users.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
                 count shouldBe validUserCount
-                users.forEach { it.password shouldBe "" }
             }
 
             with(UserService.listing(page, pageSize, " b  a null")) {
                 val (users, count) = this
                 users.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
                 count shouldBe validUserCount
-                users.forEach { it.password shouldBe "" }
             }
         }
     }
@@ -157,14 +145,12 @@ class UserServiceTest : TestWithMaria({
         rootUser shouldNotBe null
         rootUser!!
         rootUser.name shouldBe "root"
-        rootUser.password shouldBe ""
         rootUser.id shouldBe 1
 
         val guestUser = UserService.getUserByToken(UserService.sign("guest", "guest")!!)
         guestUser shouldNotBe null
         guestUser!!
         guestUser.name shouldBe "guest"
-        guestUser.password shouldBe ""
         guestUser.id shouldBe 2
 
         UserService.getUserByToken("wrong token") shouldBe null
@@ -186,7 +172,6 @@ class UserServiceTest : TestWithMaria({
         val newUser = UserService.create(name, password, groupIds, email)
         newUser.id shouldBe nextUserId
         newUser.name shouldBe name
-        newUser.password shouldBe ""
         newUser.groups shouldContainExactlyInAnyOrder groupIds
         newUser.email shouldBe email
         newUser.createTime shouldNotBe null
@@ -283,4 +268,4 @@ class UserServiceTest : TestWithMaria({
         }.message shouldBe "用户 180 不存在或已被删除"
     }
 
-}, Users)
+}, UserDAO)

@@ -17,7 +17,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import tech.cuda.datahub.TestWithMaria
-import tech.cuda.datahub.service.dao.Groups
+import tech.cuda.datahub.service.dao.GroupDAO
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
 import tech.cuda.datahub.toLocalDateTime
@@ -198,4 +198,4 @@ class GroupServiceTest : TestWithMaria({
         }.message shouldBe "项目组 98 不存在或已被删除"
     }
 
-}, Groups)
+}, GroupDAO)

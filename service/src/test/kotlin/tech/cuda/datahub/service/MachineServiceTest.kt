@@ -14,13 +14,12 @@
 package tech.cuda.datahub.service
 
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.comparables.shouldBeGreaterThanOrEqualTo
 import io.kotest.matchers.comparables.shouldBeLessThanOrEqualTo
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import tech.cuda.datahub.TestWithMaria
-import tech.cuda.datahub.service.dao.Machines
+import tech.cuda.datahub.service.dao.MachineDAO
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
 import tech.cuda.datahub.toLocalDateTime
@@ -231,4 +230,4 @@ class MachineServiceTest : TestWithMaria({
         }.message shouldBe "服务器 300 不存在或已被删除"
     }
 
-}, Machines)
+}, MachineDAO)
