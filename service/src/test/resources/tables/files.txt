@@ -19,7 +19,7 @@ id	group_id	owner_id	name	type	parent_id	content	is_remove	create_time	update_ti
 18	16	48	bcmawkte	SQL	49	fajauvsbmjkkkwzyqqmcysmbhcrioomhpyphdniohqclrbhqphgbywupxlgpjmvp	0	2002-05-01 00:41:43	2003-10-20 15:00:30
 19	18	52	ukfnktyt	SQL	54	iqxtcpbruhuwxidncdzoxfgfpkibslenbtqaiieumchhyftykofrnyaftltffgnr	0	2005-06-19 19:23:25	2006-10-10 14:48:18
 20	12	152	ildsuuce	DIR	NULL	NULL	0	2049-04-10 17:44:25	2049-08-08 06:54:32
-21	7	109	krjaodck	DIR	NULL	NULL	0	2047-06-05 19:50:04	2048-01-23 01:55:46
+21	7	109	krjaodck	DIR	NULL	NULL	1	2047-06-05 19:50:04	2048-01-23 01:55:46
 22	12	64	ilmkdxsi	DIR	NULL	NULL	0	2022-12-23 00:39:32	2025-01-09 20:57:05
 23	14	103	rtegqfkw	SQL	43	mvyldjbsvxgxrgxqapxkvwquuutlttkjwowlxvzjqieeaylgtfujijzqyiivcluf	0	2033-11-27 04:56:42	2034-01-03 20:06:29
 24	2	171	nakpvqqu	SQL	33	rivjajswvxqfazfuiveyuyatdxnavrjtwrnheoymehpsjxtbzwxzlkkfrsjovyix	1	2040-09-10 11:05:40	2043-06-29 22:45:27
@@ -38,7 +38,7 @@ id	group_id	owner_id	name	type	parent_id	content	is_remove	create_time	update_ti
 37	19	67	zbrbwuwv	SQL	51	bcobtiplzpczpipbkkdvvhjffenyfqtnpplzfzsxrtkegsxgiicabogoowumgpwh	0	2045-02-09 08:53:05	2045-04-27 17:36:19
 38	16	61	lwpkndnj	SQL	61	dhkkiumputxkjnhzwetuxpqzadwxofrqjkfymbnjzjeidestmqibuwbmryvcpoib	1	2037-03-14 02:19:06	2039-10-11 19:22:01
 39	6	38	joqlziud	SPARK	49	tauwcsxtalernfwikjuksodnsujswcofjvrjuyajzyhzvkdejqxsxdocztryxidm	0	2035-12-03 21:22:14	2037-11-14 03:17:13
-40	7	55	yhlfmhqa	DIR	NULL	NULL	0	2043-01-13 17:04:06	2045-11-24 07:18:44
+40	7	55	yhlfmhqa	SPARK	6	spark-submit	0	2043-01-13 17:04:06	2045-11-24 07:18:44
 41	3	59	ghxwtphh	SPARK	13	cffimgcqkftzsanitrdtlhniwsnowpixxbydtxohpbmhjoefaqfntkqamzxfbdio	0	2026-06-07 07:31:07	2026-12-22 08:08:15
 42	1	40	yzhamcqc	SPARK	4	upkyslvcuaejueqvyokchqrtftdqgkuwifdazcsugjcavoqqhckdamkspijxmoda	0	2017-09-18 02:08:21	2020-08-30 13:28:13
 43	1	140	kniovyqn	SQL	1	zozhbwftgaapvfdvcvvqfoorqttkplueaxxufrfzpvzgjlbymwgwqzyrclqfriob	0	2009-09-17 00:47:55	2011-11-10 01:43:32
@@ -46,7 +46,7 @@ id	group_id	owner_id	name	type	parent_id	content	is_remove	create_time	update_ti
 45	11	174	muwtoqyu	SQL	20	hvxxbfrdzecxsjihaqsccwtgmsoykcbnltahbvboobcscvqlzyxcblabmzdcyrel	0	2046-11-14 01:24:21	2047-11-04 09:40:41
 46	0	14	hfcplzlm	SQL	26	jaiiqxelafaxscvsbzvkjvuopnxteyjvqhwtjfvunlaoiukoobsnjzoziqhtrtrv	0	2026-12-20 10:43:05	2029-08-13 19:19:54
 47	2	20	mjykzzji	SQL	55	ooywuneivbrzcwoombsowedhxxtkvwzqnpfybqeyjftglbdzuxgsibqpkjvretki	0	2017-04-14 13:46:24	2019-08-07 22:26:07
-48	6	41	uwuhhspk	SQL	33	oieephisfehnxdjjmhlnouhpcksmdsrozutnjlywigteoxiidobstwuezotawnqd	0	2002-08-10 13:30:26	2003-07-26 02:59:51
+48	6	41	uwuhhspk	SQL	33	oieephisfehnxdjjmhlnouhpcksmdsrozutnjlywigteoxiidobstwuezotawnqd	1	2002-08-10 13:30:26	2003-07-26 02:59:51
 49	7	177	gkepzzai	SQL	63	tjbhyyklmmzfbldbyotnbrdtmrvstdulpvttftslamolsjepholhgykofgztnunr	0	2003-08-24 11:47:06	2003-09-05 00:22:50
 50	14	151	kzsjsljm	SQL	12	mfxebevqsyvdycqhuzydegpikphqqnpfvrsrrnmuyfmlpnwqxqylabyzewhhbunf	0	2001-06-19 01:45:29	2002-06-30 19:32:40
 51	6	64	ykyyjwbz	SPARK	31	twiafplonhgxrxqpxboharcqkemjlyypolsdqoenwmhemyuujbkgrcnfbdhfrjyy	1	2028-07-09 17:16:04	2028-09-26 03:54:33
