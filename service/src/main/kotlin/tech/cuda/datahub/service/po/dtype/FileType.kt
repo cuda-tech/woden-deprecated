@@ -13,11 +13,38 @@
  */
 package tech.cuda.datahub.service.po.dtype
 
+import java.time.LocalDateTime
+
 /**
  * 文件类型
  * @author Jensen Qi  <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
 enum class FileType {
-    DIR, SQL, SPARK, MR
+    DIR, SQL, SPARK, MR;
+
+    fun initVal(author: String, createTime: LocalDateTime) = when (this) {
+        DIR -> null
+        MR -> """
+            #---------------------------------------
+            # @author    $author
+            # @date      $createTime
+            # @describe
+            #---------------------------------------
+        """.trimIndent()
+        SQL -> """
+            -----------------------------------------
+            -- @author   $author
+            -- @date     $createTime
+            -- @describe
+            -----------------------------------------
+        """.trimIndent()
+        SPARK -> """
+            #---------------------------------------
+            # @author    $author
+            # @date      $createTime
+            # @describe
+            #--------------------------------------- 
+        """.trimIndent()
+    }
 }
