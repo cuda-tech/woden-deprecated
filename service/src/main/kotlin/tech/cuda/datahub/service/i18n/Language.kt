@@ -11,24 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.utils
-
-import java.util.*
+package tech.cuda.datahub.service.i18n
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-object I18N {
-    private var bundle = ResourceBundle.getBundle("datahub", Locale.CHINA)
-
-    fun setLanguage(lang: Locale = Locale.CHINA) {
-        bundle = ResourceBundle.getBundle("datahub", lang)
-    }
-
-    fun getString(key: String): String = bundle.getString(key)
-
-    fun getStringArray(key: String): Array<String> = bundle.getStringArray(key)
-
-    fun getObject(key: String): Any = bundle.getObject(key)
+interface Language {
+    val user: String
+    val group: String
+    val machine: String
+    val file: String
+    val fileMirror: String
+    val task: String
+    val job: String
+    val instance: String
+    val notExistsOrHasBeenRemove: String
+    val operationNotAllow: String
 }
+
+
