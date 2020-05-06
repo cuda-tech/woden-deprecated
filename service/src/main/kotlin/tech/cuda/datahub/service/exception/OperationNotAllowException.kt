@@ -17,4 +17,4 @@ package tech.cuda.datahub.service.exception
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class OperationNotAllowException(message: String) : Exception(message)
+class OperationNotAllowException(vararg message: Any) : Exception(message.joinToString(" "))

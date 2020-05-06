@@ -17,4 +17,4 @@ package tech.cuda.datahub.service.exception
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class NotFoundException(message: String) : Exception(message)
+class NotFoundException(vararg message: Any) : Exception(message.joinToString(" "))
