@@ -27,5 +27,14 @@ data class Chinese(
     override val task: String = "调度任务",
     override val job: String = "调度作业",
     override val instance: String = "调度实例",
-    override val operationNotAllow: String = "非法操作"
+    override val operationNotAllow: String = "非法操作",
+    override val notBelongTo: String = "不归属于",
+    override val parentTask: String = "父任务",
+    override val invalid: String = "已失效",
+    override val dependencyNotAllow: String = "禁止依赖",
+    override val removeNotAllow: String = "禁止删除",
+    override val isValid: String = "未失效",
+    override val childrenTask: String = "子任务",
+    override val crossFileUpdateMirrorNotAllow: String = "禁止跨文件更新镜像",
+    override val invalidNotAllow: String = "禁止失效"
 ) : Language

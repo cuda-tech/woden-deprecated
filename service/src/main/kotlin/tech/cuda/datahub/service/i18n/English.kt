@@ -27,5 +27,14 @@ data class English(
     override val task: String = "schedule task",
     override val job: String = "schedule job",
     override val instance: String = "schedule instance",
-    override val operationNotAllow: String = "operation not allow"
+    override val operationNotAllow: String = "operation not allow",
+    override val notBelongTo: String = "not belong to",
+    override val parentTask: String = "parent task",
+    override val invalid: String = "is invalid",
+    override val dependencyNotAllow: String = "dependency not allow",
+    override val removeNotAllow: String = "remove not allow",
+    override val isValid: String = "is valid",
+    override val childrenTask: String = "children task",
+    override val crossFileUpdateMirrorNotAllow: String = "cross file update mirror not allow",
+    override val invalidNotAllow: String = "invalid not allow"
 ) : Language

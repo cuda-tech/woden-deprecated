@@ -28,6 +28,15 @@ interface Language {
     val instance: String
     val notExistsOrHasBeenRemove: String
     val operationNotAllow: String
+    val notBelongTo: String
+    val parentTask: String
+    val childrenTask: String
+    val invalid: String
+    val dependencyNotAllow: String
+    val removeNotAllow: String
+    val isValid: String
+    val crossFileUpdateMirrorNotAllow: String
+    val invalidNotAllow: String
 }
 
 
