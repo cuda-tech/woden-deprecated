@@ -18,8 +18,8 @@ package tech.cuda.datahub.service.po.dtype
  * @since 1.0.0
  */
 data class ScheduleDependencyInfo(
-    val isWeakDependency: Boolean = false,  // 是否弱依赖
+    val weakDependency: Boolean = false,  // 是否弱依赖
     val dependencyWaitTimeout: Int = Int.MAX_VALUE,  // 弱依赖最大等待时间（分钟）
-    val isOffset: Boolean = false, // 是否偏移
+    val offset: Boolean = false, // 是否偏移
     val offsetDay: Int = 0 // 偏移天数
 )
