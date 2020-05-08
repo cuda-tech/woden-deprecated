@@ -17,7 +17,9 @@ import tech.cuda.datahub.service.po.TaskPO
 import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.annotation.mysql.*
+import tech.cuda.datahub.service.po.dtype.ScheduleDependencyInfo
 import tech.cuda.datahub.service.po.dtype.SchedulePeriod
+import tech.cuda.datahub.service.po.dtype.SchedulePriority
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -35,6 +37,10 @@ internal object TaskDAO : Table<TaskPO>("tasks") {
     @COMMENT("镜像 ID")
     val mirrorId by int("mirror_id").bindTo { it.mirrorId }
 
+    @BIGINT
+    @COMMENT("项目组 ID")
+    val groupId by int("group_id").bindTo { it.groupId }
+
     @VARCHAR(512)
     @COMMENT("任务名")
     val name by varchar("name").bindTo { it.name }
@@ -45,23 +51,23 @@ internal object TaskDAO : Table<TaskPO>("tasks") {
 
     @TEXT
     @COMMENT("执行参数")
-    val args by text("args").bindTo { it.args }
+    val args by json("args", typeRef<Map<String, Any>>()).bindTo { it.args }
 
     @BOOL
     @COMMENT("执行失败是否跳过")
-    val softFail by boolean("soft_fail").bindTo { it.softFail }
+    val isSoftFail by boolean("is_soft_fail").bindTo { it.isSoftFail }
 
     @VARCHAR(10)
     @COMMENT("调度周期")
-    val period by enum("type", typeRef<SchedulePeriod>()).bindTo { it.period }
+    val period by enum("period", typeRef<SchedulePeriod>()).bindTo { it.period }
 
     @VARCHAR(32)
     @COMMENT("执行队列")
     val queue by varchar("queue").bindTo { it.queue }
 
-    @SMALLINT
-    @COMMENT("优先级")
-    val priority by int("priority").bindTo { it.priority }
+    @VARCHAR(10)
+    @COMMENT("调度优先级")
+    val priority by enum("priority", typeRef<SchedulePriority>()).bindTo { it.priority }
 
     @INT
     @COMMENT("最大等待时间（分钟）")
@@ -73,11 +79,11 @@ internal object TaskDAO : Table<TaskPO>("tasks") {
 
     @JSON
     @COMMENT("父任务列表")
-    val parent by json("parent", typeRef<Map<Int, Map<String, String>>>()).bindTo { it.parent }
+    val parent by json("parent", typeRef<Map<Int, ScheduleDependencyInfo>>()).bindTo { it.parent }
 
     @JSON
     @COMMENT("子任务列表")
-    val children by json("children", typeRef<Map<Int, Map<String, String>>>()).bindTo { it.children }
+    val children by json("children", typeRef<Set<Int>>()).bindTo { it.children }
 
     @SMALLINT
     @COMMENT("重试次数")
@@ -89,7 +95,7 @@ internal object TaskDAO : Table<TaskPO>("tasks") {
 
     @BOOL
     @COMMENT("调度是否生效")
-    val valid by boolean("valid").bindTo { it.valid }
+    val isValid by boolean("is_valid").bindTo { it.isValid }
 
     @BOOL
     @COMMENT("逻辑删除")

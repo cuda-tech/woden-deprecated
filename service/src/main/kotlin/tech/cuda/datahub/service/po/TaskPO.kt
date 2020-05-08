@@ -14,6 +14,8 @@
 package tech.cuda.datahub.service.po
 
 import me.liuwj.ktorm.entity.Entity
+import tech.cuda.datahub.service.po.dtype.ScheduleDependencyInfo
+import tech.cuda.datahub.service.po.dtype.SchedulePriority
 import tech.cuda.datahub.service.po.dtype.SchedulePeriod
 import java.time.LocalDateTime
 
@@ -27,20 +29,21 @@ internal interface TaskPO : Entity<TaskPO> {
 
     val id: Int
     var mirrorId: Int
+    var groupId: Int
     var name: String
     var owners: Set<Int>
-    var args: String
-    var softFail: Boolean
+    var args: Map<String, Any>
+    var isSoftFail: Boolean
     var period: SchedulePeriod
     var queue: String
-    var priority: Int
+    var priority: SchedulePriority
     var pendingTimeout: Int
     var runningTimeout: Int
-    var parent: Map<Int, Map<String, String>>
-    var children: Map<Int, Map<String, String>>
+    var parent: Map<Int, ScheduleDependencyInfo>
+    var children: Set<Int>
     var retries: Int
     var retryDelay: Int
-    var valid: Boolean
+    var isValid: Boolean
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime
