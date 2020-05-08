@@ -19,6 +19,7 @@ import me.liuwj.ktorm.expression.BinaryExpression
 import me.liuwj.ktorm.expression.OrderByExpression
 import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.Table
+import java.lang.IllegalArgumentException
 import kotlin.math.max
 
 /**
@@ -72,28 +73,33 @@ abstract class Service(private val table: Table<*>) {
     }
 
     /**
-     * 批量查询页面大小为[pageSize]时第[pageId]页的数据
-     * 如果提供了[exclude]，则排出掉改列，比如，你可能不希望返回用户的密码列
+     * 批量查询
+     * 如果同时提供了[pageSize]和[pageId]则进行分页查询，否则进行全量查询
+     * 如果提供了[exclude]，则排出掉该列，比如，你可能不希望返回用户的密码列
      * 如果提供了[filter]，则过滤出[filter]为 true 的记录
      * 如果提供了[like]，则过滤出[filter] and [like] 为 true 的记录
      * 如果提供了[orderBy]，则对结果进行排序后再阶段返回
-     * 最终返回类型为[T]，大小为[pageSize]的数组(如果不足则可能小于[pageSize])
-     * 以及符合[filter]的总记录总数
      */
     protected fun <T : Entity<*>> batch(
-        pageId: Int,
-        pageSize: Int,
+        pageId: Int? = null,
+        pageSize: Int? = null,
         exclude: Column<*>? = null,
         filter: BinaryExpression<Boolean>? = null,
         like: BinaryExpression<Boolean>? = null,
         orderBy: OrderByExpression? = null
     ): Pair<List<T>, Int> {
+        if ((pageId == null && pageSize != null) || (pageId != null && pageSize == null)) {
+            throw IllegalArgumentException("pageId 和 pageSize 必须同时为 null 或同时不为 null")
+        }
         var items = table.select(table.columns - exclude)
         val filters = filter + like
         filters?.let { items = items.where { filters } }
         val count = items.totalRecords
         orderBy?.let { items = items.orderBy(orderBy) }
-        return items.limit(offset(pageId, pageSize), pageSize).map { table.createEntity(it) as T } to count
+        if (pageId != null && pageSize != null) {
+            items = items.limit(offset(pageId, pageSize), pageSize)
+        }
+        return items.map { table.createEntity(it) as T } to count
     }
 
     protected fun <T : Entity<*>> find(where: BinaryExpression<Boolean>, exclude: Column<*>? = null): T? {
