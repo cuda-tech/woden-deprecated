@@ -78,12 +78,12 @@ class Schema(private val dbConfig: DatabaseConfig) {
     fun rebuildDB() = cleanDB().also { buildDB() }
 
     /**
-     * 寻找 resource 目录下与[table]的表名同名的 txt 文件，然后导入数据库
+     * 寻找当前模块 resource 目录下与[tableName]的表名同名的 txt 文件，然后导入数据库
      * 其中，这个 txt 文件需要带表头，并且以 \t 作为字段分隔符
      */
-    fun mockTable(table: Table<*>) = db.useConnection { conn ->
-        val filePath = this.javaClass.classLoader.getResource("tables/${table.tableName}.txt")!!.path
-        val meta = conn.prepareStatement("select * from ${table.tableName}").metaData
+    fun mockTable(tableName: String) = db.useConnection { conn ->
+        val filePath = this.javaClass.classLoader.getResource("tables/$tableName.txt")!!.path
+        val meta = conn.prepareStatement("select * from $tableName").metaData
         val types = (1..meta.columnCount).map { meta.getColumnTypeName(it)!! }
 
         val file = Resources.readLines(java.io.File(filePath).toURI().toURL(), Charsets.UTF_8)
@@ -99,6 +99,8 @@ class Schema(private val dbConfig: DatabaseConfig) {
                 }
             }.joinToString(",", "(", ")")
         }
-        conn.prepareStatement("insert into ${table.tableName} values $values").use { it.execute() }
+        conn.prepareStatement("insert into $tableName values $values").use { it.execute() }
     }
+
+    fun mockTable(table: Table<*>) = mockTable(table.tableName)
 }
