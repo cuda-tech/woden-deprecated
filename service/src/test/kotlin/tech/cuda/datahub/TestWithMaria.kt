@@ -14,15 +14,12 @@
 package tech.cuda.datahub
 
 import ch.vorburger.mariadb4j.DB
-import com.google.common.io.Resources
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestCase
 import me.liuwj.ktorm.schema.Table
 import tech.cuda.datahub.service.config.DatabaseConfig
 import tech.cuda.datahub.service.utils.Schema
-import java.io.FileReader
-import java.util.*
 
 /**
  * 基于 maria 数据库的测试套件，所有测试用例执行前启动 maria 数据库
@@ -38,6 +35,7 @@ open class TestWithMaria(body: StringSpec.() -> Unit = {}, private vararg val ta
         super.beforeSpec(spec)
         val db = DB.newEmbeddedDB(0).also { it.start() }
         schema = Schema(DatabaseConfig(port = db.configuration.port))
+//        schema = Schema(DatabaseConfig(port = 3306))
     }
 
     override fun beforeTest(testCase: TestCase) {
