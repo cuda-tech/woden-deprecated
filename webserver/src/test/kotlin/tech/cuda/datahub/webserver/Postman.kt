@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.webserver.tools
+package tech.cuda.datahub.webserver
 
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.*
