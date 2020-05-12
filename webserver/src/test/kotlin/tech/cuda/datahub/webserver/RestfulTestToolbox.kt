@@ -11,11 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.webserver.tools
+package tech.cuda.datahub.webserver
 
 import ch.vorburger.mariadb4j.DB
+import io.kotest.core.spec.style.AnnotationSpec
+import io.kotest.spring.SpringListener
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,6 +25,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import tech.cuda.datahub.service.config.DatabaseConfig
+import tech.cuda.datahub.service.utils.Schema
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -33,16 +36,33 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("UNCHECKED_CAST")
-open class RestfulTestToolbox {
+open class RestfulTestToolbox(private vararg val tables: String = arrayOf()) : AnnotationSpec() {
     @Autowired
     lateinit var template: TestRestTemplate
     lateinit var postman: Postman
+    private lateinit var schema: Schema
+
+    override fun listeners() = listOf(SpringListener)
 
     @BeforeAll
-    fun startDb() {
-        DB.newEmbeddedDB(3307).start()
+    fun beforeAll() {
+        val db = DB.newEmbeddedDB(0).also { it.start() }
+        schema = Schema(DatabaseConfig(port = db.configuration.port))
+//        schema = Schema(DatabaseConfig(port = 3306))
     }
 
+    @BeforeEach
+    fun beforeEach() {
+        schema.rebuildDB()
+        tables.forEach {
+            schema.mockTable(it)
+        }
+        if ("users" !in tables) {
+            schema.mockTable("users")
+        }
+        this.postman = Postman(template)
+        this.postman.login()
+    }
 
     val ResponseEntity<Map<String, Any>>.shouldSuccess: ResponseEntity<Map<String, Any>>
         get() {
@@ -105,8 +125,4 @@ open class RestfulTestToolbox {
 
     infix fun LinkedHashMap<String, Any>.shouldNotContain(key: String) = Assertions.assertFalse(this.keys.contains(key))
 
-    fun assertResponseFailed(response: ResponseEntity<Map<String, Any>>) {
-        Assertions.assertEquals(HttpStatus.OK, response.statusCode)
-        Assertions.assertEquals("failed", response.body?.get("status"))
-    }
 }
