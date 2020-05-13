@@ -13,22 +13,16 @@
  */
 package tech.cuda.datahub.webserver.controller
 
-import com.google.common.collect.Lists
 import tech.cuda.datahub.webserver.Response
-import tech.cuda.datahub.webserver.ResponseData
-import tech.cuda.datahub.webserver.auth.Jwt
-import tech.cuda.datahub.webserver.auth.MD5
-import tech.cuda.datahub.webserver.utils.Page
-import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.entity.*
-import me.liuwj.ktorm.schema.ColumnDeclaring
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
-import tech.cuda.datahub.service.dao.Users
-import tech.cuda.datahub.service.model.User
-import java.time.LocalDateTime
-import javax.validation.constraints.NotBlank
-import kotlin.collections.LinkedHashMap
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
+import tech.cuda.datahub.service.UserService
+import tech.cuda.datahub.service.exception.DuplicateException
+import tech.cuda.datahub.service.exception.NotFoundException
+import tech.cuda.datahub.service.i18n.I18N
+import tech.cuda.datahub.webserver.ResponseData
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -38,17 +32,6 @@ import kotlin.collections.LinkedHashMap
 @EnableAutoConfiguration
 @RequestMapping("/api/user")
 class UserController {
-
-    private fun User.wipeOutPassword(): LinkedHashMap<String, Any> {
-        val responseData = LinkedHashMap<String, Any>()
-        responseData["id"] = this.id
-        responseData["groupIds"] = this.groups
-        responseData["name"] = this.name
-        responseData["email"] = this.email
-        responseData["createTime"] = this.createTime
-        responseData["updateTime"] = this.updateTime
-        return responseData
-    }
 
     /**
      * @api {get} /api/user 获取用户列表
@@ -67,23 +50,9 @@ class UserController {
     @GetMapping
     fun listing(@RequestParam(required = false, defaultValue = "1") page: Int,
                 @RequestParam(required = false, defaultValue = "9999") pageSize: Int,
-                @RequestParam(required = false) like: String?): ResponseData {
-        val users = Users.select().where {
-            val conditions = Lists.newArrayList<ColumnDeclaring<Boolean>>(Users.isRemove eq false)
-            if (like != null && like.isNotBlank() && like.trim().toUpperCase() != "NULL") {
-                like.split("\\s+".toRegex()).forEach {
-                    conditions.add(Users.name.like("%$it%"))
-                }
-            }
-            conditions.reduce { a, b -> a and b }
-        }
-        val count = users.totalRecords
-        return Response.Success.WithData(mapOf(
-            "count" to count,
-            "users" to users.orderBy(Users.id.asc()).limit(Page.offset(page, pageSize), pageSize).map {
-                Users.createEntity(it).wipeOutPassword()
-            }
-        ))
+                @RequestParam(required = false) like: String?): Map<String, Any> {
+        val (users, count) = UserService.listing(page, pageSize, like)
+        return Response.Success.data("count" to count, "users" to users)
     }
 
     /**
@@ -97,7 +66,12 @@ class UserController {
      * {"status":"failed","error":"错误信息"}
      */
     @GetMapping("/current")
-    fun currentUser(): ResponseData = Response.Success.WithData(mapOf("user" to Jwt.currentUser.wipeOutPassword()))
+    fun currentUser(): Map<String, Any> {
+        val servlet = RequestContextHolder.getRequestAttributes() as ServletRequestAttributes
+        val request = servlet.request
+        val user = UserService.getUserByToken(request.getHeader("TOKEN")) ?: return Response.Failed.DataNotFound("")
+        return Response.Success.data("user" to user)
+    }
 
 
     /**
@@ -113,15 +87,14 @@ class UserController {
      */
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
-        val user = Users.select().where { Users.id eq id and (Users.isRemove eq false) }.map {
-            Users.createEntity(it).wipeOutPassword()
-        }.firstOrNull()
+        val user = UserService.findById(id)
         return if (user == null) {
-            Response.Failed.DataNotFound("user $id")
+            Response.Failed.WithError("${I18N.user} $id ${I18N.notExistsOrHasBeenRemove}")
         } else {
-            Response.Success.WithData(mapOf("user" to user))
+            Response.Success.data("user" to UserService.findById(id))
         }
     }
+
 
     /**
      * @api {post} /api/user 创建用户
@@ -139,25 +112,13 @@ class UserController {
      * {"status":"failed","error":"错误信息"}
      */
     @PostMapping
-    fun create(@NotBlank(message = "{required}") name: String,
-               @NotBlank(message = "{required}") password: String,
+    fun create(@RequestParam(required = true) name: String,
+               @RequestParam(required = true) password: String,
                @RequestParam(required = true) groupIds: ArrayList<Int>,
-               @NotBlank(message = "{required}") email: String): ResponseData {
-        if (Users.select().where { Users.name eq name and (Users.isRemove eq false) }.totalRecords > 0) {
-            return Response.Failed.IllegalArgument("user $name exists")
-        }
-        val user = User {
-            this.name = name
-            this.groups = groupIds.toSet()
-            this.password = MD5.encrypt(password)
-            this.email = email
-            this.isRemove = false
-            this.createTime = LocalDateTime.now()
-            this.updateTime = LocalDateTime.now()
-        }
-        Users.add(user)
-        // todo: 创建用户后将账号密码发送到用户邮箱
-        return Response.Success.WithData(mapOf("user" to user.wipeOutPassword()))
+               @RequestParam(required = true) email: String) = try {
+        Response.Success.data("user" to UserService.create(name, password, groupIds.toSet(), email))
+    } catch (e: DuplicateException) {
+        Response.Failed.WithError(e.message ?: "系统异常")
     }
 
     /**
@@ -180,35 +141,12 @@ class UserController {
                @RequestParam(required = false) name: String?,
                @RequestParam(required = false) password: String?,
                @RequestParam(required = false) groupIds: ArrayList<Int>?,
-               @RequestParam(required = false) email: String?): ResponseData {
-        val user = Users.findById(id)
-        return if (user == null || user.isRemove) {
-            Response.Failed.DataNotFound("user $id")
-        } else {
-            var update = false
-            if (name != null) {
-                user.name = name
-                update = true
-            }
-            if (password != null) {
-                user.password = MD5.encrypt(password)
-                update = true
-            }
-            if (groupIds != null) {
-                user.groups = groupIds.toSet()
-                update = true
-            }
-            if (email != null) {
-                user.email = email
-                update = true
-            }
-            if (update) {
-                user.updateTime = LocalDateTime.now()
-            }
-            user.flushChanges()
-            Response.Success.WithData(mapOf("user" to user.wipeOutPassword()))
-        }
+               @RequestParam(required = false) email: String?) = try {
+        Response.Success.data("user" to UserService.update(id, name, password, groupIds?.toSet(), email))
+    } catch (e: Exception) {
+        Response.Failed.WithError(e.message ?: "系统异常")
     }
+
 
     /**
      * @api {delete} /api/user/{id} 删除用户
@@ -222,15 +160,12 @@ class UserController {
      * {"status":"failed","error":"错误信息"}
      */
     @DeleteMapping("{id}")
-    fun remove(@PathVariable id: Int): ResponseData {
-        val user = Users.findById(id)
-        return if (user == null || user.isRemove) {
-            Response.Failed.DataNotFound("user $id")
-        } else {
-            user.isRemove = true
-            user.flushChanges()
-            Response.Success.Remove("user ${user.id}")
-        }
+    fun remove(@PathVariable id: Int) = try {
+        UserService.remove(id)
+        Response.Success.message("用户 $id 已被删除")
+    } catch (e: NotFoundException) {
+        Response.Failed.WithError(e.message ?: "系统异常")
     }
+
 
 }

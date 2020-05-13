@@ -13,39 +13,32 @@
  */
 package tech.cuda.datahub.webserver.controller
 
-import tech.cuda.datahub.webserver.tools.Postman
-import tech.cuda.datahub.service.SchemaUtils
-import tech.cuda.datahub.webserver.tools.RestfulTestToolbox
-import org.junit.jupiter.api.*
-import tech.cuda.datahub.webserver.auth.Jwt
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.shouldBe
+import tech.cuda.datahub.webserver.RestfulTestToolbox
+import tech.cuda.datahub.service.UserService
+import tech.cuda.datahub.service.dto.UserDTO
+import tech.cuda.datahub.toLocalDateTime
 
 /**
  * @author Jensen Qi
  * @since 1.0.0
  */
-class UserControllerTest : RestfulTestToolbox() {
-
-    @BeforeEach
-    fun initEnvironment() {
-        SchemaUtils.rebuildDB()
-        SchemaUtils.loadTable("datahub.users", this.javaClass.classLoader.getResource("tables/users.txt")!!.path)
-        this.postman = Postman(template)
-        this.postman.login()
-    }
+open class UserControllerTest : RestfulTestToolbox("users") {
 
     @Test
     fun listing() {
-        val validUserCount = 143
-        postman.get("/api/user").shouldSuccess.thenGetData.andCheckCount(validUserCount)
-            .thenGetListOf("users").andCheckSize(validUserCount)
+        val validCount = 143
+        postman.get("/api/user").shouldSuccess.thenGetData.andCheckCount(validCount)
+            .thenGetListOf("users").andCheckSize(validCount)
 
         val pageSize = 13
-        val queryTimes = validUserCount / pageSize + 1
-        val lastPageUserCount = validUserCount % pageSize
+        val queryTimes = validCount / pageSize + 1
+        val lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
             postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize)).shouldSuccess
-                .thenGetData.andCheckCount(validUserCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .thenGetData.andCheckCount(validCount)
+                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
                 .forEach { it shouldNotContain "password" }
         }
     }
@@ -53,43 +46,43 @@ class UserControllerTest : RestfulTestToolbox() {
     @Test
     fun search() {
         // 提供空或 null 的相似词
-        var validUserCount = 143
+        var validCount = 143
         var pageSize = 13
-        var queryTimes = validUserCount / pageSize + 1
-        var lastPageUserCount = validUserCount % pageSize
+        var queryTimes = validCount / pageSize + 1
+        var lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
             postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess
-                .thenGetData.andCheckCount(validUserCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .thenGetData.andCheckCount(validCount)
+                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
                 .forEach { it shouldNotContain "password" }
 
             postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to "  ")).shouldSuccess
-                .thenGetData.andCheckCount(validUserCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .thenGetData.andCheckCount(validCount)
+                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
                 .forEach { it shouldNotContain "password" }
         }
 
         // 提供 1 个相似词
-        validUserCount = 43
+        validCount = 43
         pageSize = 7
-        queryTimes = validUserCount / pageSize + 1
-        lastPageUserCount = validUserCount % pageSize
+        queryTimes = validCount / pageSize + 1
+        lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
             postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to " a")).shouldSuccess
-                .thenGetData.andCheckCount(validUserCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .thenGetData.andCheckCount(validCount)
+                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
                 .forEach { it shouldNotContain "password" }
         }
 
         // 提供 2 个相似词
-        validUserCount = 8
+        validCount = 8
         pageSize = 3
-        queryTimes = validUserCount / pageSize + 1
-        lastPageUserCount = validUserCount % pageSize
+        queryTimes = validCount / pageSize + 1
+        lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
             postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to " a b")).shouldSuccess
-                .thenGetData.andCheckCount(validUserCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .thenGetData.andCheckCount(validCount)
+                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
                 .forEach { it shouldNotContain "password" }
         }
     }
@@ -97,45 +90,42 @@ class UserControllerTest : RestfulTestToolbox() {
     @Test
     fun currentUser() {
         postman.login("root", "root")
-        postman.get("/api/user/current").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
-            it["groupIds"] shouldSameElemWith setOf(1)
-            it["name"] shouldBe "root"
-            it["email"] shouldBe "root@datahub.com"
-            it["createTime"] shouldBe "2048-08-14 06:10:35"
-            it["updateTime"] shouldBe "2051-03-13 21:06:23"
-            it shouldNotContain "password"
+        postman.get("/api/user/current").shouldSuccess.get<UserDTO>("user").withExpect {
+            it.groups shouldContainExactlyInAnyOrder setOf(1)
+            it.name shouldBe "root"
+            it.email shouldBe "root@datahub.com"
+            it.createTime shouldBe "2048-08-14 06:10:35".toLocalDateTime()
+            it.updateTime shouldBe "2051-03-13 21:06:23".toLocalDateTime()
         }
 
         postman.login("guest", "guest")
-        postman.get("/api/user/current").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
-            it["groupIds"] shouldSameElemWith setOf(6, 8, 1, 9, 7, 5, 2)
-            it["name"] shouldBe "guest"
-            it["email"] shouldBe "guest@datahub.com"
-            it["createTime"] shouldBe "2041-02-10 19:37:55"
-            it["updateTime"] shouldBe "2042-03-23 08:54:17"
-            it shouldNotContain "password"
+        postman.get("/api/user/current").shouldSuccess.get<UserDTO>("user").withExpect {
+            it.groups shouldContainExactlyInAnyOrder setOf(6, 8, 1, 9, 7, 5, 2)
+            it.name shouldBe "guest"
+            it.email shouldBe "guest@datahub.com"
+            it.createTime shouldBe "2041-02-10 19:37:55".toLocalDateTime()
+            it.updateTime shouldBe "2042-03-23 08:54:17".toLocalDateTime()
         }
     }
 
     @Test
     fun find() {
-        postman.get("/api/user/66").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
-            it["groupIds"] shouldSameElemWith setOf(8, 7, 3, 6, 2, 1)
-            it["name"] shouldBe "WjWUMovObM"
-            it["email"] shouldBe "WjWUMovObM@139.com"
-            it["createTime"] shouldBe "2042-06-02 09:25:38"
-            it["updateTime"] shouldBe "2043-01-26 13:59:27"
-            it shouldNotContain "password"
+        postman.get("/api/user/66").shouldSuccess.get<UserDTO>("user").withExpect {
+            it.groups shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
+            it.name shouldBe "WjWUMovObM"
+            it.email shouldBe "WjWUMovObM@139.com"
+            it.createTime shouldBe "2042-06-02 09:25:38".toLocalDateTime()
+            it.updateTime shouldBe "2043-01-26 13:59:27".toLocalDateTime()
         }
 
-        postman.get("/api/user/67").shouldFailed.withError("user 67 not found")
+        postman.get("/api/user/67").shouldFailed.withError("用户 67 不存在或已被删除")
     }
 
     @Test
     fun create() {
         // 禁止创建重名用户
         postman.post("/api/user", mapOf("name" to "root", "password" to "", "groupIds" to listOf(1), "email" to ""))
-            .shouldFailed.withError("illegal argument: user root exists")
+            .shouldFailed.withError("用户 root 已存在")
 
         val nextUserId = 180
         val name = "test_create"
@@ -144,24 +134,22 @@ class UserControllerTest : RestfulTestToolbox() {
         val email = "test_create@datahub.com"
 
         postman.post("/api/user", mapOf("name" to name, "password" to password, "groupIds" to groupIds, "email" to email))
-            .shouldSuccess.thenGetData.thenGetItem("user").withExpect {
-            it["id"] shouldBe nextUserId
-            it["name"] shouldBe name
-            it["email"] shouldBe email
-            it["groupIds"] shouldSameElemWith groupIds
-            it shouldNotContain "password"
+            .shouldSuccess.get<UserDTO>("user").withExpect {
+            it.id shouldBe nextUserId
+            it.name shouldBe name
+            it.email shouldBe email
+            it.groups shouldContainExactlyInAnyOrder groupIds
         }
 
-        postman.get("/api/user/$nextUserId").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
-            it["groupIds"] shouldSameElemWith groupIds
-            it["name"] shouldBe name
-            it["email"] shouldBe email
-            it shouldNotContain "password"
+        postman.get("/api/user/$nextUserId").shouldSuccess.get<UserDTO>("user").withExpect {
+            it.groups shouldContainExactlyInAnyOrder groupIds
+            it.name shouldBe name
+            it.email shouldBe email
         }
 
         val token = postman.post("/api/login", mapOf("username" to name, "password" to password))
-            .shouldSuccess.thenGetData["token"].toString()
-        Assertions.assertEquals(name, Jwt.getUserName(token))
+            .shouldSuccess.get<String>("token").toString()
+        UserService.getUserByToken(token)?.name shouldBe name
     }
 
     @Test
@@ -169,19 +157,17 @@ class UserControllerTest : RestfulTestToolbox() {
         val oldName = "root"
         val newName = "root_new_name"
 
+        postman.put("/api/user/1", mapOf("name" to "guest")).shouldFailed.withError("用户 guest 已存在")
+
         postman.post("/api/login", mapOf("username" to oldName, "password" to "root")).shouldSuccess
-
-        postman.put("/api/user/1", mapOf("name" to newName)).shouldSuccess.thenGetData.thenGetItem("user")
-            .withExpect {
-                it["name"] shouldBe newName
-                it shouldNotContain "password"
-            }
-
-        postman.post("/api/login", mapOf("username" to oldName, "password" to "root")).shouldFailed.withError("login failed")
-
+        postman.put("/api/user/1", mapOf("name" to newName)).shouldSuccess.get<UserDTO>("user").withExpect {
+            it.name shouldBe newName
+        }
+        postman.post("/api/login", mapOf("username" to oldName, "password" to "root")).shouldFailed.withError("登录失败")
         val token = postman.post("/api/login", mapOf("username" to newName, "password" to "root"))
-            .shouldSuccess.thenGetData["token"].toString()
-        Assertions.assertEquals(newName, Jwt.getUserName(token))
+            .shouldSuccess.get<String>("token")
+        UserService.getUserByToken(token)?.name shouldBe newName
+
     }
 
     @Test
@@ -190,42 +176,35 @@ class UserControllerTest : RestfulTestToolbox() {
         val newPassword = "root_new_password"
 
         postman.post("/api/login", mapOf("username" to "root", "password" to oldPassword)).shouldSuccess
-
-        postman.put("/api/user/1", mapOf("password" to newPassword)).shouldSuccess.thenGetData.thenGetItem("user")
-            .withExpect { it shouldNotContain "password" }
-
-        postman.post("/api/login", mapOf("username" to "root", "password" to oldPassword)).shouldFailed.withError("login failed")
+        postman.put("/api/user/1", mapOf("password" to newPassword)).shouldSuccess
+        postman.post("/api/login", mapOf("username" to "root", "password" to oldPassword)).shouldFailed.withError("登录失败")
 
         val token = postman.post("/api/login", mapOf("username" to "root", "password" to newPassword))
-            .shouldSuccess.thenGetData["token"].toString()
-        Assertions.assertEquals("root", Jwt.getUserName(token))
+            .shouldSuccess.get<String>("token")
+        UserService.getUserByToken(token)?.name shouldBe "root"
     }
 
     @Test
     fun updateEmail() {
         val newEmail = "new_email@datahub.com"
-        postman.put("/api/user/2", mapOf("email" to newEmail)).shouldSuccess.thenGetData.thenGetItem("user")
-            .withExpect {
-                it["email"] shouldBe newEmail
-                it shouldNotContain "password"
-            }
-        postman.get("/api/user/2").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
-            it["email"] shouldBe newEmail
-            it["updateTime"] shouldNotBe "2042-03-23 08:54:17"
+        postman.put("/api/user/2", mapOf("email" to newEmail)).shouldSuccess.get<UserDTO>("user").withExpect {
+            it.email shouldBe newEmail
+        }
+        postman.get("/api/user/2").shouldSuccess.get<UserDTO>("user").withExpect {
+            it.email shouldBe newEmail
+            it.updateTime shouldNotBe "2042-03-23 08:54:17".toLocalDateTime()
         }
     }
 
     @Test
     fun updateGroupIds() {
         val newGroupIds = setOf(137, 149)
-        postman.put("/api/user/2", mapOf("groupIds" to newGroupIds)).shouldSuccess.thenGetData.thenGetItem("user")
-            .withExpect {
-                it["groupIds"] shouldSameElemWith newGroupIds
-                it shouldNotContain "password"
-            }
-        postman.get("/api/user/2").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
-            it["groupIds"] shouldSameElemWith newGroupIds
-            it["updateTime"] shouldNotBe "2042-03-23 08:54:17"
+        postman.put("/api/user/2", mapOf("groupIds" to newGroupIds)).shouldSuccess.get<UserDTO>("user").withExpect {
+            it.groups shouldContainExactlyInAnyOrder newGroupIds
+        }
+        postman.get("/api/user/2").shouldSuccess.get<UserDTO>("user").withExpect {
+            it.groups shouldContainExactlyInAnyOrder newGroupIds
+            it.updateTime shouldNotBe "2042-03-23 08:54:17".toLocalDateTime()
         }
     }
 
@@ -236,38 +215,37 @@ class UserControllerTest : RestfulTestToolbox() {
         val newEmail = "new_email@datahub.com"
         val newGroupIds = setOf(137, 149)
         postman.put("/api/user/2", mapOf("name" to newName, "password" to newPassword, "email" to newEmail, "groupIds" to newGroupIds))
-            .shouldSuccess.thenGetData.thenGetItem("user").withExpect {
-            it["name"] shouldBe newName
-            it["email"] shouldBe newEmail
-            it["groupIds"] shouldSameElemWith newGroupIds
-            it shouldNotContain "password"
+            .shouldSuccess.get<UserDTO>("user").withExpect {
+            it.name shouldBe newName
+            it.email shouldBe newEmail
+            it.groups shouldContainExactlyInAnyOrder newGroupIds
         }
 
         val token = postman.post("/api/login", mapOf("username" to newName, "password" to newPassword))
-            .shouldSuccess.thenGetData["token"].toString()
-        Assertions.assertEquals(newName, Jwt.getUserName(token))
+            .shouldSuccess.get<String>("token").toString()
+        UserService.getUserByToken(token)?.name shouldBe newName
 
-        postman.get("/api/user/2").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
-            it["groupIds"] shouldSameElemWith newGroupIds
-            it["email"] shouldBe newEmail
-            it["updateTime"] shouldNotBe "2042-03-23 08:54:17"
+        postman.get("/api/user/2").shouldSuccess.get<UserDTO>("user").withExpect {
+            it.groups shouldContainExactlyInAnyOrder newGroupIds
+            it.email shouldBe newEmail
+            it.updateTime shouldNotBe "2042-03-23 08:54:17".toLocalDateTime()
         }
     }
 
     @Test
     fun updateInvalidUser() {
-        postman.put("/api/user/4", mapOf("name" to "user who has been remove")).shouldFailed.withError("user 4 not found")
-        postman.put("/api/user/180", mapOf("name" to "user not exists")).shouldFailed.withError("user 180 not found")
+        postman.put("/api/user/4", mapOf("name" to "user who has been remove")).shouldFailed.withError("用户 4 不存在或已被删除")
+        postman.put("/api/user/180", mapOf("name" to "user not exists")).shouldFailed.withError("用户 180 不存在或已被删除")
     }
 
     @Test
     fun remove() {
         postman.get("/api/user/2").shouldSuccess
-        postman.delete("/api/user/2").shouldSuccess.withMessage("user 2 has been removed")
-        postman.get("/api/user/2").shouldFailed.withError("user 2 not found")
+        postman.delete("/api/user/2").shouldSuccess.withMessage("用户 2 已被删除")
+        postman.get("/api/user/2").shouldFailed.withError("用户 2 不存在或已被删除")
 
-        postman.delete("/api/user/4").shouldFailed.withError("user 4 not found")
+        postman.delete("/api/user/4").shouldFailed.withError("用户 4 不存在或已被删除")
 
-        postman.delete("/api/user/180").shouldFailed.withError("user 180 not found")
+        postman.delete("/api/user/180").shouldFailed.withError("用户 180 不存在或已被删除")
     }
 }
