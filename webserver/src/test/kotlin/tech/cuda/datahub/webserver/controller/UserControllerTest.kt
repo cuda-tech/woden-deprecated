@@ -30,17 +30,23 @@ open class UserControllerTest : RestfulTestToolbox("users") {
     @Test
     fun listing() {
         val validCount = 143
-        postman.get("/api/user").shouldSuccess.thenGetData.andCheckCount(validCount)
-            .thenGetListOf("users").andCheckSize(validCount)
+        with(postman.get("/api/user").shouldSuccess) {
+            val users = this.getList<UserDTO>("users")
+            val count = this.get<Int>("count")
+            users.size shouldBe validCount
+            count shouldBe validCount
+        }
 
         val pageSize = 13
         val queryTimes = validCount / pageSize + 1
         val lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize)).shouldSuccess
-                .thenGetData.andCheckCount(validCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
-                .forEach { it shouldNotContain "password" }
+            with(postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize)).shouldSuccess) {
+                val users = this.getList<UserDTO>("users")
+                val count = this.get<Int>("count")
+                users.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                count shouldBe validCount
+            }
         }
     }
 
@@ -52,15 +58,18 @@ open class UserControllerTest : RestfulTestToolbox("users") {
         var queryTimes = validCount / pageSize + 1
         var lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess
-                .thenGetData.andCheckCount(validCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
-                .forEach { it shouldNotContain "password" }
-
-            postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to "  ")).shouldSuccess
-                .thenGetData.andCheckCount(validCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
-                .forEach { it shouldNotContain "password" }
+            with(postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess) {
+                val users = this.getList<UserDTO>("users")
+                val count = this.get<Int>("count")
+                users.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                count shouldBe validCount
+            }
+            with(postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to "  ")).shouldSuccess) {
+                val users = this.getList<UserDTO>("users")
+                val count = this.get<Int>("count")
+                users.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                count shouldBe validCount
+            }
         }
 
         // 提供 1 个相似词
@@ -69,10 +78,12 @@ open class UserControllerTest : RestfulTestToolbox("users") {
         queryTimes = validCount / pageSize + 1
         lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to " a")).shouldSuccess
-                .thenGetData.andCheckCount(validCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
-                .forEach { it shouldNotContain "password" }
+            with(postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to " a")).shouldSuccess) {
+                val users = this.getList<UserDTO>("users")
+                val count = this.get<Int>("count")
+                users.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                count shouldBe validCount
+            }
         }
 
         // 提供 2 个相似词
@@ -81,10 +92,12 @@ open class UserControllerTest : RestfulTestToolbox("users") {
         queryTimes = validCount / pageSize + 1
         lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to " a b")).shouldSuccess
-                .thenGetData.andCheckCount(validCount)
-                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageCount else pageSize)
-                .forEach { it shouldNotContain "password" }
+            with(postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to " a b")).shouldSuccess) {
+                val users = this.getList<UserDTO>("users")
+                val count = this.get<Int>("count")
+                users.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                count shouldBe validCount
+            }
         }
     }
 
@@ -244,7 +257,6 @@ open class UserControllerTest : RestfulTestToolbox("users") {
         postman.get("/api/user/2").shouldSuccess
         postman.delete("/api/user/2").shouldSuccess.withMessage("用户 2 已被删除")
         postman.get("/api/user/2").shouldFailed.withError("用户 2 不存在或已被删除")
-
         postman.delete("/api/user/4").shouldFailed.withError("用户 4 不存在或已被删除")
 
         postman.delete("/api/user/180").shouldFailed.withError("用户 180 不存在或已被删除")
