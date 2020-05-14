@@ -15,6 +15,7 @@ package tech.cuda.datahub.webserver.controller
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import tech.cuda.datahub.webserver.RestfulTestToolbox
 import tech.cuda.datahub.service.UserService
 import tech.cuda.datahub.service.dto.UserDTO
