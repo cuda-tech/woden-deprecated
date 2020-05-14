@@ -13,24 +13,14 @@
  */
 package tech.cuda.datahub.webserver.controller
 
-import com.google.common.collect.Lists
 import tech.cuda.datahub.webserver.Response
 import tech.cuda.datahub.webserver.ResponseData
-import tech.cuda.datahub.webserver.auth.Jwt
-import tech.cuda.datahub.webserver.utils.Page
-import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.entity.add
-import me.liuwj.ktorm.entity.findById
-import me.liuwj.ktorm.schema.ColumnDeclaring
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
-import tech.cuda.datahub.service.dao.Files
-import tech.cuda.datahub.service.dao.Groups
-import tech.cuda.datahub.service.model.File
-import tech.cuda.datahub.service.model.Group
-import tech.cuda.datahub.service.model.dtype.FileType
-import java.time.LocalDateTime
-import javax.validation.constraints.NotBlank
+import tech.cuda.datahub.service.GroupService
+import tech.cuda.datahub.service.exception.NotFoundException
+import tech.cuda.datahub.service.i18n.I18N
+import java.lang.Exception
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -58,23 +48,9 @@ class GroupController {
     @GetMapping
     fun listing(@RequestParam(required = false, defaultValue = "1") page: Int,
                 @RequestParam(required = false, defaultValue = "9999") pageSize: Int,
-                @RequestParam(required = false) like: String?): ResponseData {
-        val groups = Groups.select().where {
-            val conditions = Lists.newArrayList<ColumnDeclaring<Boolean>>(Groups.isRemove eq false)
-            if (like != null && like.isNotBlank() && like.trim().toUpperCase() != "NULL") {
-                like.split("\\s+".toRegex()).forEach {
-                    conditions.add(Groups.name.like("%$it%"))
-                }
-            }
-            conditions.reduce { a, b -> a and b }
-        }
-        val count = groups.totalRecords
-        return Response.Success.WithData(mapOf(
-            "count" to count,
-            "groups" to groups.orderBy(Groups.id.asc()).limit(Page.offset(page, pageSize), pageSize).map {
-                Groups.createEntity(it)
-            }
-        ))
+                @RequestParam(required = false) like: String?): Map<String, Any> {
+        val (groups, count) = GroupService.listing(page, pageSize, like)
+        return Response.Success.data("groups" to groups, "count" to count)
     }
 
     /**
@@ -90,48 +66,34 @@ class GroupController {
      */
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
-        val group = Groups.findById(id)
-        return if (group == null || group.isRemove) {
-            Response.Failed.DataNotFound("group $id")
+        val group = GroupService.findById(id)
+        return if (group == null) {
+            Response.Failed.WithError("${I18N.group} $id ${I18N.notExistsOrHasBeenRemove}")
         } else {
-            Response.Success.WithData(mapOf("group" to group))
+            Response.Success.data("group" to group)
         }
     }
 
     /**
      * @api {post} /api/group 创建项目组
-     * @apiDescription 创建项目组，并创建项目组的根节点，返回创建后的项目组信息和根节点信息
+     * @apiDescription 创建项目组，并创建项目组的根节点，返回创建后的项目组信息
      * @apiGroup Group
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiParam {String} name 项目组名称
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"group":{"name":"xxxx","isRemove":false,"createTime":"2020-03-07 23:23:54","updateTime":"2020-03-07 23:23:54","id":40},"file":{"groupId":40,"ownerId":1,"name":"xxxx","type":"DIR","version":null,"parentId":null,"isRemove":false,"createTime":"2020-03-07 23:23:54","updateTime":"2020-03-07 23:23:54","id":70}}}
+     * {"status":"success","data":{"group":{"name":"xxxx","isRemove":false,"createTime":"2020-03-07 23:23:54","updateTime":"2020-03-07 23:23:54","id":40}}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
     @PostMapping
-    fun create(@NotBlank(message = "{required}") name: String): ResponseData {
-        val group = Group {
-            this.name = name
-            this.isRemove = false
-            this.createTime = LocalDateTime.now()
-            this.updateTime = LocalDateTime.now()
+    fun create(@RequestParam(required = true) name: String): ResponseData {
+        return try {
+            val group = GroupService.create(name)
+            Response.Success.data("group" to group)
+        } catch (e: Exception) {
+            Response.Failed.WithError(e.message ?: "服务异常")
         }
-        Groups.add(group)
-        val file = File {
-            this.groupId = group.id
-            this.ownerId = Jwt.currentUser.id
-            this.name = group.name
-            this.type = FileType.DIR
-            this.content = null
-            this.parentId = null
-            this.isRemove = false
-            this.createTime = LocalDateTime.now()
-            this.updateTime = LocalDateTime.now()
-        }
-        Files.add(file)
-        return Response.Success.WithData(mapOf("group" to group, "file" to file))
     }
 
     /**
@@ -147,22 +109,10 @@ class GroupController {
      * {"status":"failed","error":"group 7 not found"}
      */
     @PutMapping("{id}")
-    fun update(@PathVariable id: Int, @RequestParam(required = false) name: String?): ResponseData {
-        val group = Groups.findById(id)
-        return if (group == null || group.isRemove) {
-            Response.Failed.DataNotFound("group $id")
-        } else {
-            var update = false
-            if (name != null) {
-                group.name = name
-                update = true
-            }
-            if (update) {
-                group.updateTime = LocalDateTime.now()
-            }
-            group.flushChanges()
-            Response.Success.WithData(mapOf("group" to group))
-        }
+    fun update(@PathVariable id: Int, @RequestParam(required = false) name: String?) = try {
+        Response.Success.data("group" to GroupService.update(id, name))
+    } catch (e: NotFoundException) {
+        Response.Failed.WithError(e.message ?: "系统异常")
     }
 
     /**
@@ -177,15 +127,11 @@ class GroupController {
      * {"status":"failed","error":"错误信息"}
      */
     @DeleteMapping("{id}")
-    fun remove(@PathVariable id: Int): ResponseData {
-        val group = Groups.findById(id)
-        return if (group == null || group.isRemove) {
-            Response.Failed.DataNotFound("group $id")
-        } else {
-            group.isRemove = true
-            group.flushChanges()
-            Response.Success.Remove("group ${group.id}")
-        }
+    fun remove(@PathVariable id: Int) = try {
+        GroupService.remove(id)
+        Response.Success.message("项目组 $id 已被删除")
+    } catch (e: NotFoundException) {
+        Response.Failed.WithError(e.message ?: "系统异常")
     }
 
 }
