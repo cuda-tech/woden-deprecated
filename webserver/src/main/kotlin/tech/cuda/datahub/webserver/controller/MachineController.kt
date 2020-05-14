@@ -13,19 +13,12 @@
  */
 package tech.cuda.datahub.webserver.controller
 
-import com.google.common.collect.Lists
 import tech.cuda.datahub.webserver.Response
 import tech.cuda.datahub.webserver.ResponseData
-import tech.cuda.datahub.webserver.utils.Page
-import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.entity.add
-import me.liuwj.ktorm.entity.findById
-import me.liuwj.ktorm.schema.ColumnDeclaring
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
-import tech.cuda.datahub.service.dao.Machines
-import tech.cuda.datahub.service.model.Machine
-import java.time.LocalDateTime
+import tech.cuda.datahub.service.MachineService
+import java.lang.Exception
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -54,22 +47,8 @@ class MachineController {
     fun listing(@RequestParam(required = false, defaultValue = "1") page: Int,
                 @RequestParam(required = false, defaultValue = "9999") pageSize: Int,
                 @RequestParam(required = false) like: String?): ResponseData {
-        val machines = Machines.select().where {
-            val conditions = Lists.newArrayList<ColumnDeclaring<Boolean>>(Machines.isRemove eq false)
-            if (like != null && like.isNotBlank() && like.trim().toUpperCase() != "NULL") {
-                like.split("\\s+".toRegex()).forEach {
-                    conditions.add(Machines.hostname.like("%$it%"))
-                }
-            }
-            conditions.reduce { a, b -> a and b }
-        }
-        val count = machines.totalRecords
-        return Response.Success.WithData(mapOf(
-            "count" to count,
-            "machines" to machines.orderBy(Machines.id.asc()).limit(Page.offset(page, pageSize), pageSize).map {
-                Machines.createEntity(it)
-            }
-        ))
+        val (machines, count) = MachineService.listing(page, pageSize, like)
+        return Response.Success.data("machines" to machines, "count" to count)
     }
 
     /**
@@ -85,12 +64,7 @@ class MachineController {
      */
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
-        val machine = Machines.findById(id)
-        return if (machine == null || machine.isRemove) {
-            Response.Failed.DataNotFound("machine $id")
-        } else {
-            Response.Success.WithData(mapOf("machine" to machine))
-        }
+        return Response.Success.data("machine" to MachineService.findById(id))
     }
 
     /**
@@ -107,21 +81,13 @@ class MachineController {
      * {"status":"failed","error":"错误信息"}
      */
     @PostMapping
-    fun create(@RequestParam(required = true) hostname: String,
-               @RequestParam(required = true) ip: String): ResponseData {
-        val machine = Machine {
-            this.hostname = hostname
-            this.mac = ""
-            this.ip = ip
-            this.cpuLoad = 0
-            this.memLoad = 0
-            this.diskUsage = 0
-            this.isRemove = false
-            this.createTime = LocalDateTime.now()
-            this.updateTime = LocalDateTime.now()
+    fun create(@RequestParam(required = true) ip: String): ResponseData {
+        return try {
+            val machine = MachineService.create(ip)
+            Response.Success.data("machine" to machine)
+        } catch (e: Exception) {
+            Response.Failed.WithError(e.message ?: "服务错误")
         }
-        Machines.add(machine)
-        return Response.Success.WithData(mapOf("machine" to machine))
     }
 
     /**
@@ -138,28 +104,15 @@ class MachineController {
      * {"status":"failed","error":"machine 2 not found"}
      */
     @PutMapping("{id}")
-    fun update(@PathVariable id: Int, @RequestParam(required = false) hostname: String?,
+    fun update(@PathVariable id: Int,
+               @RequestParam(required = false) hostname: String?,
                @RequestParam(required = false) ip: String?): ResponseData {
-        val machine = Machines.findById(id)
-        return if (machine == null || machine.isRemove) {
-            Response.Failed.DataNotFound("machine $id")
-        } else {
-            var update = false
-            if (hostname != null) {
-                machine.hostname = hostname
-                update = true
-            }
-            if (ip != null) {
-                machine.ip = ip
-                update = true
-            }
-            if (update) {
-                machine.updateTime = LocalDateTime.now()
-            }
-            machine.flushChanges()
-            Response.Success.WithData(mapOf("machine" to machine))
+        return try {
+            val machine = MachineService.update(id, hostname = hostname, ip = ip)
+            Response.Success.data("machine" to machine)
+        } catch (e: Exception) {
+            Response.Failed.WithError(e.message ?: "服务错误")
         }
-
     }
 
     /**
@@ -175,15 +128,12 @@ class MachineController {
      */
     @DeleteMapping("{id}")
     fun remove(@PathVariable id: Int): ResponseData {
-        val machine = Machines.findById(id)
-        return if (machine == null || machine.isRemove) {
-            Response.Failed.DataNotFound("machine $id")
-        } else {
-            machine.isRemove = true
-            machine.flushChanges()
-            Response.Success.Remove("machine ${machine.id}")
+        return try {
+            MachineService.remove(id)
+            Response.Success.message("服务器 $id 已被删除")
+        } catch (e: Exception) {
+            Response.Failed.WithError(e.message ?: "服务错误")
         }
-
     }
 
 }
