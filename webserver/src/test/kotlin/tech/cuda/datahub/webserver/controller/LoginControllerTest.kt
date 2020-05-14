@@ -13,35 +13,26 @@
  */
 package tech.cuda.datahub.webserver.controller
 
-import tech.cuda.datahub.webserver.tools.Postman
-import tech.cuda.datahub.service.SchemaUtils
-import tech.cuda.datahub.webserver.tools.RestfulTestToolbox
-import org.junit.jupiter.api.*
-import tech.cuda.datahub.webserver.auth.Jwt
+import io.kotest.matchers.shouldBe
+import tech.cuda.datahub.webserver.RestfulTestToolbox
+import tech.cuda.datahub.service.UserService
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class LoginControllerTest : RestfulTestToolbox() {
-
-    @BeforeEach
-    fun rebuildDB() {
-        SchemaUtils.rebuildDB()
-        SchemaUtils.loadTable("datahub.users", this.javaClass.classLoader.getResource("tables/users.txt")!!.path)
-        this.postman = Postman(template)
-    }
+open class LoginControllerTest : RestfulTestToolbox("users") {
 
     @Test
     fun login() {
         val token = postman.post("/api/login", mapOf("username" to "root", "password" to "root")).shouldSuccess
-            .thenGetData["token"].toString()
-        Assertions.assertEquals("root", Jwt.getUserName(token))
+            .get<String>("token")
+        UserService.getUserByToken(token)?.name shouldBe "root"
 
         postman.post("/api/login", mapOf("username" to "root", "password" to "wrong password"))
-            .shouldFailed.withError("login failed")
+            .shouldFailed.withError("登录失败")
 
         postman.post("/api/login", mapOf("username" to "wrong username", "password" to "root"))
-            .shouldFailed.withError("login failed")
+            .shouldFailed.withError("登录失败")
     }
 }

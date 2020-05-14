@@ -14,13 +14,9 @@
 package tech.cuda.datahub.webserver.controller
 
 import tech.cuda.datahub.webserver.Response
-import tech.cuda.datahub.webserver.auth.Jwt
-import tech.cuda.datahub.webserver.auth.MD5
-import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.entity.findOne
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
-import tech.cuda.datahub.service.dao.Users
+import tech.cuda.datahub.service.UserService
 import javax.validation.constraints.NotBlank
 
 /**
@@ -48,11 +44,15 @@ class LoginController {
     @PostMapping
     fun login(@NotBlank(message = "{required}") username: String,
               @NotBlank(message = "{required}") password: String): Map<String, Any> {
-        val passwordMD5 = MD5.encrypt(password)
-        return if (Users.findOne { it.name eq username }?.password == passwordMD5) {
-            Response.Success.WithData(mapOf("token" to Jwt.sign(username, passwordMD5).orEmpty()))
-        } else {
-            Response.Failed.WithError("login failed")
+        return try {
+            val token = UserService.sign(username, password)
+            if (token != null) {
+                Response.Success.data("token" to token)
+            } else {
+                Response.Failed.WithError("登录失败")
+            }
+        } catch (e: Exception) {
+            Response.Failed.WithError(e.message ?: "服务异常")
         }
     }
 }
