@@ -21,7 +21,10 @@ import tech.cuda.datahub.service.dao.FileMirrorDAO
 import tech.cuda.datahub.service.dto.FileMirrorDTO
 import tech.cuda.datahub.service.dto.toFileMirrorDTO
 import tech.cuda.datahub.service.exception.NotFoundException
+import tech.cuda.datahub.service.exception.OperationNotAllowException
+import tech.cuda.datahub.service.i18n.I18N
 import tech.cuda.datahub.service.po.FileMirrorPO
+import tech.cuda.datahub.service.po.dtype.FileType
 import java.time.LocalDateTime
 
 /**
@@ -59,6 +62,9 @@ object FileMirrorService : Service(FileMirrorDAO) {
      * 如果给定的节点是文件夹类型，则抛出 IllegalArgumentException
      */
     fun create(fileId: Int, message: String): FileMirrorDTO {
+        if(FileService.findById(fileId)?.type == FileType.DIR){
+            throw OperationNotAllowException(I18N.dir, I18N.createMirrorNotAllow)
+        }
         val content = FileService.getContent(fileId).content!!
         val mirror = FileMirrorPO {
             this.fileId = fileId
@@ -79,7 +85,7 @@ object FileMirrorService : Service(FileMirrorDAO) {
     fun remove(id: Int) {
         val mirror = find<FileMirrorPO>(
             where = FileMirrorDAO.isRemove eq false and (FileMirrorDAO.id eq id)
-        ) ?: throw NotFoundException("镜像 $id 不存在或已被删除")
+        ) ?: throw NotFoundException(I18N.fileMirror, id, I18N.notExistsOrHasBeenRemove)
         mirror.isRemove = true
         mirror.updateTime = LocalDateTime.now()
         mirror.flushChanges()

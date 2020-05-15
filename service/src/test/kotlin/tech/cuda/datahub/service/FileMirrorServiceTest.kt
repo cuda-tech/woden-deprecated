@@ -20,6 +20,7 @@ import tech.cuda.datahub.TestWithMaria
 import tech.cuda.datahub.service.dao.FileDAO
 import tech.cuda.datahub.service.dao.FileMirrorDAO
 import tech.cuda.datahub.service.exception.NotFoundException
+import tech.cuda.datahub.service.exception.OperationNotAllowException
 import tech.cuda.datahub.toLocalDateTime
 import java.lang.IllegalArgumentException
 
@@ -128,9 +129,9 @@ class FileMirrorServiceTest : TestWithMaria({
             FileMirrorService.create(70, "nothing")
         }.message shouldBe "文件节点 70 不存在或已被删除"
 
-        shouldThrow<IllegalArgumentException> {
+        shouldThrow<OperationNotAllowException> {
             FileMirrorService.create(1, "nothing")
-        }.message shouldBe "文件夹无法获取 content"
+        }.message shouldBe "文件夹 禁止创建镜像"
     }
 
     "删除镜像" {
@@ -140,11 +141,11 @@ class FileMirrorServiceTest : TestWithMaria({
 
         shouldThrow<NotFoundException> {
             FileMirrorService.remove(5)
-        }.message shouldBe "镜像 5 不存在或已被删除"
+        }.message shouldBe "文件镜像 5 不存在或已被删除"
 
         shouldThrow<NotFoundException> {
             FileMirrorService.remove(301)
-        }.message shouldBe "镜像 301 不存在或已被删除"
+        }.message shouldBe "文件镜像 301 不存在或已被删除"
     }
 
 }, FileMirrorDAO, FileDAO)
