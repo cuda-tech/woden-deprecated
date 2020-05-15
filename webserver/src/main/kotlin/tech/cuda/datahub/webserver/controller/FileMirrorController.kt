@@ -17,8 +17,8 @@ import tech.cuda.datahub.webserver.Response
 import tech.cuda.datahub.webserver.ResponseData
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
+import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.FileMirrorService
-import tech.cuda.datahub.service.i18n.I18N
 import java.lang.Exception
 
 /**

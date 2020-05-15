@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.i18n
+package tech.cuda.datahub.i18n
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -36,5 +36,14 @@ data class Chinese(
     override val isValid: String = "未失效",
     override val childrenTask: String = "子任务",
     override val crossFileUpdateMirrorNotAllow: String = "禁止跨文件更新镜像",
-    override val invalidNotAllow: String = "禁止失效"
+    override val invalidNotAllow: String = "禁止失效",
+    override val dir: String = "文件夹",
+    override val createMirrorNotAllow: String = "禁止创建镜像",
+    override val parentNode: String = "父节点",
+    override val rootDir: String = "根目录",
+    override val mustBe: String = "必须是",
+    override val canNot: String = "不允许",
+    override val get: String = "获取",
+    override val content: String = "内容",
+    override val isNot: String = "不是"
 ) : Language

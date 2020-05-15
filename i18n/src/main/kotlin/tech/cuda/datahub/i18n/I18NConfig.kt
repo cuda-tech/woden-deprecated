@@ -11,32 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.i18n
+package tech.cuda.datahub.i18n
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-interface Language {
-    val user: String
-    val group: String
-    val machine: String
-    val file: String
-    val fileMirror: String
-    val task: String
-    val job: String
-    val instance: String
-    val notExistsOrHasBeenRemove: String
-    val operationNotAllow: String
-    val notBelongTo: String
-    val parentTask: String
-    val childrenTask: String
-    val invalid: String
-    val dependencyNotAllow: String
-    val removeNotAllow: String
-    val isValid: String
-    val crossFileUpdateMirrorNotAllow: String
-    val invalidNotAllow: String
+object I18NConfig {
+    val lang = Chinese() // todo: 动态读取配置文件
 }
-
-

@@ -18,10 +18,10 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.UserService
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
-import tech.cuda.datahub.service.i18n.I18N
 import tech.cuda.datahub.webserver.ResponseData
 
 /**

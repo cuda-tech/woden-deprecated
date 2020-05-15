@@ -3,3 +3,5 @@ include(':scheduler')
 include(':service')
 include(':annotation-processor')
 include(':webserver')
+include(':i18n')
+

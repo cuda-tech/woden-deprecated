@@ -11,14 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.config
+package tech.cuda.datahub.i18n
 
-import tech.cuda.datahub.service.i18n.Chinese
+import tech.cuda.datahub.i18n.I18NConfig.lang
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-object I18NConfig {
-    val lang = Chinese() // todo: 动态读取配置文件
+class I18N {
+    companion object : Language by lang
 }

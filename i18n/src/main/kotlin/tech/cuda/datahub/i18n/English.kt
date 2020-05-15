@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.i18n
+package tech.cuda.datahub.i18n
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -36,5 +36,14 @@ data class English(
     override val isValid: String = "is valid",
     override val childrenTask: String = "children task",
     override val crossFileUpdateMirrorNotAllow: String = "cross file update mirror not allow",
-    override val invalidNotAllow: String = "invalid not allow"
+    override val invalidNotAllow: String = "invalid not allow",
+    override val dir: String = "directory",
+    override val createMirrorNotAllow: String = "create mirror not allow",
+    override val parentNode: String = "parent node",
+    override val rootDir: String = "root directory",
+    override val mustBe: String = "must be",
+    override val canNot: String = "can not",
+    override val get: String = "get",
+    override val content: String = "content",
+    override val isNot: String = "is not"
 ) : Language
