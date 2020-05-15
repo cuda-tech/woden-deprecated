@@ -13,21 +13,13 @@
  */
 package tech.cuda.datahub.webserver.controller
 
-import com.google.common.collect.Lists
 import tech.cuda.datahub.webserver.Response
 import tech.cuda.datahub.webserver.ResponseData
-import tech.cuda.datahub.webserver.utils.Page
-import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.entity.add
-import me.liuwj.ktorm.entity.findById
-import me.liuwj.ktorm.schema.ColumnDeclaring
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
-import tech.cuda.datahub.service.dao.FileMirrors
-import tech.cuda.datahub.service.dao.Files
-import tech.cuda.datahub.service.model.FileMirror
-import tech.cuda.datahub.service.model.dtype.FileType
-import java.time.LocalDateTime
+import tech.cuda.datahub.service.FileMirrorService
+import tech.cuda.datahub.service.i18n.I18N
+import java.lang.Exception
 
 /**
  * 文件镜像接口，只允许查询、创建、删除(不建议)，不允许修改
@@ -58,25 +50,8 @@ class FileMirrorController {
                 @RequestParam(required = false, defaultValue = "1") page: Int,
                 @RequestParam(required = false, defaultValue = "9999") pageSize: Int,
                 @RequestParam(required = false) like: String?): ResponseData {
-        val fileMirrors = FileMirrors.select().where {
-            val conditions = Lists.newArrayList<ColumnDeclaring<Boolean>>(
-                FileMirrors.isRemove eq false,
-                FileMirrors.fileId eq fileId
-            )
-            if (like != null && like.isNotBlank() && like.trim().toUpperCase() != "NULL") {
-                like.split("\\s+".toRegex()).forEach {
-                    conditions.add(FileMirrors.message.like("%$it%"))
-                }
-            }
-            conditions.reduce { a, b -> a and b }
-        }
-        val count = fileMirrors.totalRecords
-        return Response.Success.WithData(mapOf(
-            "count" to count,
-            "fileMirrors" to fileMirrors.orderBy(FileMirrors.id.asc()).limit(Page.offset(page, pageSize), pageSize).map {
-                FileMirrors.createEntity(it)
-            }
-        ))
+        val (mirrors, count) = FileMirrorService.listing(fileId, page, pageSize, like)
+        return Response.Success.data("mirrors" to mirrors, "count" to count)
     }
 
 
@@ -93,13 +68,11 @@ class FileMirrorController {
      */
     @GetMapping("{id}")
     fun find(@PathVariable fileId: Int, @PathVariable id: Int): ResponseData {
-        val fileMirror = FileMirrors.select().where {
-            FileMirrors.fileId eq fileId and (FileMirrors.id eq id) and (FileMirrors.isRemove eq false)
-        }.map { FileMirrors.createEntity(it) }.firstOrNull()
-        return if (fileMirror == null) {
-            Response.Failed.DataNotFound("file mirror $id")
+        val mirror = FileMirrorService.findById(id)
+        return if (mirror == null) {
+            Response.Failed.WithError("${I18N.fileMirror} $id ${I18N.notExistsOrHasBeenRemove}")
         } else {
-            Response.Success.WithData(mapOf("fileMirror" to fileMirror))
+            Response.Success.data("mirror" to mirror)
         }
     }
 
@@ -117,22 +90,11 @@ class FileMirrorController {
      */
     @PostMapping
     fun create(@PathVariable fileId: Int, @RequestParam(required = true) message: String): ResponseData {
-        val file = Files.findById(fileId)
-        return if (file == null || file.isRemove) {
-            Response.Failed.DataNotFound("file $fileId")
-        } else if (file.type == FileType.DIR) {
-            Response.Failed.IllegalArgument("目录不允许创建镜像")
-        } else {
-            val fileMirror = FileMirror {
-                this.fileId = fileId
-                this.content = file.content ?: ""
-                this.message = message
-                this.isRemove = false
-                this.createTime = LocalDateTime.now()
-                this.updateTime = LocalDateTime.now()
-            }
-            FileMirrors.add(fileMirror)
-            return Response.Success.WithData(mapOf("fileMirror" to fileMirror))
+        return try {
+            val mirror = FileMirrorService.create(fileId, message)
+            Response.Success.data("mirror" to mirror)
+        } catch (e: Exception) {
+            Response.Failed.WithError(e.message ?: "服务异常")
         }
     }
 
@@ -149,16 +111,11 @@ class FileMirrorController {
      */
     @DeleteMapping("{id}")
     fun remove(@PathVariable fileId: Int, @PathVariable id: Int): ResponseData {
-        val fileMirror = FileMirrors.select().where {
-            FileMirrors.fileId eq fileId and (FileMirrors.id eq id) and (FileMirrors.isRemove eq false)
-        }.map { FileMirrors.createEntity(it) }.firstOrNull()
-        return if (fileMirror == null) {
-            Response.Failed.DataNotFound("file mirror $id")
-        } else {
-            fileMirror.isRemove = true
-            fileMirror.updateTime = LocalDateTime.now()
-            fileMirror.flushChanges()
-            Response.Success.Remove("file mirror $id")
+        return try {
+            FileMirrorService.remove(id)
+            Response.Success.message("文件镜像 $id 已被删除")
+        } catch (e: Exception) {
+            Response.Failed.WithError(e.message ?: "服务异常")
         }
     }
 
