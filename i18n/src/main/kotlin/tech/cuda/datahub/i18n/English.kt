@@ -45,5 +45,11 @@ data class English(
     override val canNot: String = "can not",
     override val get: String = "get",
     override val content: String = "content",
-    override val isNot: String = "is not"
+    override val isNot: String = "is not",
+    override val businessSolution: String = "business solution",
+    override val exists: String = "exists",
+    override val fileType: String = "file type",
+    override val updateNotAllow: String = "update not allow",
+    override val ipAddress: String = "ip address",
+    override val existsAlready: String = "exists already"
 ) : Language

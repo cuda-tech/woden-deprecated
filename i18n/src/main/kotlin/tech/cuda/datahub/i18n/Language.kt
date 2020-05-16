@@ -46,6 +46,12 @@ interface Language {
     val isNot: String
     val get: String
     val content: String
+    val businessSolution: String
+    val exists: String
+    val existsAlready: String
+    val fileType: String
+    val updateNotAllow: String
+    val ipAddress: String
 }
 
 

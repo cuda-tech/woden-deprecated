@@ -45,5 +45,11 @@ data class Chinese(
     override val canNot: String = "不允许",
     override val get: String = "获取",
     override val content: String = "内容",
-    override val isNot: String = "不是"
+    override val isNot: String = "不是",
+    override val businessSolution: String = "解决方案",
+    override val exists: String = "存在",
+    override val fileType: String = "文件类型",
+    override val updateNotAllow: String = "禁止更新",
+    override val ipAddress: String = "IP 地址",
+    override val existsAlready: String = "已存在"
 ) : Language
