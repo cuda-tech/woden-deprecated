@@ -178,7 +178,7 @@ class MachineServiceTest : TestWithMaria({
     "创建同 IP 服务器抛异常" {
         shouldThrow<DuplicateException> {
             MachineService.create("107.116.90.29")
-        }.message shouldBe "服务器地址 107.116.90.29 已存在"
+        }.message shouldBe "IP 地址 107.116.90.29 已存在"
     }
 
     "更新服务器信息" {
@@ -202,16 +202,16 @@ class MachineServiceTest : TestWithMaria({
     "更新不存在或已删除的服务器抛异常" {
         shouldThrow<NotFoundException> {
             MachineService.update(7, hostname = "anything")
-        }.message shouldBe "服务器 7 不存在或已被删除"
+        }.message shouldBe "调度服务器 7 不存在或已被删除"
         shouldThrow<NotFoundException> {
             MachineService.update(300, hostname = "anything")
-        }.message shouldBe "服务器 300 不存在或已被删除"
+        }.message shouldBe "调度服务器 300 不存在或已被删除"
     }
 
     "更新已存在的 IP 抛异常" {
         shouldThrow<DuplicateException> {
             MachineService.update(1, ip = "17.212.169.100")
-        }.message shouldBe "服务器地址 17.212.169.100 已存在"
+        }.message shouldBe "IP 地址 17.212.169.100 已存在"
     }
 
     "删除服务器" {
@@ -223,11 +223,11 @@ class MachineServiceTest : TestWithMaria({
     "删除不存在或已删除的服务器抛异常" {
         shouldThrow<NotFoundException> {
             MachineService.remove(7)
-        }.message shouldBe "服务器 7 不存在或已被删除"
+        }.message shouldBe "调度服务器 7 不存在或已被删除"
 
         shouldThrow<NotFoundException> {
             MachineService.remove(300)
-        }.message shouldBe "服务器 300 不存在或已被删除"
+        }.message shouldBe "调度服务器 300 不存在或已被删除"
     }
 
 }, MachineDAO)

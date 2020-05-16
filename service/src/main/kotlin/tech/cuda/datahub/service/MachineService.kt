@@ -13,10 +13,12 @@
  */
 package tech.cuda.datahub.service
 
+import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.asc
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.entity.add
+import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.dao.MachineDAO
 import tech.cuda.datahub.service.dto.MachineDTO
 import tech.cuda.datahub.service.dto.toMachineDTO
@@ -31,6 +33,10 @@ import java.time.LocalDateTime
  */
 object MachineService : Service(MachineDAO) {
 
+    /**
+     * 分页查询服务器信息
+     * 如果提供了[pattern]，则对 hostname 进行模糊查询
+     */
     fun listing(page: Int, pageSize: Int, pattern: String? = null): Pair<List<MachineDTO>, Int> {
         val (machines, count) = batch<MachinePO>(
             pageId = page,
@@ -42,14 +48,31 @@ object MachineService : Service(MachineDAO) {
         return machines.map { it.toMachineDTO() } to count
     }
 
+    /**
+     * 通过[id]查找服务器信息
+     * 如果找不到或已被删除，则返回 null
+     */
     fun findById(id: Int) = find<MachinePO>(MachineDAO.id eq id and (MachineDAO.isRemove eq false))?.toMachineDTO()
 
+    /**
+     * 查找 hostname 为[name]的服务器
+     * 如果找不到或已被删除，则返回 null
+     */
     fun findByHostname(name: String) = find<MachinePO>(MachineDAO.hostname eq name and (MachineDAO.isRemove eq false))?.toMachineDTO()
 
+    /**
+     * 通过[ip]查找服务器信息
+     * 如果找不到或已被删除，则返回 null
+     */
     fun findByIP(ip: String) = find<MachinePO>(MachineDAO.isRemove eq false and (MachineDAO.ip eq ip))?.toMachineDTO()
 
-    fun create(ip: String): MachineDTO {
-        findByIP(ip)?.let { throw DuplicateException("服务器地址 $ip 已存在") }
+    /**
+     * 创建服务器
+     * 如果提供的[ip]已存在，则抛出 DuplicateException
+     * 服务器的 hostname, mac, cpu/内存/磁盘 由 Tracker 自行获取，因此不需要提供
+     */
+    fun create(ip: String): MachineDTO = Database.global.useTransaction {
+        findByIP(ip)?.let { throw DuplicateException(I18N.ipAddress, ip, I18N.existsAlready) }
         val machine = MachinePO {
             this.ip = ip
             this.isRemove = false
@@ -65,6 +88,11 @@ object MachineService : Service(MachineDAO) {
         return machine.toMachineDTO()
     }
 
+    /**
+     * 更新服务器信息
+     * 如果给定的服务器[id]不存在或已被删除，则抛出 NotFoundException
+     * 如果试图更新[ip], 且[ip]已存在，则抛出 DuplicateException
+     */
     fun update(
         id: Int,
         ip: String? = null,
@@ -73,11 +101,11 @@ object MachineService : Service(MachineDAO) {
         cpuLoad: Int? = null,
         memLoad: Int? = null,
         diskUsage: Int? = null
-    ): MachineDTO {
+    ): MachineDTO = Database.global.useTransaction {
         val machine = find<MachinePO>(MachineDAO.id eq id and (MachineDAO.isRemove eq false))
-            ?: throw NotFoundException("服务器 $id 不存在或已被删除")
+            ?: throw NotFoundException(I18N.machine, id, I18N.notExistsOrHasBeenRemove)
         ip?.let {
-            findByIP(ip)?.let { throw DuplicateException("服务器地址 $ip 已存在") }
+            findByIP(ip)?.let { throw DuplicateException(I18N.ipAddress, ip, I18N.existsAlready) }
             machine.ip = ip
         }
         hostname?.let { machine.hostname = hostname }
@@ -92,9 +120,13 @@ object MachineService : Service(MachineDAO) {
         return machine.toMachineDTO()
     }
 
-    fun remove(id: Int) {
+    /**
+     * 删除服务器[id]
+     * 如果指定的服务器[id]不存在或已被删除，则抛出 NotFoundException
+     */
+    fun remove(id: Int) = Database.global.useTransaction {
         val machine = find<MachinePO>(MachineDAO.id eq id and (MachineDAO.isRemove eq false))
-            ?: throw NotFoundException("服务器 $id 不存在或已被删除")
+            ?: throw NotFoundException(I18N.machine, id, I18N.notExistsOrHasBeenRemove)
         machine.isRemove = true
         machine.updateTime = LocalDateTime.now()
         machine.flushChanges()

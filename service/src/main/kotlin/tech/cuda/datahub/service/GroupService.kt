@@ -13,10 +13,12 @@
  */
 package tech.cuda.datahub.service
 
+import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.asc
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.entity.add
+import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.dao.GroupDAO
 import tech.cuda.datahub.service.dto.GroupDTO
 import tech.cuda.datahub.service.dto.toGroupDTO
@@ -31,6 +33,10 @@ import java.time.LocalDateTime
  */
 object GroupService : Service(GroupDAO) {
 
+    /**
+     * 分页查询项目组信息
+     * 如果提供了[pattern]，则进行模糊查询
+     */
     fun listing(page: Int, pageSize: Int, pattern: String? = null): Pair<List<GroupDTO>, Int> {
         val (groups, count) = batch<GroupPO>(
             pageId = page,
@@ -42,12 +48,26 @@ object GroupService : Service(GroupDAO) {
         return groups.map { it.toGroupDTO() } to count
     }
 
+    /**
+     * 通过[id]查找项目组信息
+     * 如果找不到或已被删除，则返回 null
+     */
     fun findById(id: Int) = find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.id eq id))?.toGroupDTO()
 
+    /**
+     * 通过[name]查找项目组信息
+     * 如果找不到或已被删除，则返回 null
+     */
     fun findByName(name: String) = find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.name eq name))?.toGroupDTO()
 
-    fun create(name: String): GroupDTO {
-        find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.name eq name))?.let { throw DuplicateException("项目组 $name 已存在") }
+    /**
+     * 创建名称为[name]项目组
+     * 如果已存在名称为[name]的项目组，则抛出 DuplicateException
+     */
+    fun create(name: String): GroupDTO = Database.global.useTransaction {
+        find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.name eq name))?.let {
+            throw DuplicateException(I18N.group, it.name, I18N.existsAlready)
+        }
         val group = GroupPO {
             this.name = name
             this.isRemove = false
@@ -58,11 +78,16 @@ object GroupService : Service(GroupDAO) {
         return group.toGroupDTO()
     }
 
-    fun update(id: Int, name: String? = null): GroupDTO {
+    /**
+     * 更新项目组[id]信息
+     * 如果给定的项目组[id]不存在或已被删除，则抛出 NotFoundException
+     * 如果试图更新[name]，且已存在名称为[name]的项目组，则抛出 DuplicateException
+     */
+    fun update(id: Int, name: String? = null): GroupDTO = Database.global.useTransaction {
         val group = find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.id eq id))
-            ?: throw NotFoundException("项目组 $id 不存在或已被删除")
+            ?: throw NotFoundException(I18N.group, id, I18N.notExistsOrHasBeenRemove)
         name?.let {
-            findByName(name)?.let { throw DuplicateException("项目组 $name 已存在") }
+            findByName(name)?.let { throw DuplicateException(I18N.group, name, I18N.existsAlready) }
             group.name = name
         }
         anyNotNull(name)?.let {
@@ -72,9 +97,13 @@ object GroupService : Service(GroupDAO) {
         return group.toGroupDTO()
     }
 
-    fun remove(id: Int) {
+    /**
+     * 删除项目组[id]
+     * 如果指定的项目组[id]不存在或已被删除，则抛出 NotFoundException
+     */
+    fun remove(id: Int) = Database.global.useTransaction {
         val group = find<GroupPO>(where = (GroupDAO.isRemove eq false) and (GroupDAO.id eq id))
-            ?: throw NotFoundException("项目组 $id 不存在或已被删除")
+            ?: throw NotFoundException(I18N.group, id, I18N.notExistsOrHasBeenRemove)
         group.isRemove = true
         group.updateTime = LocalDateTime.now()
         group.flushChanges()

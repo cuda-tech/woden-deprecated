@@ -16,15 +16,16 @@ package tech.cuda.datahub.service
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.add
+import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.dao.FileDAO
 import tech.cuda.datahub.service.dto.*
 import tech.cuda.datahub.service.dto.toFileDTO
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
+import tech.cuda.datahub.service.exception.OperationNotAllowException
 import tech.cuda.datahub.service.exception.PermissionException
 import tech.cuda.datahub.service.po.FilePO
 import tech.cuda.datahub.service.po.dtype.FileType
-import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 
 /**
@@ -91,17 +92,17 @@ object FileService : Service(FileDAO) {
      * 获取给定文件节点[id]的父路径
      * 如果给定的文件节点不存在或已被删除，则抛出 NotFoundException
      * 如果文件节点的任何一个父节点不存在或已被删除，则抛出 NotFoundException
-     * 如果文件节点的任何一个父节点类型不是文件夹，则抛出 IllegalArgumentException
+     * 如果文件节点的任何一个父节点类型不是文件夹，则抛出 OperationNotAllowException
      */
     fun listParent(id: Int): Pair<List<FileDTO>, Int> {
         var currentFile = find<FilePO>(where = FileDAO.isRemove eq false and (FileDAO.id eq id))
-            ?: throw NotFoundException("文件节点 $id 不存在或已被删除")
+            ?: throw NotFoundException(I18N.file, id, I18N.notExistsOrHasBeenRemove)
         val parentList = mutableListOf<FilePO>()
-        while (!currentFile.isRootDir()) { // kotlin 的类型推断有点问题，这里需要强制声明 currentFile 非 NULL
+        while (!currentFile.isRootDir()) {
             val parent = find<FilePO>(where = FileDAO.isRemove eq false and (FileDAO.id eq currentFile.parentId!!))  // 非根节点一定有 parent ID
-                ?: throw NotFoundException("文件节点 ${currentFile.id} 父节点不存在或已被删除")
+                ?: throw NotFoundException(I18N.file, currentFile.id, I18N.parentNode, I18N.notExistsOrHasBeenRemove)
             when {
-                parent.type != FileType.DIR -> throw IllegalArgumentException("父节点必须是文件夹类型")
+                parent.type != FileType.DIR -> throw OperationNotAllowException(I18N.parentNode, I18N.mustBe, I18N.dir)
                 else -> {
                     parentList.add(0, parent)
                     currentFile = parent
@@ -124,7 +125,7 @@ object FileService : Service(FileDAO) {
     fun findRootByGroupId(groupId: Int): FileDTO {
         val root = find<FilePO>(
             where = (FileDAO.isRemove eq false) and (FileDAO.groupId eq groupId) and (FileDAO.parentId.isNull())
-        ) ?: throw NotFoundException("项目组 $groupId 根目录不存在或已被删除")
+        ) ?: throw NotFoundException(I18N.group, groupId, I18N.rootDir, I18N.notExistsOrHasBeenRemove)
         return root.toFileDTO()
     }
 
@@ -132,23 +133,23 @@ object FileService : Service(FileDAO) {
     /**
      * 获取给定文件节点[id]的文件内容
      * 如果给定的节点[id]不存在或已被删除，则抛出 NotFoundException
-     * 如果给定的节点是文件夹类型，则抛出 IllegalArgumentException
+     * 如果给定的节点是文件夹类型，则抛出 OperationNotAllowException
      */
     fun getContent(id: Int): FileContentDTO {
         val file = find<FilePO>(FileDAO.isRemove eq false and (FileDAO.id eq id))
-            ?: throw NotFoundException("文件节点 $id 不存在或已被删除")
-        if (file.type == FileType.DIR) throw IllegalArgumentException("文件夹无法获取 content")
+            ?: throw NotFoundException(I18N.file, id, I18N.notExistsOrHasBeenRemove)
+        if (file.type == FileType.DIR) throw OperationNotAllowException(I18N.dir, I18N.canNot, I18N.get, I18N.content)
         return file.toFileContentDTO()
     }
 
     /**
      * 创建项目组的根目录
      */
-    internal fun createRoot(groupId: Int, ownerId: Int): FilePO {
+    internal fun createRoot(groupId: Int, ownerId: Int): FilePO = Database.global.useTransaction {
         val file = FilePO {
             this.groupId = groupId
             this.ownerId = ownerId
-            this.name = "解决方案"
+            this.name = I18N.businessSolution
             this.type = FileType.DIR
             this.content = null
             this.parentId = null
@@ -164,24 +165,25 @@ object FileService : Service(FileDAO) {
     /**
      * 创建文件节点
      * 如果父节点[parentId]不存在或已被删除，则抛出 NotFoundException
-     * 如果父节点[parentId]不是文件夹，则抛出 IllegalArgumentException
+     * 如果父节点[parentId]不是文件夹，则抛出 OperationNotAllowException
      * 如果父节点[parentId]下已存在类型为[type]的同名[name]文件，则抛出 DuplicateException
      * 如果项目组[groupId]不存在或已被删除，则抛出 NotFoundException
      * 如果用户[user]不存在或已被删除，则抛出 NotFoundException
      * 如果用户[user]不归属[groupId]项目组，则抛出 PermissionException
      */
-    fun create(groupId: Int, user: UserDTO, name: String, type: FileType, parentId: Int): FileDTO {
-        val parent = findById(parentId) ?: throw NotFoundException("父节点 $parentId 不存在或已被删除")
-        if (parent.type != FileType.DIR) throw IllegalArgumentException("父节点 $parentId 不是文件夹")
-        GroupService.findById(groupId) ?: throw NotFoundException("项目组 $groupId 不存在或已被删除")
-        UserService.findById(user.id) ?: throw NotFoundException("用户 ${user.id} 不存在或已被删除")
-        if (!user.groups.contains(groupId)) throw PermissionException("用户 ${user.id} 不是项目组 $groupId 用户")
+    fun create(groupId: Int, user: UserDTO, name: String, type: FileType, parentId: Int): FileDTO = Database.global.useTransaction {
+        val parent = findById(parentId)
+            ?: throw NotFoundException(I18N.parentNode, parentId, I18N.notExistsOrHasBeenRemove)
+        if (parent.type != FileType.DIR) throw OperationNotAllowException(I18N.parentNode, parentId, I18N.isNot, I18N.dir)
+        GroupService.findById(groupId) ?: throw NotFoundException(I18N.group, groupId, I18N.notExistsOrHasBeenRemove)
+        UserService.findById(user.id) ?: throw NotFoundException(I18N.user, user.id, I18N.notExistsOrHasBeenRemove)
+        if (!user.groups.contains(groupId)) throw PermissionException(I18N.user, user.id, I18N.notBelongTo, I18N.group, groupId)
         find<FilePO>(
             where = FileDAO.isRemove eq false
                 and (FileDAO.parentId eq parentId)
                 and (FileDAO.name eq name)
                 and (FileDAO.type eq type)
-        )?.let { throw DuplicateException("文件夹 $parentId 下已存在类型为 $type 的节点 $name") }
+        )?.let { throw DuplicateException(I18N.dir, parentId, I18N.exists, I18N.fileType, type, I18N.file, name) }
         val file = FilePO {
             this.groupId = groupId
             this.ownerId = ownerId
@@ -200,22 +202,29 @@ object FileService : Service(FileDAO) {
     /**
      * 更新指定[id]的文件属性
      * 如果指定的文件节点不存在或已被删除，则抛出 NotFoundException
-     * 如果指定的文件节点是项目组的根节点，则抛出 IllegalArgumentException
+     * 如果指定的文件节点是项目组的根节点，则抛出 OperationNotAllowException
      * 如果试图更新[ownerId]，且该用户不存在或已被删除，则抛出 NotFoundException
      * 如果试图更新[ownerId]，且该用户不拥有该文件所在项目空间的权限，则抛出 PermissionException
      * 如果试图更新[name]，且父节点下已经存在同名&同类型的节点，则抛出 DuplicateException
-     * 如果试图更新[content]，且给定的节点是文件夹，则抛出 IllegalArgumentException
+     * 如果试图更新[content]，且给定的节点是文件夹，则抛出 OperationNotAllowException
      * 如果试图更新[parentId]，且父节点不存在或已删除，则抛出 NotFoundException
-     * 如果试图更新[parentId]，且父节点不是文件夹，则抛出 IllegalArgumentException
+     * 如果试图更新[parentId]，且父节点不是文件夹，则抛出 OperationNotAllowException
      * 如果试图更新[parentId]，且父节点与当前文件归属不同的项目，则抛出 PermissionException
      */
-    fun update(id: Int, ownerId: Int? = null, name: String? = null, content: String? = null, parentId: Int? = null): FileDTO {
+    fun update(
+        id: Int,
+        ownerId: Int? = null,
+        name: String? = null,
+        content: String? = null,
+        parentId: Int? = null
+    ): FileDTO = Database.global.useTransaction {
         val file = find<FilePO>(FileDAO.isRemove eq false and (FileDAO.id eq id))
-            ?: throw NotFoundException("文件节点 $id 不存在或已被删除")
-        if (file.isRootDir()) throw IllegalArgumentException("根节点不允许更改")
+            ?: throw NotFoundException(I18N.file, id, I18N.notExistsOrHasBeenRemove)
+        if (file.isRootDir()) throw OperationNotAllowException(I18N.rootDir, I18N.updateNotAllow)
         ownerId?.let {
-            val user = UserService.findById(ownerId) ?: throw NotFoundException("用户 $ownerId 不存在或已被删除")
-            if (!user.groups.contains(file.groupId)) throw PermissionException("用户 $ownerId 不是项目组 ${file.groupId} 用户")
+            val user = UserService.findById(ownerId)
+                ?: throw NotFoundException(I18N.user, ownerId, I18N.notExistsOrHasBeenRemove)
+            if (!user.groups.contains(file.groupId)) throw PermissionException(I18N.user, ownerId, I18N.notBelongTo, I18N.group, file.groupId)
             file.ownerId = ownerId
         }
         name?.let {
@@ -224,17 +233,18 @@ object FileService : Service(FileDAO) {
                     and (FileDAO.parentId eq file.parentId!!) // 前面已经检查过非根节点，因此 parentID 一定不为 null
                     and (FileDAO.name eq name)
                     and (FileDAO.type eq file.type)
-            )?.apply { throw DuplicateException("文件夹 ${file.parentId} 下已存在类型为 ${file.type} 的节点 $name") }
+            )?.apply { throw DuplicateException(I18N.dir, file.id, I18N.exists, I18N.fileType, file.type, I18N.file, name) }
             file.name = name
         }
         content?.let {
-            if (file.type == FileType.DIR) throw IllegalArgumentException("文件夹禁止更新 content 属性")
+            if (file.type == FileType.DIR) throw OperationNotAllowException(I18N.dir, I18N.content, I18N.updateNotAllow)
             file.content = content
         }
         parentId?.let {
-            val parent = findById(parentId) ?: throw NotFoundException("父节点 $parentId 不存在或已被删除")
-            if (parent.type != FileType.DIR) throw IllegalArgumentException("父节点 $parentId 不是文件夹")
-            if (parent.groupId != file.groupId) throw PermissionException("父节点与当前节点的项目组不同")
+            val parent = findById(parentId)
+                ?: throw NotFoundException(I18N.parentNode, parentId, I18N.notExistsOrHasBeenRemove)
+            if (parent.type != FileType.DIR) throw OperationNotAllowException(I18N.parentNode, parentId, I18N.isNot, I18N.dir)
+            if (parent.groupId != file.groupId) throw PermissionException(I18N.parentNode, parent.id, I18N.notBelongTo, I18N.group, file.groupId)
             file.parentId = parentId
         }
         anyNotNull(ownerId, name, content, parentId)?.let {
@@ -262,12 +272,12 @@ object FileService : Service(FileDAO) {
      * 删除文件指定[id]的文件节点
      * 如果该节点的类型是文件夹，则递归地删除它下面的所有节点
      * 如果该节点不存在或已删除，则抛出 NotFoundException
-     * 如果该节点是根节点，则抛出 IllegalArgumentException
+     * 如果该节点是根节点，则抛出 OperationNotAllowException
      */
-    fun remove(id: Int) {
+    fun remove(id: Int) = Database.global.useTransaction {
         val file = find<FilePO>(FileDAO.isRemove eq false and (FileDAO.id eq id))
-            ?: throw NotFoundException("文件节点 $id 不存在或已被删除")
-        if (file.isRootDir()) throw IllegalArgumentException("根节点不允许删除")
+            ?: throw NotFoundException(I18N.file, id, I18N.notExistsOrHasBeenRemove)
+        if (file.isRootDir()) throw OperationNotAllowException(I18N.rootDir, I18N.removeNotAllow)
         file.isRemove = true
         file.updateTime = LocalDateTime.now()
         if (file.type == FileType.DIR) {

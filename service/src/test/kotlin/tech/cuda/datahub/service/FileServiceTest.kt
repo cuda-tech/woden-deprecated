@@ -27,6 +27,7 @@ import tech.cuda.datahub.service.dao.UserDAO
 import tech.cuda.datahub.service.dto.UserDTO
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
+import tech.cuda.datahub.service.exception.OperationNotAllowException
 import tech.cuda.datahub.service.exception.PermissionException
 import tech.cuda.datahub.service.po.dtype.FileType
 import java.lang.IllegalArgumentException
@@ -154,11 +155,11 @@ class FileServiceTest : TestWithMaria({
 
         shouldThrow<NotFoundException> {
             FileService.findRootByGroupId(7)
-        }.message shouldBe "项目组 7 根目录不存在或已被删除"
+        }.message shouldBe "项目组 7 根目录 不存在或已被删除"
 
         shouldThrow<NotFoundException> {
             FileService.findRootByGroupId(40)
-        }.message shouldBe "项目组 40 根目录不存在或已被删除"
+        }.message shouldBe "项目组 40 根目录 不存在或已被删除"
     }
 
     "获取文件内容" {
@@ -175,9 +176,9 @@ class FileServiceTest : TestWithMaria({
         }.message shouldBe "文件节点 70 不存在或已被删除"
 
         // 文件夹
-        shouldThrow<IllegalArgumentException> {
+        shouldThrow<OperationNotAllowException> {
             FileService.getContent(4)
-        }.message shouldBe "文件夹无法获取 content"
+        }.message shouldBe "文件夹 不允许 获取 内容"
     }
 
     "新建文件节点" {
@@ -218,7 +219,7 @@ class FileServiceTest : TestWithMaria({
         }.message shouldBe "父节点 21 不存在或已被删除"
 
         // 父节点不是文件夹
-        shouldThrow<IllegalArgumentException> {
+        shouldThrow<OperationNotAllowException> {
             FileService.create(
                 groupId = 1,
                 user = UserService.findById(1)!!,
@@ -226,7 +227,7 @@ class FileServiceTest : TestWithMaria({
                 type = FileType.SQL,
                 parentId = 2
             )
-        }.message shouldBe "父节点 2 不是文件夹"
+        }.message shouldBe "父节点 2 不是 文件夹"
 
         // 项目组不存在
         shouldThrow<NotFoundException> {
@@ -266,7 +267,7 @@ class FileServiceTest : TestWithMaria({
                 type = FileType.SQL,
                 parentId = 1
             )
-        }.message shouldBe "用户 3 不是项目组 1 用户"
+        }.message shouldBe "用户 3 不归属于 项目组 1"
 
         // 同目录下的同类型同名文件
         shouldThrow<DuplicateException> {
@@ -277,7 +278,7 @@ class FileServiceTest : TestWithMaria({
                 type = FileType.SQL,
                 parentId = 1
             )
-        }.message shouldBe "文件夹 1 下已存在类型为 SQL 的节点 test create"
+        }.message shouldBe "文件夹 1 存在 文件类型 SQL 文件节点 test create"
     }
 
     "更新文件节点" {
@@ -306,9 +307,9 @@ class FileServiceTest : TestWithMaria({
         }.message shouldBe "文件节点 70 不存在或已被删除"
 
         // 根节点
-        shouldThrow<IllegalArgumentException> {
+        shouldThrow<OperationNotAllowException> {
             FileService.update(56, ownerId = 1)
-        }.message shouldBe "根节点不允许更改"
+        }.message shouldBe "根目录 禁止更新"
 
         // 已被删除的用户
         shouldThrow<NotFoundException> {
@@ -318,17 +319,17 @@ class FileServiceTest : TestWithMaria({
         // 没权限的用户
         shouldThrow<PermissionException> {
             FileService.update(3, ownerId = 12)
-        }.message shouldBe "用户 12 不是项目组 1 用户"
+        }.message shouldBe "用户 12 不归属于 项目组 1"
 
         // 同目录下同类型同名
         shouldThrow<DuplicateException> {
             FileService.update(3, name = "yijlstlq")
-        }.message shouldBe "文件夹 4 下已存在类型为 SQL 的节点 yijlstlq"
+        }.message shouldBe "文件夹 3 存在 文件类型 SQL 文件节点 yijlstlq"
 
         // 更新文件夹 content
-        shouldThrow<IllegalArgumentException> {
+        shouldThrow<OperationNotAllowException> {
             FileService.update(4, content = "anything")
-        }.message shouldBe "文件夹禁止更新 content 属性"
+        }.message shouldBe "文件夹 内容 禁止更新"
 
         // 父节点已被删除
         shouldThrow<NotFoundException> {
@@ -336,14 +337,14 @@ class FileServiceTest : TestWithMaria({
         }.message shouldBe "父节点 80 不存在或已被删除"
 
         // 父节点不是文件夹
-        shouldThrow<IllegalArgumentException> {
+        shouldThrow<OperationNotAllowException> {
             FileService.update(3, parentId = 6)
-        }.message shouldBe "父节点 6 不是文件夹"
+        }.message shouldBe "父节点 6 不是 文件夹"
 
         // 跨项目组
         shouldThrow<PermissionException> {
             FileService.update(3, parentId = 15)
-        }.message shouldBe "父节点与当前节点的项目组不同"
+        }.message shouldBe "父节点 15 不归属于 项目组 1"
     }
 
     "逻辑删除文件节点" {
@@ -376,9 +377,9 @@ class FileServiceTest : TestWithMaria({
             FileService.remove(70)
         }.message shouldBe "文件节点 70 不存在或已被删除"
 
-        shouldThrow<IllegalArgumentException> {
+        shouldThrow<OperationNotAllowException> {
             FileService.remove(56)
-        }.message shouldBe "根节点不允许删除"
+        }.message shouldBe "根目录 禁止删除"
     }
 
 }, FileDAO, GroupDAO, UserDAO)
