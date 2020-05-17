@@ -189,6 +189,7 @@ class FileServiceTest : TestWithMaria({
             type = FileType.SQL,
             parentId = 1
         )
+        sqlFile.ownerId shouldBe 1
         sqlFile.id shouldBe 70
         sqlFile.name shouldBe "test create"
         sqlFile.type shouldBe FileType.SQL
@@ -197,11 +198,12 @@ class FileServiceTest : TestWithMaria({
         // 创建同目录下同名但不同类型的文件
         val sparkFile = FileService.create(
             groupId = 1,
-            user = UserService.findById(1)!!,
+            user = UserService.findById(2)!!,
             name = "test create",
             type = FileType.SPARK,
             parentId = 1
         )
+        sparkFile.ownerId shouldBe 2
         sparkFile.id shouldBe 71
         sparkFile.name shouldBe "test create"
         sparkFile.type shouldBe FileType.SPARK

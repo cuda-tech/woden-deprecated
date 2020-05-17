@@ -186,7 +186,7 @@ object FileService : Service(FileDAO) {
         )?.let { throw DuplicateException(I18N.dir, parentId, I18N.exists, I18N.fileType, type, I18N.file, name) }
         val file = FilePO {
             this.groupId = groupId
-            this.ownerId = ownerId
+            this.ownerId = user.id
             this.name = name
             this.type = type
             this.content = type.initVal(user.name, LocalDateTime.now())
