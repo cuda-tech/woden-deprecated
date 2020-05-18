@@ -13,275 +13,291 @@
  */
 package tech.cuda.datahub.webserver.controller
 
-import tech.cuda.datahub.webserver.tools.Postman
-import tech.cuda.datahub.service.SchemaUtils
-import tech.cuda.datahub.webserver.tools.RestfulTestToolbox
-import org.junit.jupiter.api.*
-import tech.cuda.datahub.service.model.dtype.FileType
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.ints.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import tech.cuda.datahub.service.dto.FileContentDTO
+import tech.cuda.datahub.service.dto.FileDTO
+import tech.cuda.datahub.service.po.dtype.FileType
+import tech.cuda.datahub.toLocalDateTime
+import tech.cuda.datahub.webserver.RestfulTestToolbox
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class FileControllerTest : RestfulTestToolbox() {
-
-    @BeforeEach
-    fun rebuildDB() {
-        SchemaUtils.rebuildDB()
-        SchemaUtils.loadTable("datahub.users", this.javaClass.classLoader.getResource("tables/users.txt")!!.path)
-        SchemaUtils.loadTable("datahub.files", this.javaClass.classLoader.getResource("tables/files.txt")!!.path)
-        SchemaUtils.loadTable("datahub.groups", this.javaClass.classLoader.getResource("tables/groups.txt")!!.path)
-        this.postman = Postman(template)
-        this.postman.login()
-    }
+open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
 
     @Test
-    fun listingRootDir() {
-        val rootDirCount = 8
-        postman.get("/api/file").shouldSuccess.thenGetData.andCheckCount(rootDirCount)
-            .thenGetListOf("files").andCheckSize(rootDirCount).forEach {
-                it["type"] shouldBe FileType.DIR.toString()
-                it["content"] shouldBe null
+    fun listing() {
+        // 一级目录
+        with(postman.get("/api/file", mapOf("parentId" to 1)).shouldSuccess) {
+            val files = this.getList<FileDTO>("files")
+            val count = this.get<Int>("count")
+            files.size shouldBe 5
+            count shouldBe 5
+            files.map { it.type } shouldContainExactly listOf(FileType.DIR, FileType.SQL, FileType.SQL, FileType.SQL, FileType.SPARK)
+            files.map { it.name } shouldContainExactly listOf("zwgjydgn", "kniovyqn", "ladlehnr", "yoglnkyc", "jldwzlys")
+            files.forEach {
+                it.groupId shouldBe 1
+                it.parentId shouldBe 1
             }
-    }
+        }
 
-    @Test
-    fun listingFirstOrder() {
-        val fileNodeCount = 5
-        val types = listOf("DIR", "SQL", "SQL", "SQL", "SPARK")
-        val names = listOf("zwgjydgn", "kniovyqn", "ladlehnr", "yoglnkyc", "jldwzlys")
-        postman.get("/api/file", mapOf("parentId" to 1)).shouldSuccess.thenGetData.andCheckCount(fileNodeCount)
-            .thenGetListOf("files").andCheckSize(fileNodeCount).forEachIndexed { i, it ->
-                it["groupId"] shouldBe 1
-                it["parentId"] shouldBe 1
-                it["type"] shouldBe types[i]
-                it["name"] shouldBe names[i]
+        // 二级目录
+        with(postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess) {
+            val files = this.getList<FileDTO>("files")
+            val count = this.get<Int>("count")
+            files.size shouldBe 3
+            count shouldBe 3
+            files.map { it.type } shouldContainExactly listOf(FileType.DIR, FileType.SQL, FileType.SPARK)
+            files.map { it.name } shouldContainExactly listOf("zvdjsdhz", "yijlstlq", "yzhamcqc")
+            files.forEach {
+                it.groupId shouldBe 1
+                it.parentId shouldBe 4
             }
-    }
-
-    @Test
-    fun listingSecondOrder() {
-        val fileNodeCount = 3
-        val types = listOf("DIR", "SQL", "SPARK")
-        val names = listOf("zvdjsdhz", "yijlstlq", "yzhamcqc")
-        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.thenGetData.andCheckCount(fileNodeCount)
-            .thenGetListOf("files").andCheckSize(fileNodeCount).forEachIndexed { i, it ->
-                it["groupId"] shouldBe 1
-                it["parentId"] shouldBe 4
-                it["type"] shouldBe types[i]
-                it["name"] shouldBe names[i]
-            }
+        }
     }
 
     @Test
     fun findRootDir() {
-        postman.get("/api/file/root", mapOf("groupId" to 6)).shouldSuccess.thenGetData.thenGetItem("file")
-            .withExpect {
-                it["name"] shouldBe "hhkjnqwc"
-                it["ownerId"] shouldBe 124
-            }
+        postman.get("/api/file/root", mapOf("groupId" to 6)).shouldSuccess.get<FileDTO>("file").withExpect {
+            it.name shouldBe "hhkjnqwc"
+            it.ownerId shouldBe 124
+        }
 
         // 已删除的项目组
-        postman.get("/api/file/root", mapOf("groupId" to 7)).shouldFailed.withNotFoundError("root in 7")
+        postman.get("/api/file/root", mapOf("groupId" to 7)).shouldFailed.withError("项目组 7 根目录 不存在或已被删除")
 
         // 不存在的项目组
-        postman.get("/api/file/root", mapOf("groupId" to 40)).shouldFailed.withNotFoundError("root in 40")
+        postman.get("/api/file/root", mapOf("groupId" to 40)).shouldFailed.withError("项目组 40 根目录 不存在或已被删除")
     }
 
     @Test
     fun getParent() {
         // 三层父节点
-        var parentNames = listOf("root_project", "zwgjydgn", "zvdjsdhz")
-        postman.get("/api/file/28/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
-            .andCheckSize(3).forEachIndexed { idx, file ->
-                file["name"] shouldBe parentNames[idx]
-            }
+        with(postman.get("/api/file/28/parent").shouldSuccess) {
+            val parent = this.getList<FileDTO>("parent")
+            val count = this.get<Int>("count")
+            parent.size shouldBe count
+            parent.map { it.name } shouldContainExactly listOf("root_project", "zwgjydgn", "zvdjsdhz")
+        }
 
         // 两层父节点
-        parentNames = listOf("root_project", "zwgjydgn")
-        postman.get("/api/file/42/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
-            .andCheckSize(2).forEachIndexed { idx, file ->
-                file["name"] shouldBe parentNames[idx]
-            }
-        postman.get("/api/file/27/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
-            .andCheckSize(2).forEachIndexed { idx, file ->
-                file["name"] shouldBe parentNames[idx]
-            }
-
+        with(postman.get("/api/file/42/parent").shouldSuccess) {
+            val parent = this.getList<FileDTO>("parent")
+            val count = this.get<Int>("count")
+            parent.size shouldBe count
+            parent.map { it.name } shouldContainExactly listOf("root_project", "zwgjydgn")
+        }
+        with(postman.get("/api/file/27/parent").shouldSuccess) {
+            val parent = this.getList<FileDTO>("parent")
+            val count = this.get<Int>("count")
+            parent.size shouldBe count
+            parent.map { it.name } shouldContainExactly listOf("root_project", "zwgjydgn")
+        }
 
         // 一层父节点
-        parentNames = listOf("root_project")
-        postman.get("/api/file/6/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
-            .andCheckSize(1).forEachIndexed { idx, file ->
-                file["name"] shouldBe parentNames[idx]
-            }
-        postman.get("/api/file/4/parent").shouldSuccess.thenGetData.thenGetListOf("parent")
-            .andCheckSize(1).forEachIndexed { idx, file ->
-                file["name"] shouldBe parentNames[idx]
-            }
+        with(postman.get("/api/file/6/parent").shouldSuccess) {
+            val parent = this.getList<FileDTO>("parent")
+            val count = this.get<Int>("count")
+            parent.size shouldBe count
+            parent.map { it.name } shouldContainExactly listOf("root_project")
+        }
+        with(postman.get("/api/file/4/parent").shouldSuccess) {
+            val parent = this.getList<FileDTO>("parent")
+            val count = this.get<Int>("count")
+            parent.size shouldBe count
+            parent.map { it.name } shouldContainExactly listOf("root_project")
+        }
 
         // 根目录
-        postman.get("/api/file/1/parent").shouldSuccess.thenGetData.thenGetListOf("parent").andCheckSize(0)
+        postman.get("/api/file/1/parent").shouldSuccess.getList<FileDTO>("parent").size shouldBe 0
 
         // 已删除的文件
-        postman.get("/api/file/5/parent").shouldFailed.withNotFoundError("file 5")
+        postman.get("/api/file/5/parent").shouldFailed.withError("文件节点 5 不存在或已被删除")
 
         // 不存在的文件
-        postman.get("/api/file/70/parent").shouldFailed.withNotFoundError("file 70")
+        postman.get("/api/file/70/parent").shouldFailed.withError("文件节点 70 不存在或已被删除")
     }
 
     @Test
     fun getContent() {
-        postman.get("/api/file/2/content").shouldSuccess.thenGetData["content"]
-            .shouldBe("xwuocwyldfswbdwbnkpizvuhokfhhbwrmykqlgtpqkrzuatixnavciilmbkyxnuw")
+        postman.get("/api/file/2/content").shouldSuccess.get<FileContentDTO>("content").content shouldBe
+            "xwuocwyldfswbdwbnkpizvuhokfhhbwrmykqlgtpqkrzuatixnavciilmbkyxnuw"
         // 已删除的文件
-        postman.get("/api/file/5/content").shouldFailed.withNotFoundError("file 5")
+        postman.get("/api/file/5/content").shouldFailed.withError("文件节点 5 不存在或已被删除")
         // 不存在的文件
-        postman.get("/api/file/70/content").shouldFailed.withNotFoundError("file 70")
+        postman.get("/api/file/70/content").shouldFailed.withError("文件节点 70 不存在或已被删除")
         // 目录
-        postman.get("/api/file/4/content").shouldFailed.withIllegalArgumentError("dir has not content")
+        postman.get("/api/file/4/content").shouldFailed.withError("文件夹 不允许 获取 内容")
     }
 
     @Test
     fun search() {
-        val files = postman.get("/api/file", mapOf("like" to " a  b   c    "))
-            .shouldSuccess.thenGetData.andCheckCount(2).thenGetListOf("files").andCheckSize(2)
-        files.first()["name"] shouldBe "bcmawkte"
-        files.last()["name"] shouldBe "lwbaccod"
+        with(postman.get("/api/file/search", mapOf("like" to " a  b   c    ")).shouldSuccess) {
+            val files = this.getList<FileDTO>("files")
+            val count = this.get<Int>("count")
+            count shouldBe 2
+            files.map { it.name } shouldContainExactly listOf("bcmawkte", "lwbaccod")
+        }
 
-        postman.get("/api/file", mapOf("like" to "hh")).shouldSuccess.thenGetData.andCheckCount(3)
-            .thenGetListOf("files").andCheckSize(3)
+        with(postman.get("/api/file/search", mapOf("like" to "hh")).shouldSuccess) {
+            val files = this.getList<FileDTO>("files")
+            val count = this.get<Int>("count")
+            count shouldBe 2
+            files.map { it.name } shouldContainExactly listOf("hhkjnqwc", "ghxwtphh")
+        }
     }
 
     @Test
     fun createDir() {
+        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.get<Int>("count") shouldBe 3
+
         postman.post("/api/file", mapOf(
-            "groupId" to 12345,
+            "groupId" to 1,
             "name" to "test create",
             "type" to "DIR",
-            "parentId" to 38324)
-        ).shouldSuccess.thenGetData.thenGetItem("file").withExpect {
-            it["groupId"] shouldBe 12345
-            it["ownerId"] shouldBe 1
-            it["name"] shouldBe "test create"
-            it["type"] shouldBe "DIR"
-            it["parentId"] shouldBe 38324
-            it["content"] shouldBe null
+            "parentId" to 4)
+        ).shouldSuccess.get<FileDTO>("file").withExpect {
+            it.id shouldBe 70
+            it.groupId shouldBe 1
+            it.ownerId shouldBe 1
+            it.name shouldBe "test create"
+            it.type shouldBe FileType.DIR
+            it.parentId shouldBe 4
         }
 
-        postman.get("/api/file", mapOf("like" to "test create")).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").first().withExpect { it["name"] shouldBe "test create" }
+        with(postman.get("/api/file/search", mapOf("like" to "test create")).shouldSuccess) {
+            val count = this.get<Int>("count")
+            val files = this.getList<FileDTO>("files")
+            count shouldBe 1
+            files.size shouldBe 1
+            files.first().withExpect {
+                it.id shouldBe 70
+                it.groupId shouldBe 1
+                it.ownerId shouldBe 1
+                it.name shouldBe "test create"
+                it.type shouldBe FileType.DIR
+                it.parentId shouldBe 4
+            }
+        }
 
-        postman.get("/api/file", mapOf("parentId" to 38324)).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").first().withExpect { it["name"] shouldBe "test create" }
+        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.get<Int>("count") shouldBe 4
 
         // 创建同名文件夹
         postman.post("/api/file", mapOf(
-            "groupId" to 12345,
+            "groupId" to 1,
             "name" to "test create",
             "type" to "DIR",
-            "parentId" to 38324)
-        ).shouldFailed.withIllegalArgumentError("该文件夹下已存在 test create 节点")
-
+            "parentId" to 4)
+        ).shouldFailed.withError("文件夹 4 存在 文件类型 DIR 文件节点 test create")
     }
 
     @Test
     fun createFile() {
+        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.get<Int>("count") shouldBe 3
+
         postman.post("/api/file", mapOf(
-            "groupId" to 12345,
+            "groupId" to 1,
             "name" to "test create",
             "type" to "SQL",
-            "parentId" to 38324)
-        ).shouldSuccess.thenGetData.thenGetItem("file").withExpect {
-            it["groupId"] shouldBe 12345
-            it["ownerId"] shouldBe 1
-            it["name"] shouldBe "test create"
-            it["type"] shouldBe "SQL"
-            it["parentId"] shouldBe 38324
-            it["content"] shouldNotBe null
+            "parentId" to 4)
+        ).shouldSuccess.get<FileDTO>("file").withExpect {
+            it.id shouldBe 70
+            it.groupId shouldBe 1
+            it.ownerId shouldBe 1
+            it.name shouldBe "test create"
+            it.type shouldBe FileType.SQL
+            it.parentId shouldBe 4
         }
 
-        postman.get("/api/file", mapOf("like" to "test create")).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").first().withExpect { it["name"] shouldBe "test create" }
+        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.get<Int>("count") shouldBe 4
+        postman.get("/api/file/70/content").shouldSuccess.get<FileContentDTO>("content").content!!.length shouldBeGreaterThan 0
 
-        postman.get("/api/file", mapOf("parentId" to 38324)).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").first().withExpect { it["name"] shouldBe "test create" }
+        with(postman.get("/api/file/search", mapOf("like" to "test create")).shouldSuccess) {
+            val count = this.get<Int>("count")
+            val files = this.getList<FileDTO>("files")
+            count shouldBe 1
+            files.size shouldBe 1
+            files.first().withExpect {
+                it.id shouldBe 70
+                it.groupId shouldBe 1
+                it.ownerId shouldBe 1
+                it.name shouldBe "test create"
+                it.type shouldBe FileType.SQL
+                it.parentId shouldBe 4
+            }
+        }
 
         postman.post("/api/file", mapOf(
-            "groupId" to 12345,
+            "groupId" to 1,
             "name" to "test create",
             "type" to "SQL",
-            "parentId" to 38324)
-        ).shouldFailed.withIllegalArgumentError("该文件夹下已存在 test create 节点")
+            "parentId" to 4)
+        ).shouldFailed.withError("文件夹 4 存在 文件类型 SQL 文件节点 test create")
     }
 
     @Test
     fun update() {
-        postman.put("/api/file/28", mapOf("name" to "test update")).shouldSuccess.withMessage("file 28 has been update")
-        postman.get("/api/file", mapOf("like" to "test update")).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").first().withExpect { it["name"] shouldBe "test update" }
+        // 更新名称
+        postman.get("/api/file/search", mapOf("like" to "test update")).shouldSuccess.get<Int>("count") shouldBe 0
+        postman.put("/api/file/28", mapOf("name" to "test update")).shouldSuccess.get<FileDTO>("file").withExpect {
+            it.name shouldBe "test update"
+            it.updateTime shouldNotBe "2046-07-28 08:28:16".toLocalDateTime()
+        }
+        postman.get("/api/file/search", mapOf("like" to "test update")).shouldSuccess.get<Int>("count") shouldBe 1
 
-        postman.put("/api/file/28", mapOf("ownerId" to 1)).shouldSuccess.withMessage("file 28 has been update")
-        postman.get("/api/file", mapOf("like" to "test update")).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").first().withExpect { it["ownerId"] shouldBe 1 }
+        // 更新归属者
+        postman.get("/api/file/search", mapOf("like" to "test update")).shouldSuccess
+            .getList<FileDTO>("files").first().ownerId shouldBe 91
+        postman.put("/api/file/28", mapOf("ownerId" to 5)).shouldSuccess.get<FileDTO>("file").ownerId shouldBe 5
+        postman.get("/api/file/search", mapOf("like" to "test update")).shouldSuccess
+            .getList<FileDTO>("files").first().ownerId shouldBe 5
 
 
+        // 更新父节点
+        postman.get("/api/file/search", mapOf("like" to "yoglnkyc")).shouldSuccess
+            .getList<FileDTO>("files").first().parentId shouldBe 1
+        postman.put("/api/file/3", mapOf("parentId" to 4)).shouldSuccess.get<FileDTO>("file").parentId shouldBe 4
+        postman.get("/api/file/search", mapOf("like" to "yoglnkyc")).shouldSuccess
+            .getList<FileDTO>("files").first().parentId shouldBe 4
 
-        postman.put("/api/file/28", mapOf("parentId" to 38324)).shouldSuccess.withMessage("file 28 has been update")
-        postman.get("/api/file", mapOf("parentId" to 38324)).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").first().withExpect { it["id"] shouldBe 28 }
-    }
-
-    @Test
-    fun updateMoreThanOneArgument() {
-        postman.put("/api/file/3", mapOf("ownerId" to 1, "name" to "test update")).shouldFailed
-            .withIllegalArgumentError("ownerId, name, content, parentId must only one not null")
-    }
-
-    @Test
-    fun illegalUpdate() {
-        postman.put("/api/file/11", mapOf("ownerId" to 1)).shouldFailed.withNotFoundError("file 11")
-        postman.put("/api/file/70", mapOf("ownerId" to 1)).shouldFailed.withNotFoundError("file 70")
-        postman.put("/api/file/56", mapOf("ownerId" to 2)).shouldFailed.withIllegalArgumentError("根节点不允许更改")
+        // 更新异常
+        postman.put("/api/file/11", mapOf("ownerId" to 1)).shouldFailed.withError("文件节点 11 不存在或已被删除")
+        postman.put("/api/file/70", mapOf("ownerId" to 1)).shouldFailed.withError("文件节点 70 不存在或已被删除")
+        postman.put("/api/file/56", mapOf("ownerId" to 2)).shouldFailed.withError("根目录 禁止更新")
     }
 
     @Test
     fun remove() {
-        postman.delete("/api/file/42").shouldSuccess.withMessage("file 42 has been removed")
-        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.thenGetData.andCheckCount(2)
-            .thenGetListOf("files").andCheckSize(2)
+        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.get<Int>("count") shouldBe 3
+        postman.delete("/api/file/42").shouldSuccess.withMessage("文件节点 42 已被删除")
+        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.get<Int>("count") shouldBe 2
 
-        postman.delete("/api/file/55").shouldSuccess.withMessage("file 55 has been removed")
-        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.thenGetData.andCheckCount(1)
-            .thenGetListOf("files").andCheckSize(1)
-    }
+        // 已删除
+        postman.delete("/api/file/11").shouldFailed.withError("文件节点 11 不存在或已被删除")
 
-    @Test
-    fun removeRootDir() {
-        postman.delete("/api/file/56").shouldFailed.withIllegalArgumentError("根节点不允许删除")
+        // 不存在
+        postman.delete("/api/file/70").shouldFailed.withError("文件节点 70 不存在或已被删除")
+
+        // 根目录
+        postman.delete("/api/file/56").shouldFailed.withError("根目录 禁止删除")
     }
 
     @Test
     fun removeDir() {
-        postman.delete("/api/file/4").shouldSuccess.withMessage("file 4 has been removed")
+        postman.delete("/api/file/4").shouldSuccess.withMessage("文件节点 4 已被删除")
 
         // 子节点应被删除
-        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.thenGetData.andCheckCount(0)
-            .thenGetListOf("files").andCheckSize(0)
+        postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.get<Int>("count") shouldBe 0
 
         // 孙节点应被删除
-        postman.get("/api/file", mapOf("parentId" to 27)).shouldSuccess.thenGetData.andCheckCount(0)
-            .thenGetListOf("files").andCheckSize(0)
+        postman.get("/api/file", mapOf("parentId" to 27)).shouldSuccess.get<Int>("count") shouldBe 0
 
         // 兄弟节点不应被删除
-        postman.get("/api/file", mapOf("parentId" to 1)).shouldSuccess.thenGetData.andCheckCount(4)
-            .thenGetListOf("files").andCheckSize(4)
+        postman.get("/api/file", mapOf("parentId" to 1)).shouldSuccess.get<Int>("count") shouldBe 4
     }
 
-
-    @Test
-    fun removeNotFoundFile() {
-        postman.delete("/api/file/11").shouldFailed.withNotFoundError("file 11")
-        postman.delete("/api/file/70").shouldFailed.withNotFoundError("file 70")
-    }
 }
