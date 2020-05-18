@@ -17,6 +17,7 @@ import tech.cuda.datahub.webserver.Response
 import tech.cuda.datahub.webserver.ResponseData
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
+import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.MachineService
 import java.lang.Exception
 
@@ -130,7 +131,7 @@ class MachineController {
     fun remove(@PathVariable id: Int): ResponseData {
         return try {
             MachineService.remove(id)
-            Response.Success.message("服务器 $id 已被删除")
+            Response.Success.message("${I18N.machine} $id 已被删除")
         } catch (e: Exception) {
             Response.Failed.WithError(e.message ?: "服务错误")
         }

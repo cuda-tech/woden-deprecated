@@ -142,17 +142,17 @@ open class MachineControllerTest : RestfulTestToolbox("users", "machines") {
 
         // 更新已删除的机器信息
         postman.put("/api/machine/2", mapOf("hostname" to "nothing"))
-            .shouldFailed.withError("服务器 2 不存在或已被删除")
+            .shouldFailed.withError("调度服务器 2 不存在或已被删除")
 
         // 更新不存在的机器信息
         postman.put("/api/machine/247", mapOf("hostname" to "nothing"))
-            .shouldFailed.withError("服务器 247 不存在或已被删除")
+            .shouldFailed.withError("调度服务器 247 不存在或已被删除")
     }
 
     @Test
     fun remove() {
-        postman.delete("/api/machine/11").shouldSuccess.withMessage("服务器 11 已被删除")
-        postman.delete("/api/machine/12").shouldFailed.withError("服务器 12 不存在或已被删除")
-        postman.delete("/api/machine/247").shouldFailed.withError("服务器 247 不存在或已被删除")
+        postman.delete("/api/machine/11").shouldSuccess.withMessage("调度服务器 11 已被删除")
+        postman.delete("/api/machine/12").shouldFailed.withError("调度服务器 12 不存在或已被删除")
+        postman.delete("/api/machine/247").shouldFailed.withError("调度服务器 247 不存在或已被删除")
     }
 }
