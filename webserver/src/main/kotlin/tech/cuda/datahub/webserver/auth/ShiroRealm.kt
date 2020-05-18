@@ -13,8 +13,6 @@
  */
 package tech.cuda.datahub.webserver.auth
 
-import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.entity.findOne
 import org.apache.shiro.authc.AuthenticationException
 import org.apache.shiro.authc.AuthenticationToken
 import org.apache.shiro.authc.SimpleAuthenticationInfo
@@ -22,7 +20,7 @@ import org.apache.shiro.authz.AuthorizationInfo
 import org.apache.shiro.authz.SimpleAuthorizationInfo
 import org.apache.shiro.realm.AuthorizingRealm
 import org.apache.shiro.subject.PrincipalCollection
-import tech.cuda.datahub.service.dao.Users
+import tech.cuda.datahub.service.UserService
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -31,8 +29,7 @@ import tech.cuda.datahub.service.dao.Users
 class ShiroRealm : AuthorizingRealm() {
     override fun doGetAuthenticationInfo(authToken: AuthenticationToken?): SimpleAuthenticationInfo {
         val token = authToken?.credentials.toString()
-        val user = Users.findOne { it.name eq Jwt.getUserName(token).orEmpty() }
-        if (Jwt.verify(token, user?.name.orEmpty(), user?.password.orEmpty())) {
+        if (UserService.verify(token)) {
             return SimpleAuthenticationInfo(token, token, "shiro_realm")
         } else {
             throw AuthenticationException("wrong token")
@@ -40,7 +37,7 @@ class ShiroRealm : AuthorizingRealm() {
     }
 
     override fun doGetAuthorizationInfo(token: PrincipalCollection?): AuthorizationInfo {
-        val user = Users.findOne { it.name eq Jwt.getUserName(token.toString()).orEmpty() }
+        val user = UserService.getUserByToken(token.toString())
         val isRootGroup = user?.groups?.contains(1) ?: false
         return if (isRootGroup) {
             SimpleAuthorizationInfo().also {
