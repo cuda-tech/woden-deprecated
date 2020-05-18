@@ -15,7 +15,7 @@ package tech.cuda.datahub.webserver.converter
 
 import org.springframework.core.convert.converter.Converter
 import org.springframework.stereotype.Component
-import tech.cuda.datahub.service.model.dtype.FileType
+import tech.cuda.datahub.service.po.dtype.FileType
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
