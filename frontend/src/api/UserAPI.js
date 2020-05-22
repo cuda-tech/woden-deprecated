@@ -75,6 +75,23 @@ export default {
             params['like'] = like;
         }
         axios.get("/user", {params: params}).then(data => callback(data.count, data.users))
+    },
+
+    /**
+     * 获取当前用户信息
+     * @param callback(user): 回调函数，请求成功后会返回当前用户信息
+     */
+    currentUser(callback) {
+        axios.get("/user/current").then(data => callback(data.user))
+    },
+
+    /**
+     * 通过 id 查找用户信息
+     * @param id: 需要查找的用户 ID
+     * @param callback(user): 回调函数，请求成功后会返回对应 id 的用户信息
+     */
+    find(id, callback) {
+        axios.get(`/user/${id}`).then(data => callback(data.user))
     }
 
 }
