@@ -43,7 +43,7 @@ class FileController {
      * @apiHeader {String} token 用户授权 token
      * @apiParam {Number} [parentId = null] 父节点 ID
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"count":5,"files":[{"id":4,"groupId":1,"ownerId":26,"name":"zwgjydgn","type":"DIR","parentId":1,"isRemove":false,"createTime":"2002-05-14 08:16:08","updateTime":"2004-04-17 08:43:14"},{"id":43,"groupId":1,"ownerId":140,"name":"kniovyqn","type":"SQL","parentId":1,"content":"zozhbwftgaapvfdvcvvqfoorqttkplueaxxufrfzpvzgjlbymwgwqzyrclqfriob","isRemove":false,"createTime":"2009-09-17 00:47:55","updateTime":"2011-11-10 01:43:32"}]}}
+     * {"status":"success","data":{"files":[{"id":4,"groupId":1,"ownerId":26,"name":"zwgjydgn","type":"DIR","parentId":1,"createTime":"2002-05-14 08:16:08","updateTime":"2004-04-17 08:43:14"},{"id":43,"groupId":1,"ownerId":140,"name":"kniovyqn","type":"SQL","parentId":1,"createTime":"2009-09-17 00:47:55","updateTime":"2011-11-10 01:43:32"},{"id":6,"groupId":1,"ownerId":167,"name":"ladlehnr","type":"SQL","parentId":1,"createTime":"2003-09-09 05:14:44","updateTime":"2004-06-15 14:47:45"},{"id":2,"groupId":1,"ownerId":10,"name":"jldwzlys","type":"SPARK","parentId":1,"createTime":"2048-12-27 13:12:08","updateTime":"2049-01-24 17:09:09"}],"count":4}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
@@ -54,14 +54,14 @@ class FileController {
     }
 
     /**
-     * @api {get} /api/file/search 模糊文件
+     * @api {get} /api/file/search 模糊查询
      * @apiDescription 全局模糊查询文件
      * @apiGroup File
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiParam {String} [like = null] 文件名模糊匹配，多个词用空格分隔，null 字符串会被忽略
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"count":5,"files":[{"id":4,"groupId":1,"ownerId":26,"name":"zwgjydgn","type":"DIR","parentId":1,"isRemove":false,"createTime":"2002-05-14 08:16:08","updateTime":"2004-04-17 08:43:14"},{"id":43,"groupId":1,"ownerId":140,"name":"kniovyqn","type":"SQL","parentId":1,"content":"zozhbwftgaapvfdvcvvqfoorqttkplueaxxufrfzpvzgjlbymwgwqzyrclqfriob","isRemove":false,"createTime":"2009-09-17 00:47:55","updateTime":"2011-11-10 01:43:32"}]}}
+     * {"status":"success","data":{"files":[{"id":7,"groupId":7,"ownerId":36,"name":"bamvjrno","type":"SQL","parentId":64,"createTime":"2045-08-02 02:39:46","updateTime":"2048-06-19 13:58:27"},{"id":18,"groupId":16,"ownerId":48,"name":"bcmawkte","type":"SQL","parentId":49,"createTime":"2002-05-01 00:41:43","updateTime":"2003-10-20 15:00:30"},{"id":60,"groupId":5,"ownerId":48,"name":"lwbaccod","type":"SQL","parentId":7,"createTime":"2007-02-12 03:45:03","updateTime":"2008-04-14 18:06:49"}],"count":3}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
@@ -79,9 +79,9 @@ class FileController {
      * @apiHeader {String} token 用户授权 token
      * @apiParam {Number} groupId 项目组 ID
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"file":{"id":1,"groupId":1,"ownerId":1,"name":"root_project","type":"DIR","isRemove":false,"createTime":"2037-05-20 14:58:39","updateTime":"2040-02-04 21:46:36"}}}
+     * {"status":"success","data":{"file":{"id":1,"groupId":1,"ownerId":1,"name":"root_project","type":"DIR","parentId":null,"createTime":"2037-05-20 14:58:39","updateTime":"2040-02-04 21:46:36"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"项目组 3 根目录 不存在或已被删除"}
      */
     @GetMapping("/root")
     fun findRoot(@RequestParam(required = true) groupId: Int): ResponseData {
@@ -101,15 +101,15 @@ class FileController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"parent":[{"id":1,"groupId":1,"ownerId":1,"name":"root_project","type":"DIR","isRemove":false,"createTime":"2037-05-20 14:58:39","updateTime":"2040-02-04 21:46:36"},{"id":4,"groupId":1,"ownerId":26,"name":"zwgjydgn","type":"DIR","parentId":1,"isRemove":false,"createTime":"2002-05-14 08:16:08","updateTime":"2004-04-17 08:43:14"}]}}
+     * {"status":"success","data":{"files":[{"id":1,"groupId":1,"ownerId":1,"name":"root_project","type":"DIR","parentId":null,"createTime":"2037-05-20 14:58:39","updateTime":"2040-02-04 21:46:36"}],"count":1}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"file 70 not found"}
+     * {"status":"failed","error":"文件节点 5 不存在或已被删除"}
      */
     @GetMapping("/{id}/parent")
     fun listingParent(@PathVariable id: Int): ResponseData {
         return try {
             val (parent, count) = FileService.listParent(id)
-            Response.Success.data("parent" to parent, "count" to count)
+            Response.Success.data("files" to parent, "count" to count)
         } catch (e: Exception) {
             Response.Failed.WithError(e.message ?: "服务异常")
         }
@@ -123,9 +123,9 @@ class FileController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"content":"upkyslvcuaejueqvyokchqrtftdqgkuwifdazcsugjcavoqqhckdamkspijxmoda"}}
+     * {"status":"success","data":{"content":{"content":"jfoarywksxudqwimajgenwlvebjrjdfbiumogupwebatcyvmjhryscbjwkeshont"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"文件夹 不允许 获取 内容"}
      */
     @GetMapping("/{id}/content")
     fun getContent(@PathVariable id: Int): ResponseData {
@@ -148,9 +148,9 @@ class FileController {
      * @apiParam {Enum} type 文件类型，可选 DIR、 SQL、 SPARK、 MR
      * @apiParam {Number} parentId 父节点 ID
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"file":{"groupId":1,"ownerId":1,"name":"xxx","type":"DIR","content":null,"parentId":1,"isRemove":false,"createTime":"2020-03-22 01:35:18","updateTime":"2020-03-22 01:35:18","id":70}}}
+     * {"status":"success","data":{"file":{"id":70,"groupId":1,"ownerId":1,"name":"testCreate","type":"SQL","parentId":1,"createTime":"2020-05-23 12:49:53","updateTime":"2020-05-23 12:49:53"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"文件夹 1 存在 文件类型 SQL 文件节点 testCreate"}
      */
     @PostMapping
     fun create(@RequestParam(required = true) groupId: Int,
@@ -185,9 +185,9 @@ class FileController {
      * @apiParam {Number} [version = null] 文件版本号
      * @apiParam {Number} [parentId = null] 父节点 ID
      * @apiSuccessExample 请求成功
-     * {"status":"success","message":"file 3 has been update"}
+     * {"status":"success","data":{"file":{"id":4,"groupId":1,"ownerId":26,"name":"testUpdate","type":"DIR","parentId":1,"createTime":"2002-05-14 08:16:08","updateTime":"2020-05-23 12:48:46"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"根目录 禁止更新"}
      */
     @PutMapping("{id}")
     fun update(@PathVariable id: Int,
@@ -210,9 +210,9 @@ class FileController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","message":"file 2 has been removed"}
+     * {"status":"success","message":"文件节点 3 已被删除"}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"根目录 禁止删除"}
      */
     @DeleteMapping("{id}")
     fun remove(@PathVariable id: Int): ResponseData {

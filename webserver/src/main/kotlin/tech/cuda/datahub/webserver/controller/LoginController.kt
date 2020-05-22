@@ -39,7 +39,7 @@ class LoginController {
      * @apiSuccessExample 请求成功
      * {"status":"success","data":{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1ODM2ODI0MTQsInVzZXJuYW1lIjoicm9vdCJ9.LQuBenBb9UymkBfmzYkxCvrq5ecVL2YGqAyAtSU2IjY"}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"login failed"}
+     * {"status":"failed","error":"登录失败"}
      */
     @PostMapping
     fun login(@NotBlank(message = "{required}") username: String,

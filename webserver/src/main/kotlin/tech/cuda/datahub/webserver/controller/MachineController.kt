@@ -40,7 +40,7 @@ class MachineController {
      * @apiParam {Number} [pageSize = 9999] 分页大小
      * @apiParam {String} like 机器 hostname 模糊匹配，多个词用空格分隔，null 字符串会被忽
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"count":188,"machines":[{"id":234,"hostname":"hevhjzva","mac":"50-95-F4-68-0E-DA","ip":"145.28.32.35","cpuLoad":34,"memLoad":2,"diskUsage":80,"isRemove":false,"createTime":"2009-07-03 10:34:56","updateTime":"2010-12-22 20:37:10"},{"id":235,"hostname":"djesrwkr","mac":"1F-E1-DA-20-DB-EB","ip":"95.127.187.33","cpuLoad":13,"memLoad":27,"diskUsage":35,"isRemove":false,"createTime":"2019-07-15 22:29:11","updateTime":"2019-12-13 07:56:14"}]}}
+     * {"status":"success","data":{"machines":[{"id":1,"hostname":"new host name","mac":"1F-72-5B-F7-10-AB","ip":"107.116.90.29","cpuLoad":34,"memLoad":31,"diskUsage":63,"createTime":"2029-06-06 19:57:08","updateTime":"2020-05-23 01:40:25"},{"id":3,"hostname":"nknvleif","mac":"9E-EE-49-FA-00-F4","ip":"192.168.1.1","cpuLoad":98,"memLoad":48,"diskUsage":31,"createTime":"2035-11-05 14:17:43","updateTime":"2020-05-23 01:40:25"},{"id":5,"hostname":"anything","mac":"7D-75-70-DE-73-0E","ip":"192.168.1.2","cpuLoad":1,"memLoad":60,"diskUsage":59,"createTime":"2004-11-28 21:50:06","updateTime":"2020-05-23 01:40:25"}],"count":188}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
@@ -59,13 +59,18 @@ class MachineController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"machine":{"id":1,"hostname":"tejxajfq","mac":"1F-72-5B-F7-10-AB","ip":"107.116.90.29","cpuLoad":34,"memLoad":31,"diskUsage":63,"isRemove":false,"createTime":"2029-06-06 19:57:08","updateTime":"2032-06-08 19:36:03"}}}
+     * {"status":"success","data":{"machine":{"id":1,"hostname":"new host name","mac":"1F-72-5B-F7-10-AB","ip":"107.116.90.29","cpuLoad":34,"memLoad":31,"diskUsage":63,"createTime":"2029-06-06 19:57:08","updateTime":"2020-05-23 01:40:25"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"machine 2 not found"}
+     * {"status":"failed","error":"调度服务器 2 不存在或已被删除"}
      */
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
-        return Response.Success.data("machine" to MachineService.findById(id))
+        val machine = MachineService.findById(id)
+        return if (machine == null) {
+            Response.Failed.WithError("${I18N.machine} $id ${I18N.notExistsOrHasBeenRemove}")
+        } else {
+            Response.Success.data("machine" to MachineService.findById(id))
+        }
     }
 
     /**
@@ -74,12 +79,11 @@ class MachineController {
      * @apiGroup Machine
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
-     * @apiParam {String} hostname 服务器 hostname
      * @apiParam {String} ip 服务器 IP
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"machine":{"hostname":"test","mac":"","ip":"192.168.1.1","cpuLoad":0,"memLoad":0,"diskUsage":0,"isRemove":false,"createTime":"2020-03-13 00:42:16","updateTime":"2020-03-13 00:42:16","id":248}}}
+     * {"status":"success","data":{"machine":{"id":247,"hostname":"","mac":"","ip":"192.168.1.20","cpuLoad":0,"memLoad":0,"diskUsage":0,"createTime":"2020-05-23 02:00:43","updateTime":"2020-05-23 02:00:43"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"IP 地址 192.168.1.1 已存在"}
      */
     @PostMapping
     fun create(@RequestParam(required = true) ip: String): ResponseData {
@@ -100,9 +104,9 @@ class MachineController {
      * @apiParam {String} [hostname = null] 机器 hostname，如果不提供则不更新
      * @apiParam {String} [ip = null] 机器 IP，如果不提供则不更新
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"machine":{"id":5,"hostname":"myjwey","mac":"7D-75-70-DE-73-0E","ip":"14.66.49.193","cpuLoad":1,"memLoad":60,"diskUsage":59,"isRemove":false,"createTime":"2004-11-28 21:50:06","updateTime":"2020-03-13 01:01:13"}}}
+     * {"status":"success","data":{"machine":{"id":3,"hostname":"nknvleif","mac":"9E-EE-49-FA-00-F4","ip":"192.168.1.21","cpuLoad":98,"memLoad":48,"diskUsage":31,"createTime":"2035-11-05 14:17:43","updateTime":"2020-05-23 12:28:03"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"machine 2 not found"}
+     * {"status":"failed","error":"IP 地址 192.168.1.21 已存在"}
      */
     @PutMapping("{id}")
     fun update(@PathVariable id: Int,
@@ -123,15 +127,15 @@ class MachineController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","message":"machine 3 has been removed"}
+     * {"status":"success","message":"调度服务器 1 已被删除"}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"machine 2 not found"}
+     * {"status":"failed","error":"调度服务器 1 不存在或已被删除"}
      */
     @DeleteMapping("{id}")
     fun remove(@PathVariable id: Int): ResponseData {
         return try {
             MachineService.remove(id)
-            Response.Success.message("${I18N.machine} $id 已被删除")
+            Response.Success.message("${I18N.machine} $id ${I18N.hasBeenRemove}")
         } catch (e: Exception) {
             Response.Failed.WithError(e.message ?: "服务错误")
         }

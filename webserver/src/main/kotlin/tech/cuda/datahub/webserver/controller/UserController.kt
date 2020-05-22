@@ -43,7 +43,7 @@ class UserController {
      * @apiParam {Number} [pageSize = 9999] 分页大小
      * @apiParam {String} like 用户名模糊匹配，多个词用空格分隔，null 字符串会被忽略
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"count":143,"users":[{"id":177,"groupIds":[1,2],"name":"yUEtMsgswR","email":"yUEtMsgswR@aliyun.com","createTime":"2010-06-0518:23:58","updateTime":"2011-09-2300:47:13"},{"id":178,"groupIds":[1,2,3],"name":"snaspGzKcI","email":"snaspGzKcI@outlook.com","createTime":"2032-11-1808:54:43","updateTime":"2035-04-0704:26:21"}]}}
+     * {"status":"success","data":{"count":144,"users":[{"id":1,"groups":[1],"name":"root","email":"root@datahub.com","createTime":"2048-08-14 06:10:35","updateTime":"2051-03-13 21:06:23"},{"id":2,"groups":[1,2,5,6,7,8,9],"name":"guest","email":"guest@datahub.com","createTime":"2041-02-10 19:37:55","updateTime":"2042-03-23 08:54:17"},{"id":3,"groups":[2,3,4,6,8],"name":"OHzXwnDAAd","email":"OHzXwnDAAd@189.com","createTime":"2041-11-20 12:44:46","updateTime":"2044-05-12 14:09:07"}]}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
@@ -61,7 +61,7 @@ class UserController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"user":{"id":1,"groupIds":[1],"name":"root","email":"root@datahub.com","createTime":"2048-08-14 06:10:35","updateTime":"2051-03-13 21:06:23"}}}
+     * {"status":"success","data":{"user":{"id":1,"groups":[1],"name":"root","email":"root@datahub.com","createTime":"2048-08-14 06:10:35","updateTime":"2051-03-13 21:06:23"}}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
@@ -81,9 +81,9 @@ class UserController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"user":{"id":3,"groupIds":[2,3,4,6,8],"name":"OHzXwnDAAd","email":"OHzXwnDAAd@189.com","createTime":"2041-11-20 12:44:46","updateTime":"2044-05-12 14:09:07"}}}
+     * {"status":"success","data":{"user":{"id":10,"groups":[1,3,4,5,6,8,9],"name":"IinOzxLtGL","email":"IinOzxLtGL@139.com","createTime":"2018-03-21 03:59:24","updateTime":"2019-02-28 12:26:06"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"user 2 not found"}
+     * {"status":"failed","error":"用户 11 不存在或已被删除"}
      */
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
@@ -107,9 +107,9 @@ class UserController {
      * @apiParam {Array} groupIds 用户归属项目组 ID
      * @apiParam {String} email 用户邮箱
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"user":{"id":180,"groupIds":[2,3],"name":"rootaa","email":"aaaaa","createTime":"2020-03-07 22:58:26","updateTime":"2020-03-07 22:58:26"}}}
+     * {"status":"success","data":{"user":{"id":180,"groups":[1,2,3],"name":"testName","email":"testEmail","createTime":"2020-05-22 01:43:10","updateTime":"2020-05-22 01:43:10"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"用户 testName 已存在"}
      */
     @PostMapping
     fun create(@RequestParam(required = true) name: String,
@@ -132,9 +132,9 @@ class UserController {
      * @apiParam {Array} [groupIds = null] 用户归属项目组，不指定则不更新
      * @apiParam {String} [email = null] 用户邮箱，不指定则不更新
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"user":{"id":10,"groupIds":[3,6],"name":"IinOzxLt","email":"IinOzxLtGL@139.com","createTime":"2018-03-21 03:59:24","updateTime":"2020-03-07 23:00:34"}}}
+     * {"status":"success","data":{"user":{"id":180,"groups":[1,2,3],"name":"testName","email":"testEmail","createTime":"2020-05-22 01:43:11","updateTime":"2020-05-22 01:49:55"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"用户 root 已存在"}
      */
     @PutMapping("{id}")
     fun update(@PathVariable id: Int,
@@ -155,14 +155,14 @@ class UserController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","message":"user 2 has been removed"}
+     * {"status":"success","message":"用户 10 已被删除"}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"用户 9 不存在或已被删除"}
      */
     @DeleteMapping("{id}")
     fun remove(@PathVariable id: Int) = try {
         UserService.remove(id)
-        Response.Success.message("用户 $id 已被删除")
+        Response.Success.message("${I18N.user} $id ${I18N.hasBeenRemove}")
     } catch (e: NotFoundException) {
         Response.Failed.WithError(e.message ?: "系统异常")
     }

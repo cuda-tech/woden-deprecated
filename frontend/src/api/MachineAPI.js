@@ -4,7 +4,7 @@ export default {
     /**
      * 删除服务器
      * @param id: 服务器 ID
-     * @param callback: 回调函数
+     * @param callback(): 回调函数
      */
     delete(id, callback) {
         axios.delete(`/machine/${id}`).then(callback);
@@ -15,7 +15,7 @@ export default {
      * @param id: 服务器 ID
      * @param hostname: 服务器 hostname
      * @param ip: 服务器 IP
-     * @param callback: 回调函数，请求成功后返回更新后的服务器
+     * @param callback(machine): 回调函数，请求成功后返回更新后的服务器
      */
     update({id, hostname, ip}, callback) {
         let params = new FormData();
@@ -44,14 +44,21 @@ export default {
 
     /**
      * 创建服务器
-     * @param hostname: 服务器 hostname
      * @param ip: 服务器 IP
-     * @param callback: 回调函数，请求成功后返回创建的服务器
+     * @param callback(machine): 回调函数，请求成功后返回创建的服务器
      */
-    create({hostname, ip}, callback) {
+    create(ip, callback) {
         let params = new FormData();
-        params.set("hostname", hostname);
         params.set("ip", ip);
         axios.post("/machine", params).then(data => callback(data.machine));
+    },
+
+    /**
+     * 通过 ID 查找服务器
+     * @param id: 服务器 ID
+     * @param callback(machine): 回调函数，请求成功后返回指定的服务器
+     */
+    find(id, callback) {
+        axios.get(`/machine/${id}`).then(data => callback(data.machine))
     }
 }

@@ -78,7 +78,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
     fun getParent() {
         // 三层父节点
         with(postman.get("/api/file/28/parent").shouldSuccess) {
-            val parent = this.getList<FileDTO>("parent")
+            val parent = this.getList<FileDTO>("files")
             val count = this.get<Int>("count")
             parent.size shouldBe count
             parent.map { it.name } shouldContainExactly listOf("root_project", "zwgjydgn", "zvdjsdhz")
@@ -86,13 +86,13 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
 
         // 两层父节点
         with(postman.get("/api/file/42/parent").shouldSuccess) {
-            val parent = this.getList<FileDTO>("parent")
+            val parent = this.getList<FileDTO>("files")
             val count = this.get<Int>("count")
             parent.size shouldBe count
             parent.map { it.name } shouldContainExactly listOf("root_project", "zwgjydgn")
         }
         with(postman.get("/api/file/27/parent").shouldSuccess) {
-            val parent = this.getList<FileDTO>("parent")
+            val parent = this.getList<FileDTO>("files")
             val count = this.get<Int>("count")
             parent.size shouldBe count
             parent.map { it.name } shouldContainExactly listOf("root_project", "zwgjydgn")
@@ -100,20 +100,20 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
 
         // 一层父节点
         with(postman.get("/api/file/6/parent").shouldSuccess) {
-            val parent = this.getList<FileDTO>("parent")
+            val parent = this.getList<FileDTO>("files")
             val count = this.get<Int>("count")
             parent.size shouldBe count
             parent.map { it.name } shouldContainExactly listOf("root_project")
         }
         with(postman.get("/api/file/4/parent").shouldSuccess) {
-            val parent = this.getList<FileDTO>("parent")
+            val parent = this.getList<FileDTO>("files")
             val count = this.get<Int>("count")
             parent.size shouldBe count
             parent.map { it.name } shouldContainExactly listOf("root_project")
         }
 
         // 根目录
-        postman.get("/api/file/1/parent").shouldSuccess.getList<FileDTO>("parent").size shouldBe 0
+        postman.get("/api/file/1/parent").shouldSuccess.getList<FileDTO>("files").size shouldBe 0
 
         // 已删除的文件
         postman.get("/api/file/5/parent").shouldFailed.withError("文件节点 5 不存在或已被删除")

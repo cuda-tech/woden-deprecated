@@ -41,7 +41,7 @@ class GroupController {
      * @apiParam {Number} [pageSize = 9999] 分页大小
      * @apiParam {String} like 项目组名模糊匹配，多个词用空格分隔，null 字符串会被忽略
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"count":32,"groups":[{"id":37,"name":"rjktnfdu","isRemove":false,"createTime":"2006-10-07 09:46:27","updateTime":"2007-07-29 16:10:54"},{"id":38,"name":"fpjsyxun","isRemove":false,"createTime":"2044-10-25 01:02:29","updateTime":"2046-03-05 16:13:40"}]}}
+     * {"status":"success","data":{"groups":[{"id":2,"name":"testUpdate","createTime":"2029-05-26 23:17:01","updateTime":"2020-05-23 12:36:21"},{"id":3,"name":"cdqmxplc","createTime":"2045-06-15 10:48:04","updateTime":"2046-03-20 16:54:28"},{"id":4,"name":"rdiwafif","createTime":"2025-06-12 09:41:41","updateTime":"2027-01-04 14:36:46"}],"count":32}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
@@ -60,9 +60,9 @@ class GroupController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"group":{"id":1,"name":"root","isRemove":false,"createTime":"2050-01-10 23:42:07","updateTime":"2050-10-27 21:44:49"}}}
+     * {"status":"success","data":{"group":{"id":2,"name":"testUpdate","createTime":"2029-05-26 23:17:01","updateTime":"2020-05-23 12:36:21"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"group 7 not found"}
+     * {"status":"failed","error":"项目组 1 不存在或已被删除"}
      */
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
@@ -82,9 +82,9 @@ class GroupController {
      * @apiHeader {String} token 用户授权 token
      * @apiParam {String} name 项目组名称
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"group":{"name":"xxxx","isRemove":false,"createTime":"2020-03-07 23:23:54","updateTime":"2020-03-07 23:23:54","id":40}}}
+     * {"status":"success","data":{"group":{"id":40,"name":"testCreate","createTime":"2020-05-23 12:36:52","updateTime":"2020-05-23 12:36:52"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"项目组 testCreate 已存在"}
      */
     @PostMapping
     fun create(@RequestParam(required = true) name: String): ResponseData {
@@ -104,9 +104,9 @@ class GroupController {
      * @apiHeader {String} token 用户授权 token
      * @apiParam {String} [name = null] 项目组名称，如果不提供则不更新
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"group":{"id":38,"name":"fpjsy","isRemove":false,"createTime":"2044-10-25 01:02:29","updateTime":"2020-03-07 23:25:36"}}}
+     * {"status":"success","data":{"group":{"id":2,"name":"testUpdate","createTime":"2029-05-26 23:17:01","updateTime":"2020-05-23 12:36:20"}}}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"group 7 not found"}
+     * {"status":"failed","error":"项目组 1 不存在或已被删除"}
      */
     @PutMapping("{id}")
     fun update(@PathVariable id: Int, @RequestParam(required = false) name: String?) = try {
@@ -122,14 +122,14 @@ class GroupController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","message":"group 38 has been removed"}
+     * {"status":"success","message":"项目组 1 已被删除"}
      * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"错误信息"}
+     * {"status":"failed","error":"项目组 1 不存在或已被删除"}
      */
     @DeleteMapping("{id}")
     fun remove(@PathVariable id: Int) = try {
         GroupService.remove(id)
-        Response.Success.message("项目组 $id 已被删除")
+        Response.Success.message("${I18N.group} $id ${I18N.hasBeenRemove}")
     } catch (e: NotFoundException) {
         Response.Failed.WithError(e.message ?: "系统异常")
     }

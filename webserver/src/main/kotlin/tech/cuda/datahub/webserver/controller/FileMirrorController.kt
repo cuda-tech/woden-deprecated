@@ -41,9 +41,9 @@ class FileMirrorController {
      * @apiParam {Number} [pageSize = 9999] 分页大小
      * @apiParam {String} like 注释模糊匹配，多个词用空格分隔，null 字符串会被忽略
      * @apiSuccessExample 请求成功
-     * {}
+     * {"status":"success","data":{"mirrors":[{"id":40,"fileId":1,"content":"qyeosvfgnborxpqfmqyagyheklugcbiylczhxxtaedyeerkkpmajgskpgntohyyl","message":"krvpcwcg","createTime":"2020-05-04 03:18:07","updateTime":"2023-05-06 00:32:21"},{"id":56,"fileId":1,"content":"wrjmwtrbeoqmkunhifbkybchxhzxrlfcoelzuoobwukvsavhymdtjqlitblzfyxb","message":"eneasves","createTime":"2025-09-07 13:38:33","updateTime":"2025-09-10 09:58:15"},{"id":135,"fileId":1,"content":"iyzzxvkqvjgbhjiewbfnepenadmchhusgrejvjmbgfbbcqhsiijiumghsziaomrm","message":"lirtmdot","createTime":"2042-05-04 19:25:08","updateTime":"2043-10-15 14:11:59"}],"count":9}}
      * @apiSuccessExample 请求失败
-     * {}
+     * {"status":"failed","error":"错误信息"}
      */
     @GetMapping
     fun listing(@PathVariable fileId: Int,
@@ -56,15 +56,15 @@ class FileMirrorController {
 
 
     /**
-     * @api {delete} /api/file/{fileId}/mirror/{id} 获取指定文件镜像
+     * @api {get} /api/file/{fileId}/mirror/{id} 获取指定文件镜像
      * @apiDescription 获取指定文件的指定镜像，如果镜像不存在或被删除，则返回错误
      * @apiGroup FileMirror
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {}
+     * {"status":"success","data":{"mirror":{"id":40,"fileId":1,"content":"qyeosvfgnborxpqfmqyagyheklugcbiylczhxxtaedyeerkkpmajgskpgntohyyl","message":"krvpcwcg","createTime":"2020-05-04 03:18:07","updateTime":"2023-05-06 00:32:21"}}}
      * @apiSuccessExample 请求失败
-     * {}
+     * {"status":"failed","error":"文件镜像 5 不存在或已被删除"}
      */
     @GetMapping("{id}")
     fun find(@PathVariable fileId: Int, @PathVariable id: Int): ResponseData {
@@ -84,9 +84,9 @@ class FileMirrorController {
      * @apiHeader {String} token 用户授权 token
      * @apiParam {String} message 镜像注释
      * @apiSuccessExample 请求成功
-     * {}
+     * {"status":"success","data":{"mirror":{"id":301,"fileId":3,"content":"jfoarywksxudqwimajgenwlvebjrjdfbiumogupwebatcyvmjhryscbjwkeshont","message":"testCreate","createTime":"2020-05-23 12:56:20","updateTime":"2020-05-23 12:56:20"}}}
      * @apiSuccessExample 请求失败
-     * {}
+     * {"status":"failed","error":"文件夹 禁止创建镜像"}
      */
     @PostMapping
     fun create(@PathVariable fileId: Int, @RequestParam(required = true) message: String): ResponseData {
@@ -105,15 +105,15 @@ class FileMirrorController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {}
+     * {"status":"success","message":"文件镜像 1 已被删除"}
      * @apiSuccessExample 请求失败
-     * {}
+     * {"status":"failed","error":"文件镜像 1 不存在或已被删除"}
      */
     @DeleteMapping("{id}")
     fun remove(@PathVariable fileId: Int, @PathVariable id: Int): ResponseData {
         return try {
             FileMirrorService.remove(id)
-            Response.Success.message("文件镜像 $id 已被删除")
+            Response.Success.message("${I18N.fileMirror} $id ${I18N.hasBeenRemove}")
         } catch (e: Exception) {
             Response.Failed.WithError(e.message ?: "服务异常")
         }
