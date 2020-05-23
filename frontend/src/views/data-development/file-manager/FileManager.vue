@@ -73,7 +73,7 @@
 </style>
 
 <template>
-    <div class="file-manager" style="background-color: #3C3F41; color: #BABABA; border-bottom: 1px solid #323232">
+    <div class="file-manager" style="background-color: #3C3F41; color: #BABABA;">
         <div style="border-bottom: solid 1px #323232; border-right: solid 1px #323232;">
             <GroupSelection style="width: 120px;"/>
             <FileManagerToolBar style="float: right"/>
@@ -129,7 +129,7 @@
     import FileManagerToolBar from "../toolbars/FileManagerToolBar";
     import FileItem from "./FileItem";
     import '../../../assets/icons/iconfont.css'
-    import EventBus from "../EventBus";
+    import EventBus from "../../../event-bus/DataDevlopmentEventBus";
 
     export default {
 

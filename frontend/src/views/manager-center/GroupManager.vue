@@ -52,6 +52,8 @@
 </template>
 
 <script>
+    import GroupAPI from "../../api/GroupAPI";
+
     /**
      * 项目组管理
      * 普通用户：查看项目组 & 申请加入项目组

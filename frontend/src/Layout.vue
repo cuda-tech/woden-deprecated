@@ -1,4 +1,13 @@
 <style>
+    .layout {
+        border: none !important;
+        border-radius: 0 !important;
+    }
+
+    /** {*/
+    /*   box-sizing: unset !important;*/
+    /*box-sizing: inherit;*/
+    /*}*/
 
     /*左边菜单栏 icon 在收起时居中*/
     .collapsed-menu .ivu-menu-item {
@@ -238,4 +247,3 @@
         }
     }
 </script>
-

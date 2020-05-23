@@ -7,7 +7,7 @@
 
 <script>
     import * as monaco from 'monaco-editor';
-    import EventBus from "./EventBus";
+    import EventBus from "../../event-bus/DataDevlopmentEventBus";
 
     export default {
         name: 'Editor',

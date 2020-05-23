@@ -2,6 +2,6 @@ export default [
     {
         path: '/data_quality',
         name: 'DataQuality',
-        component: resolve => require(['../components/data-quality/DataQuality.vue'], resolve)
+        component: resolve => require(['../views/data-quality/DataQuality.vue'], resolve)
     }
 ]
