@@ -9,9 +9,9 @@ export default {
      */
     login(username, password, callback) {
         let data = new FormData();
-        data.set("username", username);
-        data.set("password", password);
-        axios.post("/login", data).then(data => callback(data.token))
+        data.set('username', username);
+        data.set('password', password);
+        axios.post('/login', data).then(data => callback(data.token))
     },
 
     /**
@@ -20,7 +20,7 @@ export default {
      * @param callback: 删除成功后的回调函数
      */
     delete(id, callback) {
-        axios.delete(`/user/${id}`).then(callback);
+        axios.delete(`/user/${id}`).then(callback());
     },
 
     /**
@@ -33,12 +33,12 @@ export default {
      */
     create({name, password, groupIds, email}, callback) {
         let params = new FormData();
-        params.set("name", name);
-        params.set("password", password);
-        params.set("groupIds", groupIds);
-        params.set("email", email);
+        params.set('name', name);
+        params.set('password', password);
+        params.set('groupIds', groupIds);
+        params.set('email', email);
 
-        axios.post("/user", params).then(data => callback(data.user));
+        axios.post('/user', params).then(data => callback(data.user));
     },
 
     /**
@@ -52,10 +52,10 @@ export default {
      */
     update({id, name, password, groupIds, email}, callback) {
         let params = new FormData();
-        params.set("name", name);
-        params.set("password", password);
-        params.set("groupIds", groupIds);
-        params.set("email", email);
+        params.set('name', name);
+        params.set('password', password);
+        params.set('groupIds', groupIds);
+        params.set('email', email);
         axios.put(`/user/${id}`, params).then(data => callback(data.user));
     },
 
@@ -71,10 +71,10 @@ export default {
             page: pageId,
             pageSize: pageSize
         };
-        if (like !== null && like.trim() !== "") {
+        if (like !== null && like.trim() !== '') {
             params['like'] = like;
         }
-        axios.get("/user", {params: params}).then(data => callback(data.count, data.users))
+        axios.get('/user', {params: params}).then(data => callback(data.count, data.users))
     },
 
     /**
@@ -82,7 +82,7 @@ export default {
      * @param callback(user): 回调函数，请求成功后会返回当前用户信息
      */
     currentUser(callback) {
-        axios.get("/user/current").then(data => callback(data.user))
+        axios.get('/user/current').then(data => callback(data.user))
     },
 
     /**

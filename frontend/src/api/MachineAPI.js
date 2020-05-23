@@ -7,7 +7,7 @@ export default {
      * @param callback(): 回调函数
      */
     delete(id, callback) {
-        axios.delete(`/machine/${id}`).then(callback);
+        axios.delete(`/machine/${id}`).then(callback());
     },
 
     /**
@@ -19,8 +19,8 @@ export default {
      */
     update({id, hostname, ip}, callback) {
         let params = new FormData();
-        params.set("hostname", hostname);
-        params.set("ip", ip);
+        params.set('hostname', hostname);
+        params.set('ip', ip);
         axios.put(`/machine/${id}`, params).then(data => callback(data.machine));
     },
 
@@ -36,10 +36,10 @@ export default {
             page: pageId,
             pageSize: pageSize
         };
-        if (like !== null && like.trim() !== "") {
+        if (like !== null && like.trim() !== '') {
             params['like'] = like;
         }
-        axios.get("/machine", {params: params}).then(data => callback(data.count, data.machines))
+        axios.get('/machine', {params: params}).then(data => callback(data.count, data.machines))
     },
 
     /**
@@ -49,8 +49,8 @@ export default {
      */
     create(ip, callback) {
         let params = new FormData();
-        params.set("ip", ip);
-        axios.post("/machine", params).then(data => callback(data.machine));
+        params.set('ip', ip);
+        axios.post('/machine', params).then(data => callback(data.machine));
     },
 
     /**
