@@ -41,7 +41,7 @@
 
 <script>
     import FileIcon from "./FileIcon";
-    import Clicker from "../../common/Clicker";
+    import Clicker from "../../../components/Clicker";
 
     export default {
         name: "FileItem",

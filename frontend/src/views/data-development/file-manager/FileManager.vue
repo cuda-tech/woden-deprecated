@@ -75,7 +75,7 @@
 <template>
     <div class="file-manager" style="background-color: #3C3F41; color: #BABABA;">
         <div style="border-bottom: solid 1px #323232; border-right: solid 1px #323232;">
-            <GroupSelection style="width: 120px;"/>
+            <GroupSelection v-model="selectedGroupId" style="width: 120px;"/>
             <FileManagerToolBar style="float: right"/>
         </div>
         <Modal v-model="createFileModal.visible" @on-ok="createFile" @on-cancel="createFileModal.visible = false">
@@ -125,7 +125,7 @@
 </template>
 
 <script>
-    import GroupSelection from "../../common/selections/GroupSelection";
+    import GroupSelection from "../../../components/selections/GroupSelection";
     import FileManagerToolBar from "../toolbars/FileManagerToolBar";
     import FileItem from "./FileItem";
     import '../../../assets/icons/iconfont.css'
@@ -151,6 +151,7 @@
             return {
                 height: 600,
                 files: [],
+                selectedGroupId: null,
                 createFileModal: {
                     visible: false,
                     parentId: null,
