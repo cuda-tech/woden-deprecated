@@ -126,7 +126,7 @@
 
 <script>
     import GroupSelection from "../../../components/selections/GroupSelection";
-    import FileManagerToolBar from "../toolbars/FileManagerToolBar";
+    import FileManagerToolBar from "./FileManagerToolBar";
     import FileItem from "./FileItem";
     import '../../../assets/icons/iconfont.css'
     import EventBus from "../../../event-bus/DataDevlopmentEventBus";

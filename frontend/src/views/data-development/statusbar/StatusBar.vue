@@ -16,9 +16,7 @@
         <Col span="3">
             <div style="float: right">
                 <RunButton/>
-                <StopButton/>
                 <UnlockButton/>
-                <CreateMirrorButton/>
                 <ReleaseButton/>
             </div>
         </Col>
@@ -29,21 +27,17 @@
     /**
      * 底部状态栏
      */
-    import RunButton from './bottons/RunButton';
-    import StopButton from './bottons/StopButton';
-    import UnlockButton from './bottons/UnlockButton';
-    import ReleaseButton from './bottons/ReleaseButton';
-    import CreateMirrorButton from "./bottons/CreateMirrorButton";
+    import RunButton from './buttons/RunButton';
+    import UnlockButton from './buttons/UnlockButton';
+    import ReleaseButton from './buttons/ReleaseButton';
     import EventBus from "../../../event-bus/DataDevlopmentEventBus";
 
     export default {
         name: "StatusToolBar",
         components: {
             RunButton: RunButton,
-            StopButton: StopButton,
             UnlockButton: UnlockButton,
             ReleaseButton: ReleaseButton,
-            CreateMirrorButton: CreateMirrorButton
         },
         created() {
             EventBus.$on("select-file", this.fetchParent);

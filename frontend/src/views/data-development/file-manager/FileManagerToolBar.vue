@@ -10,9 +10,9 @@
 </template>
 
 <script>
-    import SearchButton from "./bottons/SearchButton";
-    import SwitchButton from "./bottons/SwitchButton";
-    import FoldButton from "./bottons/FoldButton";
+    import SearchButton from "./buttons/SearchButton";
+    import SwitchButton from "./buttons/SwitchButton";
+    import FoldButton from "./buttons/FoldButton";
 
     export default {
         components: {

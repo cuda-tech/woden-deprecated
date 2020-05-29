@@ -1,5 +1,5 @@
 <style scoped>
-    .btn:hover{
+    .btn:hover {
         background-color: #353739;
     }
 </style>
@@ -7,21 +7,24 @@
     <div align="center" :style="{backgroundColor: '#3C3F41', height: height, color: '#BABABA', fontSize: 'medium'}">
         <DependencyButton class="btn"/>
         <SchedulerButton class="btn"/>
-        <VersionButton class="btn"/>
+        <MirrorButton class="btn"/>
     </div>
 </template>
 
 <script>
-    import DependencyButton from './bottons/DependencyButton';
-    import SchedulerButton from './bottons/SchedulerButton';
-    import VersionButton from "./bottons/VersionButton";
+    /**
+     * 右边导航栏
+     */
+    import DependencyButton from './buttons/DependencyButton';
+    import SchedulerButton from './buttons/SchedulerButton';
+    import MirrorButton from "./buttons/MirrorButton";
 
     export default {
         name: "SideToolBar",
         components: {
             DependencyButton: DependencyButton,
             SchedulerButton: SchedulerButton,
-            VersionButton:VersionButton
+            MirrorButton: MirrorButton
         },
         beforeMount() {
             this.height = document.documentElement.clientHeight;
@@ -35,7 +38,3 @@
         }
     }
 </script>
-
-<style scoped>
-
-</style>

@@ -49,6 +49,9 @@
 </template>
 
 <script>
+    /**
+     * 顶部文件导航栏
+     */
     import FileIcon from "../file-manager/FileIcon";
     import EventBus from "../../../event-bus/DataDevlopmentEventBus";
 
@@ -76,7 +79,6 @@
         created() {
             EventBus.$on("select-file", this.switchOrOpenTab);
         },
-
 
 
         data() {

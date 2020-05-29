@@ -15,9 +15,9 @@
 </style>
 <template>
     <div class="btn" @click="drawerIsOpen=true">
-        <Icon type="ios-albums" style="margin-bottom: 8px"/>
+        <Icon type="md-camera" style="margin-bottom: 8px"/>
         <br>
-        版本控制
+        镜像管理
         <Drawer title="历史版本" :closable="false" v-model="drawerIsOpen" width="20">
             <Timeline>
                 <TimelineItem>
@@ -49,6 +49,9 @@
     </div>
 </template>
 <script>
+    /**
+     * 镜像管理按钮
+     */
     export default {
         data() {
             return {
