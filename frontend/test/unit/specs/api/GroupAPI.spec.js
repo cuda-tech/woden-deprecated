@@ -1,4 +1,4 @@
-import groupApi from '../../../../src/api/GroupAPI'
+import groupApi from '@/api/GroupAPI'
 import axios from 'axios';
 
 jest.mock('axios');

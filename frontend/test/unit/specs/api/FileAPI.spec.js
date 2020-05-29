@@ -1,4 +1,4 @@
-import fileApi from '../../../../src/api/FileAPI'
+import fileApi from '@/api/FileAPI'
 import axios from 'axios';
 
 jest.mock('axios');

@@ -1,6 +1,6 @@
 import ViewUI from 'view-design';
 import {mount, createLocalVue} from '@vue/test-utils';
-import GroupSelection from '../../../../../src/components/selections/GroupSelection.vue';
+import GroupSelection from '@/components/selections/GroupSelection.vue';
 import axios from "axios";
 
 jest.mock('axios');

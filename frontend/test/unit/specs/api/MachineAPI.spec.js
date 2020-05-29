@@ -1,4 +1,4 @@
-import machineAPI from '../../../../src/api/MachineAPI'
+import machineAPI from '@/api/MachineAPI'
 import axios from 'axios';
 
 jest.mock('axios');

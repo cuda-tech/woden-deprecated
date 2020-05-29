@@ -1,4 +1,4 @@
-import userAPI from '../../../../src/api/UserAPI'
+import userAPI from '@/api/UserAPI'
 import axios from 'axios';
 
 jest.mock('axios');
