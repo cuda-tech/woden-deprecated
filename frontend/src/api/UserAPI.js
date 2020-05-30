@@ -7,7 +7,7 @@ export default {
      * @param password: 登录密码
      * @param callback(token): 回调函数, 请求成功后返回 token
      */
-    login(username, password, callback) {
+    login({username, password}, callback) {
         let data = new FormData();
         data.set('username', username);
         data.set('password', password);
@@ -50,7 +50,7 @@ export default {
      * @param email: 登录邮箱
      * @param callback(user): 回调函数，请求成功后返回更新后的用户
      */
-    update({id, name, password, groupIds, email}, callback) {
+    update(id, {name = null, password = null, groupIds = null, email = null}, callback) {
         let params = new FormData();
         params.set('name', name);
         params.set('password', password);
@@ -66,7 +66,7 @@ export default {
      * @param like: 用户名模糊匹配，多个词用空格间隔，null 或空字符串会忽略
      * @param callback(count, users): 回调函数，请求成功后会返回用户列表以及用户总数
      */
-    listing(pageId, pageSize, like, callback) {
+    listing({pageId, pageSize, like = null}, callback) {
         let params = {
             page: pageId,
             pageSize: pageSize

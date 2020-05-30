@@ -17,7 +17,7 @@ export default {
      * @param ip: 服务器 IP
      * @param callback(machine): 回调函数，请求成功后返回更新后的服务器
      */
-    update({id, hostname, ip}, callback) {
+    update(id, {hostname = null, ip = null}, callback) {
         let params = new FormData();
         params.set('hostname', hostname);
         params.set('ip', ip);
@@ -31,7 +31,7 @@ export default {
      * @param like: 服务器 hostname 模糊匹配，多个词用空格间隔，null 或空字符串会忽略
      * @param callback(count, machines): 回调函数，请求成功后会返回服务器列表以及服务器总数
      */
-    listing(pageId, pageSize, like, callback) {
+    listing({pageId, pageSize, like = null}, callback) {
         let params = {
             page: pageId,
             pageSize: pageSize
@@ -47,7 +47,7 @@ export default {
      * @param ip: 服务器 IP
      * @param callback(machine): 回调函数，请求成功后返回创建的服务器
      */
-    create(ip, callback) {
+    create({ip}, callback) {
         let params = new FormData();
         params.set('ip', ip);
         axios.post('/machine', params).then(data => callback(data.machine));

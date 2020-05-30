@@ -76,7 +76,7 @@ export default {
      * @param parentId: 父节点ID
      * @param callback(file): 回调函数, 返回更新后的文件信息
      */
-    update(id, {ownerId, name, content, parentId}, callback) {
+    update(id, {ownerId = null, name = null, content = null, parentId = null}, callback) {
         let params = new FormData();
         params.set('ownerId', ownerId);
         params.set('name', name);
@@ -102,7 +102,7 @@ export default {
      * @param like: 镜像名模糊匹配
      * @param callback(count, mirrors): 回调函数，返回镜像数量和镜像列表
      */
-    listingMirror(id, pageId, pageSize, like, callback) {
+    listingMirror(id, {pageId, pageSize, like = null}, callback) {
         let params = {
             page: pageId,
             pageSize: pageSize
@@ -119,7 +119,7 @@ export default {
      * @param callback(mirror): 回调函数，返回创建后的镜像信息
      */
     createMirror(id, callback) {
-        axios.post(`/file/${id}`).then(data => callback(data.mirror));
+        axios.post(`/file/${id}/mirror`).then(data => callback(data.mirror));
     },
 
     /**

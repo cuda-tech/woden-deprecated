@@ -15,7 +15,7 @@ export default {
      * @param name: 项目组名称
      * @param callback(group): 回调函数，返回创建的项目组
      */
-    create(name, callback) {
+    create({name}, callback) {
         let params = new FormData();
         params.set('name', name);
         axios.post('/group', params).then(data => callback(data.group));
@@ -27,7 +27,7 @@ export default {
      * @param name: 项目组名称
      * @param callback(group): 回调函数，返回更新后的项目组
      */
-    update(id, {name}, callback) {
+    update(id, {name = null}, callback) {
         let params = new FormData();
         params.set('name', name);
         axios.put(`/group/${id}`, params).then(data => callback(data.group));
@@ -49,7 +49,7 @@ export default {
      * @param like: 模糊查询词
      * @param callback(count, groups): 回调函数，返回符合要求的项目组总数和分页项目组列表
      */
-    listing(pageId, pageSize, like, callback) {
+    listing({pageId, pageSize, like = null}, callback) {
         let params = {
             page: pageId,
             pageSize: pageSize
