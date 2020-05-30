@@ -1,35 +1,20 @@
+import '../axios-mocker'
 import userAPI from '@/api/UserAPI'
-import axios from 'axios';
-
-jest.mock('axios');
 
 describe('用户接口', () => {
 
     test('登录测试', done => {
-        axios.post.mockResolvedValue({token: 'token Value'});
-
-        userAPI.login('root', 'root', token => {
+        userAPI.login({username: 'root', password: 'root'}, token => {
             expect(token).toEqual('token Value');
             done()
         })
     });
 
     test('删除用户测试', done => {
-        axios.delete.mockResolvedValue();
-        userAPI.delete(1, () => done())
+        userAPI.delete(1, done)
     });
 
     test('创建用户测试', done => {
-        axios.post.mockResolvedValue({
-            user: {
-                id: 180,
-                groups: [1, 2, 3],
-                name: 'testName',
-                email: 'testEmail',
-                createTime: '2020-05-22 01:43:10',
-                updateTime: '2020-05-22 01:43:10'
-            }
-        });
         userAPI.create({
                 name: 'testName',
                 password: 'testPassword',
@@ -50,19 +35,7 @@ describe('用户接口', () => {
     });
 
     test('更新用户测试', done => {
-        axios.put.mockResolvedValue({
-            user: {
-                id: 180,
-                groups: [1, 2, 3],
-                name: 'testName',
-                email: 'testEmail',
-                createTime: '2020-05-22 01:43:11',
-                updateTime: '2020-05-22 01:49:55'
-            }
-        });
-
-        userAPI.update({
-                id: 180,
+        userAPI.update(180, {
                 password: 'testPassword',
                 groupIds: [1, 2, 3],
                 email: 'testEmail'
@@ -81,36 +54,7 @@ describe('用户接口', () => {
     });
 
     test('获取用户列表测试', done => {
-        axios.get.mockResolvedValue({
-            count: 144,
-            users: [
-                {
-                    id: 1,
-                    groups: [1],
-                    name: 'root',
-                    email: 'root@datahub.com',
-                    createTime: '2048-08-14 06:10:35',
-                    updateTime: '2051-03-13 21:06:23'
-                },
-                {
-                    id: 2,
-                    groups: [1, 2, 5, 6, 7, 8, 9],
-                    name: 'guest',
-                    email: 'guest@datahub.com',
-                    createTime: '2041-02-10 19:37:55',
-                    updateTime: '2042-03-23 08:54:17'
-                },
-                {
-                    id: 3,
-                    groups: [2, 3, 4, 6, 8],
-                    name: 'OHzXwnDAAd',
-                    email: 'OHzXwnDAAd@189.com',
-                    createTime: '2041-11-20 12:44:46',
-                    updateTime: '2044-05-12 14:09:07'
-                }
-            ]
-        });
-        userAPI.listing(1, 3, null, (count, user) => {
+        userAPI.listing({pageId: 1, pageSize: 3}, (count, user) => {
             expect(count).toBe(144);
             expect(user).toEqual([
                 {
@@ -143,16 +87,6 @@ describe('用户接口', () => {
     });
 
     test('获取当前用户登录信息', done => {
-        axios.get.mockResolvedValue({
-            user: {
-                id: 1,
-                groups: [1],
-                name: 'root',
-                email: 'root@datahub.com',
-                createTime: '2048-08-14 06:10:35',
-                updateTime: '2051-03-13 21:06:23'
-            }
-        });
         userAPI.currentUser(user => {
             expect(user).toEqual({
                 id: 1,
@@ -167,17 +101,7 @@ describe('用户接口', () => {
     });
 
     test('通过 ID 查找用户', done => {
-        axios.get.mockResolvedValue({
-            user: {
-                id: 10,
-                groups: [1, 3, 4, 5, 6, 8, 9],
-                name: 'IinOzxLtGL',
-                email: 'IinOzxLtGL@139.com',
-                createTime: '2018-03-21 03:59:24',
-                updateTime: '2019-02-28 12:26:06'
-            }
-        });
-        userAPI.currentUser(user => {
+        userAPI.find(10, user => {
             expect(user).toEqual({
                 id: 10,
                 groups: [1, 3, 4, 5, 6, 8, 9],
