@@ -4,6 +4,7 @@ const utils = require('./utils');
 const config = require('../config');
 const vueLoaderConfig = require('./vue-loader.conf');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 function resolve(dir) {
     return path.join(__dirname, '..', dir);
@@ -30,7 +31,8 @@ module.exports = {
         }
     },
     plugins: [
-        new MonacoWebpackPlugin()
+        new MonacoWebpackPlugin(),
+        new VueLoaderPlugin()
     ],
     module: {
         rules: [
@@ -42,7 +44,11 @@ module.exports = {
             {
                 test: /\.js$/,
                 loader: 'babel-loader',
-                include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')]
+                include: [
+                    resolve('src'),
+                    resolve('test'),
+                    // resolve('node_modules/webpack-dev-server/client')
+                ]
             },
             {
                 test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
