@@ -18,10 +18,10 @@
         props: {
             /**
              * 弹出方向, 可选值: <br>
-             * top, top-start, top-end <br>
-             * bottom, bottom-start, bottom-end <br>
-             * left, left-start, left-end <br>
-             * right, right-start, right-end <br>
+             * @values top, top-start, top-end,
+             * bottom, bottom-start, bottom-end,
+             * left, left-start, left-end,
+             * right, right-start, right-end
              */
             placement: {
                 type: String,
