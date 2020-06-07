@@ -1,105 +1,36 @@
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const vueLoader = require('vue-loader');
 const path = require('path');
-
-const transpileDependencies = [
-    'regexpu-core',
-    'strip-ansi',
-    'ansi-regex',
-    'ansi-styles',
-    'react-dev-utils',
-    'chalk',
-    'unicode-match-property-ecmascript',
-    'unicode-match-property-value-ecmascript',
-    'acorn-jsx',
-    '@znck[\\\\/]prop-types'
-];
+const webpackConfig = require('./build_script/webpack.base.conf');
+webpackConfig.module.rules.push({
+    test: /\.css$/,
+    use: ['style-loader', 'css-loader']
+});
 
 module.exports = {
     title: 'datahub 前端文档',
     version: '1.0.0',
-    components: 'src/**/[A-Z]*.vue',
-    ignore: [
-        '**/src/assets/**',
-    ],
-    getComponentPathLine(componentPath) {
-        const componentFileName = path.basename(componentPath, '.vue');
-        const name =
-            componentFileName.toLowerCase() === 'index'
-                ? path.basename(path.dirname(componentPath))
-                : componentFileName;
-        return `import ${name} from '${componentPath.replace(/^src\//, 'my-library/dist/')}'`
-    },
-    webpackConfig: {
-        resolve: {
-            extensions: ['.js', '.vue', '.json'],
-            alias: {
-                '~': path.join(__dirname, './test'),
-                'vue$': 'vue/dist/vue.esm.js',
-                '@': path.join(__dirname, './src')
-            }
-        },
-        module: {
-            rules: [
+    webpackConfig: require('./build_script/webpack.base.conf'),
+    sections: [
+        {
+            name: '通用组件',
+            sections: [
                 {
-                    test: /\.vue$/,
-                    loader: 'vue-loader'
+                    name: 'Selections',
+                    components: 'src/components/selections/**/[A-Z]*.vue',
                 },
                 {
-                    test: /\.js$/,
-                    exclude: modulePath =>
-                        (/node_modules/.test(modulePath) ||
-                            /packages[\\/]vue-styleguidist[\\/]lib/.test(modulePath)) &&
-                        !transpileDependencies.some(mod =>
-                            new RegExp(`node_modules[\\\\/]${mod}[\\\\/]`).test(modulePath)
-                        ),
-                    use: {
-                        loader: 'babel-loader',
-                        options: {
-                            sourceType: 'unambiguous',
-                            presets: [
-                                [
-                                    '@babel/preset-env',
-                                    {
-                                        useBuiltIns: 'usage',
-                                        corejs: 3,
-                                        targets: {
-                                            ie: '11'
-                                        }
-                                    }
-                                ]
-                            ],
-                            comments: false
-                        }
-                    }
+                    name: 'Searcher',
+                    components: 'src/components/searcher/**/[A-Z]*.vue',
                 },
                 {
-                    test: /\.css$/,
-                    use: ['style-loader', 'css-loader']
-                },
-                {
-                    test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-                    loader: 'url-loader',
-                    options: {
-                        limit: 10000,
-                        name: path.posix.join('static', 'fonts/[name].[hash:7].[ext]')
-                    }
-                },
-                {
-                    test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                    loader: 'url-loader',
-                    options: {
-                        limit: 10000,
-                        name: path.posix.join('static', 'img/[name].[hash:7].[ext]')
-                    }
-                },
+                    name: '杂项',
+                    components: 'src/components/misc/**/[A-Z]*.vue',
+                }
             ]
         },
-
-        plugins: [new vueLoader.VueLoaderPlugin()].concat(
-            process.argv.includes('--analyze') ? [new BundleAnalyzerPlugin()] : []
-        )
-    },
+        {
+            name: '业务组件'
+        }
+    ],
     usageMode: 'expand',
     exampleMode: 'hide',
     defaultExample: true,
