@@ -24,28 +24,48 @@ data class ScheduleFormat(
     val year: Int? = null,
     val month: Int? = null,
     val day: Int? = null,
-    val weekday: Int? = null,
+    val weekday: Int? = null, // 周一:1, 周二: 2, ..., 周日: 7
     val hour: Int? = null,
     val minute: Int = 0
 ) {
     /**
-     * 判断格式是否满足调度周期[period]的约束
+     * 判断格式是否满足时间和调度周期[period]的约束
      */
-    fun valid(period: SchedulePeriod) = when (period) {
-        SchedulePeriod.HOUR -> Checker.allNull(year, month, day, weekday, hour)
-        SchedulePeriod.DAY -> Checker.allNull(year, month, day, weekday) && hour != null
-        SchedulePeriod.MONTH -> Checker.allNull(year, month, weekday) && Checker.allNotNull(day, hour)
-        SchedulePeriod.YEAR -> Checker.allNull(year, weekday) && Checker.allNotNull(month, day, hour)
-        SchedulePeriod.WEEK -> Checker.allNull(year, month, day) && Checker.allNotNull(weekday, hour)
-        SchedulePeriod.ONCE -> weekday == null && Checker.allNotNull(year, month, day, hour)
+    fun isValid(period: SchedulePeriod): Boolean {
+        if (year != null && year < 2020) {
+            return false
+        }
+        if (month != null && (month < 1 || month > 12)) {
+            return false
+        }
+        if (day != null && (day < 1 || day > 31)) {
+            return false
+        }
+        if (weekday != null && (weekday < 1 || weekday > 7)) {
+            return false
+        }
+        if (hour != null && (hour < 0 || hour > 23)) {
+            return false
+        }
+        if (minute < 0 || minute > 59) {
+            return false
+        }
+        return when (period) {
+            SchedulePeriod.HOUR -> Checker.allNull(year, month, day, weekday, hour)
+            SchedulePeriod.DAY -> Checker.allNull(year, month, day, weekday) && hour != null
+            SchedulePeriod.MONTH -> Checker.allNull(year, month, weekday) && Checker.allNotNull(day, hour)
+            SchedulePeriod.YEAR -> Checker.allNull(year, weekday) && Checker.allNotNull(month, day, hour)
+            SchedulePeriod.WEEK -> Checker.allNull(year, month, day) && Checker.allNotNull(weekday, hour)
+            SchedulePeriod.ONCE -> weekday == null && Checker.allNotNull(year, month, day, hour)
+        }
     }
 
     /**
      * 判断根据调度周期[period]判断在[date]这一天是否应该调度
      * 如果[date]没有提供，则判断当天是否应该调度
      */
-    fun shouldSchedule(period: SchedulePeriod, date: LocalDateTime?): Boolean {
-        if (!valid(period)) return false
+    fun shouldSchedule(period: SchedulePeriod, date: LocalDateTime? = null): Boolean {
+        if (!isValid(period)) return false
         val dt = date ?: LocalDateTime.now()
         return when (period) {
             SchedulePeriod.HOUR, SchedulePeriod.DAY -> true

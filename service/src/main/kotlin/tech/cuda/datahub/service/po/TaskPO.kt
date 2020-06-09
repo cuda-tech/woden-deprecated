@@ -15,6 +15,7 @@ package tech.cuda.datahub.service.po
 
 import me.liuwj.ktorm.entity.Entity
 import tech.cuda.datahub.service.po.dtype.ScheduleDependencyInfo
+import tech.cuda.datahub.service.po.dtype.ScheduleFormat
 import tech.cuda.datahub.service.po.dtype.SchedulePriority
 import tech.cuda.datahub.service.po.dtype.SchedulePeriod
 import java.time.LocalDateTime
@@ -35,6 +36,7 @@ internal interface TaskPO : Entity<TaskPO> {
     var args: Map<String, Any>
     var isSoftFail: Boolean
     var period: SchedulePeriod
+    var format: ScheduleFormat
     var queue: String
     var priority: SchedulePriority
     var pendingTimeout: Int

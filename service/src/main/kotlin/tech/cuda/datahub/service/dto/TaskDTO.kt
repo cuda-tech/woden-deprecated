@@ -16,6 +16,7 @@ package tech.cuda.datahub.service.dto
 import tech.cuda.datahub.annotation.pojo.DTO
 import tech.cuda.datahub.service.po.TaskPO
 import tech.cuda.datahub.service.po.dtype.ScheduleDependencyInfo
+import tech.cuda.datahub.service.po.dtype.ScheduleFormat
 import tech.cuda.datahub.service.po.dtype.SchedulePeriod
 import tech.cuda.datahub.service.po.dtype.SchedulePriority
 import java.time.LocalDateTime
@@ -34,6 +35,7 @@ data class TaskDTO(
     val args: Map<String, Any>,
     val isSoftFail: Boolean,
     val period: SchedulePeriod,
+    val format: ScheduleFormat,
     val queue: String,
     val priority: SchedulePriority,
     val pendingTimeout: Int,

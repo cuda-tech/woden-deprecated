@@ -18,6 +18,7 @@ import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.annotation.mysql.*
 import tech.cuda.datahub.service.po.dtype.ScheduleDependencyInfo
+import tech.cuda.datahub.service.po.dtype.ScheduleFormat
 import tech.cuda.datahub.service.po.dtype.SchedulePeriod
 import tech.cuda.datahub.service.po.dtype.SchedulePriority
 
@@ -60,6 +61,10 @@ internal object TaskDAO : Table<TaskPO>("tasks") {
     @VARCHAR(10)
     @COMMENT("调度周期")
     val period by enum("period", typeRef<SchedulePeriod>()).bindTo { it.period }
+
+    @JSON
+    @COMMENT("调度时间格式")
+    val format by json("format", typeRef<ScheduleFormat>()).bindTo { it.format }
 
     @VARCHAR(32)
     @COMMENT("执行队列")

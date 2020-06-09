@@ -15,6 +15,7 @@ package tech.cuda.datahub.service.po.dtype
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import java.time.LocalDateTime
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -23,61 +24,87 @@ import io.kotest.matchers.shouldBe
 class ScheduleFormatTest : StringSpec({
     "周调度测试" {
         val period = SchedulePeriod.WEEK
-        ScheduleFormat(weekday = 1, hour = 1).valid(period) shouldBe true
-        ScheduleFormat(weekday = 1).valid(period) shouldBe false
-        ScheduleFormat(year = 2020).valid(period) shouldBe false
-        ScheduleFormat(month = 1).valid(period) shouldBe false
-        ScheduleFormat(day = 1).valid(period) shouldBe false
-        ScheduleFormat(hour = 1).valid(period) shouldBe false
+        ScheduleFormat(weekday = 1, hour = 1).isValid(period) shouldBe true
+        ScheduleFormat(weekday = 1).isValid(period) shouldBe false
+        ScheduleFormat(year = 2020).isValid(period) shouldBe false
+        ScheduleFormat(month = 1).isValid(period) shouldBe false
+        ScheduleFormat(day = 1).isValid(period) shouldBe false
+        ScheduleFormat(hour = 1).isValid(period) shouldBe false
+        // 周一
+        ScheduleFormat(weekday = 1, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 8, 1, 0)) shouldBe true
+        // 周日
+        ScheduleFormat(weekday = 7, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 7, 1, 0)) shouldBe true
+        // weekday 不匹配
+        ScheduleFormat(weekday = 2, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 8, 1, 0)) shouldBe false
+        // 格式非法
+        ScheduleFormat(hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 8, 1, 0)) shouldBe false
     }
 
     "日调度测试"{
         val period = SchedulePeriod.DAY
-        ScheduleFormat(hour = 1).valid(period) shouldBe true
-        ScheduleFormat(weekday = 1).valid(period) shouldBe false
-        ScheduleFormat(year = 2020).valid(period) shouldBe false
-        ScheduleFormat(month = 1).valid(period) shouldBe false
-        ScheduleFormat(day = 1).valid(period) shouldBe false
+        ScheduleFormat(hour = 1).isValid(period) shouldBe true
+        ScheduleFormat(weekday = 1).isValid(period) shouldBe false
+        ScheduleFormat(year = 2020).isValid(period) shouldBe false
+        ScheduleFormat(month = 1).isValid(period) shouldBe false
+        ScheduleFormat(day = 1).isValid(period) shouldBe false
+
+        ScheduleFormat(hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 8, 1, 0)) shouldBe true
+        ScheduleFormat(month = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 8, 1, 0)) shouldBe false
     }
 
     "月调度测试"{
         val period = SchedulePeriod.MONTH
-        ScheduleFormat(day = 1, hour = 1).valid(period) shouldBe true
-        ScheduleFormat(weekday = 1).valid(period) shouldBe false
-        ScheduleFormat(year = 2020).valid(period) shouldBe false
-        ScheduleFormat(month = 1).valid(period) shouldBe false
-        ScheduleFormat(day = 1).valid(period) shouldBe false
-        ScheduleFormat(hour = 1).valid(period) shouldBe false
+        ScheduleFormat(day = 1, hour = 1).isValid(period) shouldBe true
+        ScheduleFormat(weekday = 1).isValid(period) shouldBe false
+        ScheduleFormat(year = 2020).isValid(period) shouldBe false
+        ScheduleFormat(month = 1).isValid(period) shouldBe false
+        ScheduleFormat(day = 1).isValid(period) shouldBe false
+        ScheduleFormat(hour = 1).isValid(period) shouldBe false
+
+        ScheduleFormat(day = 8, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 8, 1, 0)) shouldBe true
+        ScheduleFormat(day = 1, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 8, 1, 0)) shouldBe false
+        ScheduleFormat(day = -1, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 8, 1, 0)) shouldBe false
+        ScheduleFormat(day = 32, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 6, 8, 1, 0)) shouldBe false
     }
 
     "年调度测试"{
         val period = SchedulePeriod.YEAR
-        ScheduleFormat(month = 1, day = 1, hour = 1).valid(period) shouldBe true
-        ScheduleFormat(weekday = 1).valid(period) shouldBe false
-        ScheduleFormat(year = 2020).valid(period) shouldBe false
-        ScheduleFormat(month = 1).valid(period) shouldBe false
-        ScheduleFormat(day = 1).valid(period) shouldBe false
-        ScheduleFormat(hour = 1).valid(period) shouldBe false
+        ScheduleFormat(month = 1, day = 1, hour = 1).isValid(period) shouldBe true
+        ScheduleFormat(weekday = 1).isValid(period) shouldBe false
+        ScheduleFormat(year = 2020).isValid(period) shouldBe false
+        ScheduleFormat(month = 1).isValid(period) shouldBe false
+        ScheduleFormat(day = 1).isValid(period) shouldBe false
+        ScheduleFormat(hour = 1).isValid(period) shouldBe false
+
+        ScheduleFormat(month = 1, day = 1, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 1, 1, 1, 0)) shouldBe true
+        ScheduleFormat(month = 1, day = 1, hour = 1).shouldSchedule(period, LocalDateTime.of(2021, 1, 1, 1, 0)) shouldBe true
+        ScheduleFormat(month = 1, day = 1, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 1, 2, 1, 0)) shouldBe false
+        ScheduleFormat(month = 1, day = 1, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 2, 1, 1, 0)) shouldBe false
     }
 
     "小时调度测试"{
         val period = SchedulePeriod.HOUR
-        ScheduleFormat(minute = 1).valid(period) shouldBe true
-        ScheduleFormat(weekday = 1).valid(period) shouldBe false
-        ScheduleFormat(year = 2020).valid(period) shouldBe false
-        ScheduleFormat(month = 1).valid(period) shouldBe false
-        ScheduleFormat(day = 1).valid(period) shouldBe false
-        ScheduleFormat(hour = 1).valid(period) shouldBe false
+        ScheduleFormat(minute = 1).isValid(period) shouldBe true
+        ScheduleFormat(weekday = 1).isValid(period) shouldBe false
+        ScheduleFormat(year = 2020).isValid(period) shouldBe false
+        ScheduleFormat(month = 1).isValid(period) shouldBe false
+        ScheduleFormat(day = 1).isValid(period) shouldBe false
+        ScheduleFormat(hour = 1).isValid(period) shouldBe false
+        ScheduleFormat(minute = 1).shouldSchedule(period, LocalDateTime.of(2020, 1, 1, 1, 0)) shouldBe true
     }
 
     "单次调度测试"{
         val period = SchedulePeriod.ONCE
-        ScheduleFormat(year = 2020, month = 1, day = 1, hour = 1).valid(period) shouldBe true
-        ScheduleFormat(weekday = 1).valid(period) shouldBe false
-        ScheduleFormat(year = 2020).valid(period) shouldBe false
-        ScheduleFormat(month = 1).valid(period) shouldBe false
-        ScheduleFormat(day = 1).valid(period) shouldBe false
-        ScheduleFormat(hour = 1).valid(period) shouldBe false
+        ScheduleFormat(year = 2020, month = 1, day = 1, hour = 1).isValid(period) shouldBe true
+        ScheduleFormat(weekday = 1).isValid(period) shouldBe false
+        ScheduleFormat(year = 2020).isValid(period) shouldBe false
+        ScheduleFormat(month = 1).isValid(period) shouldBe false
+        ScheduleFormat(day = 1).isValid(period) shouldBe false
+        ScheduleFormat(hour = 1).isValid(period) shouldBe false
+        ScheduleFormat(year = 2020, month = 1, day = 1, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 1, 1, 1, 0)) shouldBe true
+        ScheduleFormat(year = 2020, month = 1, day = 2, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 1, 1, 1, 0)) shouldBe false
+        ScheduleFormat(year = 2020, month = 2, day = 1, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 1, 1, 1, 0)) shouldBe false
+        ScheduleFormat(year = 2021, month = 1, day = 1, hour = 1).shouldSchedule(period, LocalDateTime.of(2020, 1, 1, 1, 0)) shouldBe false
     }
 
 })

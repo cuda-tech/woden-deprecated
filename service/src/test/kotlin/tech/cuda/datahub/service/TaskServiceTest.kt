@@ -25,6 +25,7 @@ import tech.cuda.datahub.service.exception.NotFoundException
 import tech.cuda.datahub.service.exception.OperationNotAllowException
 import tech.cuda.datahub.service.exception.PermissionException
 import tech.cuda.datahub.service.po.dtype.ScheduleDependencyInfo
+import tech.cuda.datahub.service.po.dtype.ScheduleFormat
 import tech.cuda.datahub.service.po.dtype.SchedulePeriod
 import tech.cuda.datahub.service.po.dtype.SchedulePriority
 
@@ -42,6 +43,8 @@ class TaskServiceTest : TestWithMaria({
         task.name shouldBe "aniudyqv"
         task.owners shouldContainExactlyInAnyOrder setOf(131, 163, 98, 108)
         task.period shouldBe SchedulePeriod.MONTH
+        task.format shouldBe ScheduleFormat(day=12, hour=21, minute = 46)
+        task.format.isValid(task.period) shouldBe true
         task.isSoftFail shouldBe false
         task.queue shouldBe "vfukassr"
         task.priority shouldBe SchedulePriority.HIGH
@@ -64,6 +67,7 @@ class TaskServiceTest : TestWithMaria({
             val (tasks, count) = TaskService.listing(page, pageSize)
             count shouldBe validCount
             tasks.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
+            tasks.forEach { it.format.isValid(it.period) }
         }
     }
 
@@ -223,6 +227,7 @@ class TaskServiceTest : TestWithMaria({
             name = "test create",
             ownerIds = setOf(3, 12, 15),
             period = SchedulePeriod.DAY,
+            format = ScheduleFormat(hour = 3),
             queue = "adhoc",
             parent = mapOf(
                 3 to ScheduleDependencyInfo(),
@@ -234,6 +239,8 @@ class TaskServiceTest : TestWithMaria({
         task.name shouldBe "test create"
         task.owners shouldContainExactlyInAnyOrder setOf(3, 12, 15)
         task.period shouldBe SchedulePeriod.DAY
+        task.format shouldBe ScheduleFormat(hour = 3, minute = 0)
+        task.format.isValid(task.period) shouldBe true
         task.parent.keys shouldContainExactlyInAnyOrder setOf(3, 4)
         task.queue shouldBe "adhoc"
         task.priority shouldBe SchedulePriority.VERY_LOW
@@ -247,6 +254,7 @@ class TaskServiceTest : TestWithMaria({
                 name = "test create",
                 ownerIds = setOf(3, 12, 15),
                 period = SchedulePeriod.DAY,
+                format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
                 parent = mapOf(
                     3 to ScheduleDependencyInfo(),
@@ -262,6 +270,7 @@ class TaskServiceTest : TestWithMaria({
                 name = "test create",
                 ownerIds = setOf(3, 12, 15),
                 period = SchedulePeriod.DAY,
+                format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
                 parent = mapOf(
                     3 to ScheduleDependencyInfo(),
@@ -277,6 +286,7 @@ class TaskServiceTest : TestWithMaria({
                 name = "test create",
                 ownerIds = setOf(3, 12, 15, 27),
                 period = SchedulePeriod.DAY,
+                format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
                 parent = mapOf(
                     3 to ScheduleDependencyInfo(),
@@ -292,6 +302,7 @@ class TaskServiceTest : TestWithMaria({
                 name = "test create",
                 ownerIds = setOf(3, 12, 15, 4),
                 period = SchedulePeriod.DAY,
+                format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
                 parent = mapOf(
                     3 to ScheduleDependencyInfo(),
@@ -307,6 +318,7 @@ class TaskServiceTest : TestWithMaria({
                 name = "test create",
                 ownerIds = setOf(3, 12, 15),
                 period = SchedulePeriod.DAY,
+                format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
                 parent = mapOf(
                     2 to ScheduleDependencyInfo(),
@@ -322,6 +334,7 @@ class TaskServiceTest : TestWithMaria({
                 name = "test create",
                 ownerIds = setOf(3, 12, 15),
                 period = SchedulePeriod.DAY,
+                format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
                 parent = mapOf(
                     6 to ScheduleDependencyInfo(),
@@ -329,6 +342,39 @@ class TaskServiceTest : TestWithMaria({
                 )
             )
         }.message shouldBe "父任务 6 已失效 , 禁止依赖"
+
+        // 调度格式非法
+        shouldThrow<OperationNotAllowException> {
+            TaskService.create(
+                mirrorId = 1,
+                name = "test create",
+                ownerIds = setOf(3, 12, 15),
+                period = SchedulePeriod.DAY,
+                format = ScheduleFormat(hour = 24),
+                queue = "adhoc",
+                parent = mapOf(
+                    3 to ScheduleDependencyInfo(),
+                    4 to ScheduleDependencyInfo()
+                )
+            )
+        }.message shouldBe "调度时间格式 非法"
+
+        shouldThrow<OperationNotAllowException> {
+            TaskService.create(
+                mirrorId = 1,
+                name = "test create",
+                ownerIds = setOf(3, 12, 15),
+                period = SchedulePeriod.DAY,
+                format = ScheduleFormat(year = 2020, hour = 3),
+                queue = "adhoc",
+                parent = mapOf(
+                    3 to ScheduleDependencyInfo(),
+                    4 to ScheduleDependencyInfo()
+                )
+            )
+        }.message shouldBe "调度时间格式 非法"
+
+
     }
 
     "更新任务" {
@@ -342,6 +388,7 @@ class TaskServiceTest : TestWithMaria({
             name = "test update",
             ownerIds = setOf(14, 16, 17),
             period = SchedulePeriod.DAY,
+            format = ScheduleFormat(hour = 3),
             queue = "adhoc",
             priority = SchedulePriority.HIGH,
             parent = mapOf(
@@ -399,6 +446,61 @@ class TaskServiceTest : TestWithMaria({
                 isValid = false
             )
         }.message shouldBe "文件镜像 301 不存在或已被删除"
+
+        // 试图更新调度周期而不提供调度时间格式
+        shouldThrow<OperationNotAllowException> {
+            TaskService.update(
+                id = 35,
+                mirrorId = 203,
+                name = "test update",
+                ownerIds = setOf(14, 16, 17),
+                period = SchedulePeriod.DAY,
+                queue = "adhoc",
+                priority = SchedulePriority.HIGH,
+                parent = mapOf(
+                    4 to ScheduleDependencyInfo(),
+                    8 to ScheduleDependencyInfo()
+                ),
+                isValid = false
+            )
+        }.message shouldBe "调度时间格式 缺失"
+
+        // 试图更新调度周期而调度时间格式不匹配
+        shouldThrow<OperationNotAllowException> {
+            TaskService.update(
+                id = 35,
+                mirrorId = 203,
+                name = "test update",
+                ownerIds = setOf(14, 16, 17),
+                period = SchedulePeriod.DAY,
+                format = ScheduleFormat(year=2020, hour = 3),
+                queue = "adhoc",
+                priority = SchedulePriority.HIGH,
+                parent = mapOf(
+                    4 to ScheduleDependencyInfo(),
+                    8 to ScheduleDependencyInfo()
+                ),
+                isValid = false
+            )
+        }.message shouldBe "调度时间格式 非法"
+
+        // 试图更新非法的调度时间格式
+        shouldThrow<OperationNotAllowException> {
+            TaskService.update(
+                id = 35,
+                mirrorId = 203,
+                name = "test update",
+                ownerIds = setOf(14, 16, 17),
+                format = ScheduleFormat(year=2020, hour = 3),
+                queue = "adhoc",
+                priority = SchedulePriority.HIGH,
+                parent = mapOf(
+                    4 to ScheduleDependencyInfo(),
+                    8 to ScheduleDependencyInfo()
+                ),
+                isValid = false
+            )
+        }.message shouldBe "调度时间格式 非法"
 
         // 文件不存在
         shouldThrow<NotFoundException> {
@@ -479,7 +581,6 @@ class TaskServiceTest : TestWithMaria({
                 mirrorId = 203,
                 name = "test update",
                 ownerIds = setOf(14, 16, 17),
-                period = SchedulePeriod.DAY,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
                 parent = mapOf(
@@ -497,7 +598,6 @@ class TaskServiceTest : TestWithMaria({
                 mirrorId = 203,
                 name = "test update",
                 ownerIds = setOf(14, 16, 17),
-                period = SchedulePeriod.DAY,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
                 parent = mapOf(

@@ -29,6 +29,7 @@ import tech.cuda.datahub.service.exception.PermissionException
 import tech.cuda.datahub.service.mysql.function.contains
 import tech.cuda.datahub.service.po.TaskPO
 import tech.cuda.datahub.service.po.dtype.ScheduleDependencyInfo
+import tech.cuda.datahub.service.po.dtype.ScheduleFormat
 import tech.cuda.datahub.service.po.dtype.SchedulePeriod
 import tech.cuda.datahub.service.po.dtype.SchedulePriority
 import java.time.LocalDateTime
@@ -98,6 +99,7 @@ object TaskService : Service(TaskDAO) {
      * 如果[ownerIds]中存在用户已被删除或查找不到，则抛出 NotFoundException
      * 如果依赖的父任务[parent]有失效的，则抛出 OperationNotAllowException
      * 如果依赖的父任务[parent]有被删除的或已失效的，则抛出 NotFoundException
+     * 如果调度格式[format]非法，则抛出 OperationNotAllowException
      */
     fun create(
         mirrorId: Int,
@@ -106,6 +108,7 @@ object TaskService : Service(TaskDAO) {
         args: Map<String, String> = mapOf(),
         isSoftFail: Boolean = false,
         period: SchedulePeriod,
+        format: ScheduleFormat,
         queue: String,
         priority: SchedulePriority = SchedulePriority.VERY_LOW,
         pendingTimeout: Int = Int.MAX_VALUE,
@@ -120,6 +123,9 @@ object TaskService : Service(TaskDAO) {
         val file = FileService.findById(mirror.fileId)
             ?: throw NotFoundException(I18N.file, mirror.fileId, I18N.notExistsOrHasBeenRemove)
         val groupId = file.groupId
+
+        // 检查调度时间格式是否合法
+        if (!format.isValid(period)) throw OperationNotAllowException(I18N.scheduleFormat, I18N.illegal)
 
         // 检查用户权限
         ownerIds.forEach {
@@ -145,6 +151,7 @@ object TaskService : Service(TaskDAO) {
             this.args = args
             this.isSoftFail = isSoftFail
             this.period = period
+            this.format = format
             this.queue = queue
             this.priority = priority
             this.pendingTimeout = pendingTimeout
@@ -177,6 +184,8 @@ object TaskService : Service(TaskDAO) {
      * 如果试图更新[parent]，且列表中存在已删除的或不存在的任务，则抛出 NotFoundException
      * 如果试图更新[parent]，且列表中存在失效的任务，则抛出 IllegalArgumentException
      * 如果试图更新[isValid]为 false，且子任务存在未失效的任务，则抛出 IllegalArgumentException
+     * 如果试图更新[period]，且没有提供[format]或[format]非法，则抛出 OperationNotAllowException
+     * 如果试图更新[format]，且格式非法，则抛出 OperationNotAllowException
      */
     fun update(
         id: Int,
@@ -186,6 +195,7 @@ object TaskService : Service(TaskDAO) {
         args: Map<String, Any>? = null,
         isSoftFail: Boolean? = null,
         period: SchedulePeriod? = null,
+        format: ScheduleFormat? = null,
         queue: String? = null,
         priority: SchedulePriority? = null,
         pendingTimeout: Int? = null,
@@ -218,7 +228,22 @@ object TaskService : Service(TaskDAO) {
         }
         args?.let { task.args = args }
         isSoftFail?.let { task.isSoftFail = isSoftFail }
-        period?.let { task.period = period }
+        if (period != null && format == null) {
+            throw OperationNotAllowException(I18N.scheduleFormat, I18N.missing)
+        } else if (period != null && format != null) {
+            if (!format.isValid(period)) {
+                throw OperationNotAllowException(I18N.scheduleFormat, I18N.illegal)
+            } else {
+                task.period = period
+                task.format = format
+            }
+        } else if (period == null && format != null) {
+            if (!format.isValid(task.period)) {
+                throw OperationNotAllowException(I18N.scheduleFormat, I18N.illegal)
+            } else {
+                task.format = format
+            }
+        }
         queue?.let { task.queue = queue }
         priority?.let { task.priority = priority }
         pendingTimeout?.let { task.pendingTimeout = pendingTimeout }
