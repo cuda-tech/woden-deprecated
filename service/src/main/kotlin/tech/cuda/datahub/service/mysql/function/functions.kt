@@ -15,9 +15,9 @@ package tech.cuda.datahub.service.mysql.function
 
 import me.liuwj.ktorm.expression.ArgumentExpression
 import me.liuwj.ktorm.expression.FunctionExpression
-import me.liuwj.ktorm.schema.BooleanSqlType
-import me.liuwj.ktorm.schema.ColumnDeclaring
-import me.liuwj.ktorm.schema.VarcharSqlType
+import me.liuwj.ktorm.schema.*
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -32,5 +32,15 @@ fun ColumnDeclaring<Set<Int>>.contains(item: Int): FunctionExpression<Boolean> {
             ArgumentExpression("$", VarcharSqlType)
         ),
         sqlType = BooleanSqlType
+    )
+}
+
+fun ColumnDeclaring<LocalDateTime>.toDate(): FunctionExpression<LocalDate> {
+    return FunctionExpression(
+        functionName = "date",
+        arguments = listOf(
+            this.asExpression()
+        ),
+        sqlType = LocalDateSqlType
     )
 }
