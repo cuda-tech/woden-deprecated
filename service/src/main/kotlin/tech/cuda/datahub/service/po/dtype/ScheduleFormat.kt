@@ -32,7 +32,7 @@ data class ScheduleFormat(
      * 判断格式是否满足时间和调度周期[period]的约束
      */
     fun isValid(period: SchedulePeriod): Boolean {
-        if (year != null && year < 2020) {
+        if (year != null && year < 0) {
             return false
         }
         if (month != null && (month < 1 || month > 12)) {
