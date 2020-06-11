@@ -14,10 +14,11 @@
 package tech.cuda.datahub.service.po
 
 import me.liuwj.ktorm.entity.Entity
+import tech.cuda.datahub.service.po.dtype.JobStatus
 import java.time.LocalDateTime
 
 /**
- * 任务例行作业
+ * 当天的例行作业
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
@@ -26,6 +27,9 @@ internal interface JobPO : Entity<JobPO> {
 
     val id: Int
     var taskId: Int
+    var status: JobStatus
+    var hour: Int
+    var minute: Int
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime

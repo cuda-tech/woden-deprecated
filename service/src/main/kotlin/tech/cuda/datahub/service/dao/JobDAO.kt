@@ -13,12 +13,10 @@
  */
 package tech.cuda.datahub.service.dao
 
+import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.service.po.JobPO
-import me.liuwj.ktorm.schema.Table
-import me.liuwj.ktorm.schema.boolean
-import me.liuwj.ktorm.schema.datetime
-import me.liuwj.ktorm.schema.int
 import tech.cuda.datahub.annotation.mysql.*
+import tech.cuda.datahub.service.po.dtype.JobStatus
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -37,6 +35,18 @@ internal object JobDAO : Table<JobPO>("jobs") {
     @UNSIGNED
     @COMMENT("任务 ID")
     val taskId by int("task_id").bindTo { it.taskId }
+
+    @VARCHAR(10)
+    @COMMENT("作业状态")
+    val status by enum("status", typeRef<JobStatus>()).bindTo { it.status }
+
+    @TINYINT
+    @COMMENT("执行时间（小时)")
+    val hour by int("hour").bindTo { it.hour }
+
+    @TINYINT
+    @COMMENT("执行时间（小时)")
+    val minute by int("minute").bindTo { it.minute }
 
     @BOOL
     @COMMENT("逻辑删除")
