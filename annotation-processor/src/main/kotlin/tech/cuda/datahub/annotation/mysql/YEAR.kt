@@ -19,5 +19,4 @@ package tech.cuda.datahub.annotation.mysql
  */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(value = AnnotationRetention.SOURCE)
-annotation class SMALLINT(val length: Int = 6)
-
+annotation class YEAR

@@ -110,20 +110,46 @@ class DDLProcessor : AbstractProcessor() {
                             var comment = ""
                             it.mods.annotations.forEach { annotation ->
                                 when (annotation.type.toString()) {
+                                    // 修饰符
                                     COMMENT::class.qualifiedName -> comment = annotation.args.orDefault("")
-                                    BIGINT::class.qualifiedName -> columnType = "bigint(${annotation.args.orDefault(20)})"
                                     AUTO_INCREMENT::class.qualifiedName -> autoIncrement = true
-                                    BOOL::class.qualifiedName -> columnType = "bool"
-                                    DATETIME::class.qualifiedName -> columnType = "datetime"
-                                    INT::class.qualifiedName -> columnType = "int(${annotation.args.orDefault(11)})"
-                                    JSON::class.qualifiedName -> columnType = "json"
                                     NOT_NULL::class.qualifiedName -> isNotNull = true
                                     PRIMARY_KEY::class.qualifiedName -> isPrimaryKey = true
-                                    SMALLINT::class.qualifiedName -> columnType = "smallint(${annotation.args.orDefault(5)})"
-                                    TEXT::class.qualifiedName -> columnType = "text"
-                                    TINYINT::class.qualifiedName -> columnType = "tinyint(${annotation.args.orDefault(4)})"
                                     UNSIGNED::class.qualifiedName -> isUnsigned = true
+
+                                    // 整型
+                                    TINYINT::class.qualifiedName -> columnType = "tinyint(${annotation.args.orDefault(4)})"
+                                    SMALLINT::class.qualifiedName -> columnType = "smallint(${annotation.args.orDefault(6)})"
+                                    MEDIUMINT::class.qualifiedName -> columnType = "mediumint(${annotation.args.orDefault(9)})"
+                                    INT::class.qualifiedName -> columnType = "int(${annotation.args.orDefault(11)})"
+                                    BIGINT::class.qualifiedName -> columnType = "bigint(${annotation.args.orDefault(20)})"
+
+                                    // 浮点型
+
+                                    // 字符型
                                     VARCHAR::class.qualifiedName -> columnType = "varchar(${annotation.args.orDefault(16)})"
+                                    CHAR::class.qualifiedName -> columnType = "char(${annotation.args.orDefault(16)})"
+
+                                    TINYTEXT::class.qualifiedName -> columnType = "tinytext"
+                                    TEXT::class.qualifiedName -> columnType = "text"
+                                    MEDIUMTEXT::class.qualifiedName -> columnType = "mediumtext"
+                                    LONGTEXT::class.qualifiedName -> columnType = "longtext"
+
+                                    TINYBLOB::class.qualifiedName -> columnType = "tinyblob"
+                                    BLOB::class.qualifiedName -> columnType = "blob"
+                                    MEDIUMBLOB::class.qualifiedName -> columnType = "mediumblob"
+                                    LONGBLOB::class.qualifiedName -> columnType = "longblob"
+
+                                    // 时间型
+                                    DATETIME::class.qualifiedName -> columnType = "datetime"
+                                    DATE::class.qualifiedName -> columnType = "date"
+                                    TIME::class.qualifiedName -> columnType = "time"
+                                    TIMESTAMP::class.qualifiedName -> columnType = "timestamp"
+                                    YEAR::class.qualifiedName -> columnType = "year"
+
+                                    // 其他
+                                    BOOL::class.qualifiedName -> columnType = "bool"
+                                    JSON::class.qualifiedName -> columnType = "json"
                                 }
                             }
                             listOfNotNull(
