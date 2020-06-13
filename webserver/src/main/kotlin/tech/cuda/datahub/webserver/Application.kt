@@ -13,18 +13,27 @@
  */
 package tech.cuda.datahub.webserver
 
+import com.alibaba.druid.pool.DruidDataSourceFactory
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
+import com.google.common.io.Resources
+import datahub.tech.cuda.datahub.logo
+import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.jackson.KtormModule
+import org.apache.log4j.Logger
+import org.springframework.boot.Banner
+import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.io.FileReader
 import java.time.format.DateTimeFormatter
+import java.util.*
 import javax.servlet.*
 import javax.servlet.http.HttpServletRequest
 
@@ -73,4 +82,14 @@ open class RestfulServer : WebMvcConfigurer, Filter {
 
     override fun destroy() {}
 
+}
+
+fun main(args: Array<String>) {
+    with(SpringApplication(RestfulServer::class.java)) {
+        setBannerMode(Banner.Mode.OFF)
+        run(*args)
+        Logger.getLogger("DataHub").info(logo)
+        val props = Properties().also { it.load(FileReader(Resources.getResource("druid.properties").file)) }
+        Database.connect(DruidDataSourceFactory.createDataSource(props))
+    }
 }
