@@ -14,6 +14,7 @@
 package tech.cuda.datahub.service.po
 
 import me.liuwj.ktorm.entity.Entity
+import tech.cuda.datahub.service.po.dtype.InstanceStatus
 import java.time.LocalDateTime
 
 /**
@@ -26,6 +27,8 @@ internal interface InstancePO : Entity<InstancePO> {
 
     val id: Int
     var jobId: Int
+    var status: InstanceStatus
+    var log: String
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime

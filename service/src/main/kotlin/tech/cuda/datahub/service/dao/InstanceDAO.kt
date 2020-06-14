@@ -13,12 +13,11 @@
  */
 package tech.cuda.datahub.service.dao
 
+import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.service.po.InstancePO
-import me.liuwj.ktorm.schema.Table
-import me.liuwj.ktorm.schema.boolean
-import me.liuwj.ktorm.schema.datetime
-import me.liuwj.ktorm.schema.int
 import tech.cuda.datahub.annotation.mysql.*
+import tech.cuda.datahub.service.mysql.type.longtext
+import tech.cuda.datahub.service.po.dtype.InstanceStatus
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -38,6 +37,14 @@ internal object InstanceDAO : Table<InstancePO>("instances") {
     @UNSIGNED
     @COMMENT("作业 ID")
     val jobId by int("job_id").bindTo { it.jobId }
+
+    @VARCHAR(10)
+    @COMMENT("实例状态")
+    val status by enum("status", typeRef<InstanceStatus>()).bindTo { it.status }
+
+    @LONGTEXT
+    @COMMENT("执行日志")
+    val log by longtext("log").bindTo { it.log }
 
     @BOOL
     @COMMENT("逻辑删除")

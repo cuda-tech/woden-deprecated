@@ -15,6 +15,7 @@ package tech.cuda.datahub.service.dto
 
 import tech.cuda.datahub.annotation.pojo.DTO
 import tech.cuda.datahub.service.po.InstancePO
+import tech.cuda.datahub.service.po.dtype.InstanceStatus
 import java.time.LocalDateTime
 
 /**
@@ -25,6 +26,8 @@ import java.time.LocalDateTime
 data class InstanceDTO(
     val id: Int,
     val jobId: Int,
+    val status: InstanceStatus,
+    val log: String,
     val createTime: LocalDateTime,
     val updateTime: LocalDateTime
 )
