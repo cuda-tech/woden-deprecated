@@ -41,6 +41,8 @@ interface Language {
     val crossFileUpdateMirrorNotAllow: String
     val invalidNotAllow: String
     val createMirrorNotAllow: String
+    val createInstanceNotAllow: String
+    val status: String
     val mustBe: String
     val canNot: String
     val isNot: String
@@ -52,6 +54,13 @@ interface Language {
     val fileType: String
     val updateNotAllow: String
     val ipAddress: String
+    val hasBeenRemove: String
+    val illegal: String
+    val scheduleFormat: String
+    val missing: String
+    val canNotUpdateTo: String
+    val hostname: String
+    val mac: String
 }
 
 

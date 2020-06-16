@@ -51,5 +51,14 @@ data class Chinese(
     override val fileType: String = "文件类型",
     override val updateNotAllow: String = "禁止更新",
     override val ipAddress: String = "IP 地址",
-    override val existsAlready: String = "已存在"
+    override val existsAlready: String = "已存在",
+    override val hasBeenRemove: String = "已被删除",
+    override val illegal: String = "非法",
+    override val scheduleFormat: String = "调度时间格式",
+    override val missing: String = "缺失",
+    override val createInstanceNotAllow: String = "禁止创建调度实例",
+    override val status: String = "状态",
+    override val canNotUpdateTo: String = "禁止更新为",
+    override val hostname: String = "主机名",
+    override val mac: String = "网卡 MAC 地址"
 ) : Language
