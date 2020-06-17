@@ -64,15 +64,14 @@ data class ScheduleFormat(
      * 判断根据调度周期[period]判断在[date]这一天是否应该调度
      * 如果[date]没有提供，则判断当天是否应该调度
      */
-    fun shouldSchedule(period: SchedulePeriod, date: LocalDateTime? = null): Boolean {
+    fun shouldSchedule(period: SchedulePeriod, date: LocalDateTime = LocalDateTime.now()): Boolean {
         if (!isValid(period)) return false
-        val dt = date ?: LocalDateTime.now()
         return when (period) {
             SchedulePeriod.HOUR, SchedulePeriod.DAY -> true
-            SchedulePeriod.MONTH -> dt.dayOfMonth == day
-            SchedulePeriod.ONCE -> dt.year == year && dt.monthValue == month && dt.dayOfMonth == day
-            SchedulePeriod.WEEK -> dt.dayOfWeek.value == weekday
-            SchedulePeriod.YEAR -> dt.monthValue == month && dt.dayOfMonth == day
+            SchedulePeriod.MONTH -> date.dayOfMonth == day
+            SchedulePeriod.ONCE -> date.year == year && date.monthValue == month && date.dayOfMonth == day
+            SchedulePeriod.WEEK -> date.dayOfWeek.value == weekday
+            SchedulePeriod.YEAR -> date.monthValue == month && date.dayOfMonth == day
         }
     }
 }
