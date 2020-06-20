@@ -14,11 +14,9 @@
 package tech.cuda.datahub.service
 
 import me.liuwj.ktorm.database.Database
-import me.liuwj.ktorm.dsl.and
-import me.liuwj.ktorm.dsl.desc
-import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.dsl.inList
+import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.add
+import me.liuwj.ktorm.entity.findListByIds
 import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.dao.TaskDAO
 import tech.cuda.datahub.service.dto.TaskDTO
@@ -38,6 +36,7 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@Suppress("DEPRECATION")
 object TaskService : Service(TaskDAO) {
 
     /**
@@ -81,6 +80,17 @@ object TaskService : Service(TaskDAO) {
         )
         return tasks.map { it.toTaskDTO() } to count
     }
+
+    /**
+     * 查询任务[task]的子任务
+     */
+    fun listingChildren(task: TaskDTO) = TaskDAO.findListByIds(task.children).map { it.toTaskDTO() }
+
+
+    /**
+     * 查询任务[task]的父任务
+     */
+    fun listingParent(task: TaskDTO) = TaskDAO.findListByIds(task.parent.keys).map { it.toTaskDTO() }
 
     /**
      * 查找指定 id 的任务

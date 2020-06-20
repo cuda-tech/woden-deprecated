@@ -19,6 +19,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import javafx.concurrent.Task
 import tech.cuda.datahub.TestWithMaria
 import tech.cuda.datahub.service.dao.*
 import tech.cuda.datahub.service.exception.NotFoundException
@@ -43,7 +44,7 @@ class TaskServiceTest : TestWithMaria({
         task.name shouldBe "aniudyqv"
         task.owners shouldContainExactlyInAnyOrder setOf(131, 163, 98, 108)
         task.period shouldBe SchedulePeriod.MONTH
-        task.format shouldBe ScheduleFormat(day=12, hour=21, minute = 46)
+        task.format shouldBe ScheduleFormat(day = 12, hour = 21, minute = 46)
         task.format.isValid(task.period) shouldBe true
         task.isSoftFail shouldBe false
         task.queue shouldBe "vfukassr"
@@ -216,6 +217,18 @@ class TaskServiceTest : TestWithMaria({
         )
         tasks.size shouldBe 2
         count shouldBe 3
+    }
+
+    "查询子任务" {
+        TaskService.listingChildren(TaskService.findById(42)!!).map { it.id } shouldContainExactlyInAnyOrder listOf(1, 2, 3, 4, 5)
+        TaskService.listingChildren(TaskService.findById(4)!!).map { it.id } shouldContainExactlyInAnyOrder listOf(3)
+        TaskService.listingChildren(TaskService.findById(5)!!).size shouldBe 0
+    }
+
+    "查询父任务" {
+        TaskService.listingParent(TaskService.findById(35)!!).map { it.id } shouldContainExactlyInAnyOrder listOf(30, 34)
+        TaskService.listingParent(TaskService.findById(3)!!).map { it.id } shouldContainExactlyInAnyOrder listOf(4)
+        TaskService.listingParent(TaskService.findById(5)!!).size shouldBe 0
     }
 
     "创建任务" {
@@ -473,7 +486,7 @@ class TaskServiceTest : TestWithMaria({
                 name = "test update",
                 ownerIds = setOf(14, 16, 17),
                 period = SchedulePeriod.DAY,
-                format = ScheduleFormat(year=2020, hour = 3),
+                format = ScheduleFormat(year = 2020, hour = 3),
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
                 parent = mapOf(
@@ -491,7 +504,7 @@ class TaskServiceTest : TestWithMaria({
                 mirrorId = 203,
                 name = "test update",
                 ownerIds = setOf(14, 16, 17),
-                format = ScheduleFormat(year=2020, hour = 3),
+                format = ScheduleFormat(year = 2020, hour = 3),
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
                 parent = mapOf(
