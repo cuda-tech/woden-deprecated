@@ -18,7 +18,9 @@ package tech.cuda.datahub.service.po.dtype
  * @since 1.0.0
  */
 enum class JobStatus {
-    WIP, // 正常调度中(work in progress)
+    INIT, // 新建状态
+    READY, // 可执行状态
+    RUNNING, // 执行中
     HOLD, // 挂起，即该作业不会调度，并且后续作业将会中止调度
     PASS, // 跳过，即该作业不会调度，但后续作业会继续调度
     SUCCESS,

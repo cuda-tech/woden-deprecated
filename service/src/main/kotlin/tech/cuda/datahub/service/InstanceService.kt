@@ -32,6 +32,7 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@Suppress("DEPRECATION")
 object InstanceService : Service(InstanceDAO) {
     /**
      * 通过[id]查找实例
@@ -63,7 +64,7 @@ object InstanceService : Service(InstanceDAO) {
      * 如果[job]的状态不为 WIP，则抛出 OperationNotAllowException
      */
     fun create(job: JobDTO): InstanceDTO = Database.global.useTransaction {
-        if (job.status != JobStatus.WIP) {
+        if (job.status != JobStatus.INIT) {
             throw OperationNotAllowException(I18N.job, job.id, I18N.status, job.status, I18N.createInstanceNotAllow)
         }
         val instance = InstancePO {

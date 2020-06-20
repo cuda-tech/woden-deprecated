@@ -116,7 +116,7 @@ class JobServiceTest : TestWithMaria({
                 job!!
                 job.hour shouldBe hr
                 job.minute shouldBe 38
-                job.status shouldBe JobStatus.WIP
+                job.status shouldBe JobStatus.INIT
             }
         }
 
@@ -125,7 +125,7 @@ class JobServiceTest : TestWithMaria({
         with(JobService.listing(1, 100, taskId = 112, before = now, after = now)) {
             this.second shouldBe 1
             val job = this.first.first()
-            job.status shouldBe JobStatus.WIP
+            job.status shouldBe JobStatus.INIT
             job.hour shouldBe 16
             job.minute shouldBe 59
         }
@@ -151,9 +151,9 @@ class JobServiceTest : TestWithMaria({
 
     "更新作业" {
 
-        JobService.update(4, JobStatus.WIP)
+        JobService.update(4, JobStatus.INIT)
         val job = JobService.findById(4)!!
-        job.status shouldBe JobStatus.WIP
+        job.status shouldBe JobStatus.INIT
         job.updateTime shouldNotBe "2026-01-26 23:09:37".toLocalDateTime()
 
         shouldThrow<NotFoundException> {

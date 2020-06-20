@@ -33,6 +33,7 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@Suppress("DEPRECATION")
 object JobService : Service(JobDAO) {
 
     /**
@@ -86,11 +87,11 @@ object JobService : Service(JobDAO) {
             throw OperationNotAllowException(I18N.scheduleFormat, I18N.illegal)
         }
         // 只有当天需要调度的任务才会生成作业
-        if (task.format.shouldSchedule(task.period, LocalDateTime.now())) {
+        if (task.format.shouldSchedule(task.period)) {
             if (task.period != SchedulePeriod.HOUR) { // 非小时任务只会生成一个作业
                 val job = JobPO {
                     taskId = task.id
-                    status = JobStatus.WIP
+                    status = JobStatus.INIT
                     hour = task.format.hour!! // 非小时 hour 一定不为 null
                     minute = task.format.minute
                     isRemove = false
@@ -103,7 +104,7 @@ object JobService : Service(JobDAO) {
                 return (0..23).map { hr ->
                     val job = JobPO {
                         taskId = task.id
-                        status = JobStatus.WIP
+                        status = JobStatus.INIT
                         hour = hr
                         minute = task.format.minute
                         isRemove = false
