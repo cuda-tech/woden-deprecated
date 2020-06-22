@@ -19,7 +19,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestCase
 import me.liuwj.ktorm.schema.Table
 import tech.cuda.datahub.service.config.DatabaseConfig
-import tech.cuda.datahub.service.utils.Schema
+import tech.cuda.datahub.service.Database
 
 /**
  * 基于 maria 数据库的测试套件，所有测试用例执行前启动 maria 数据库
@@ -29,20 +29,19 @@ import tech.cuda.datahub.service.utils.Schema
  */
 open class TestWithMaria(body: StringSpec.() -> Unit = {}, private vararg val tables: Table<*> = arrayOf()) : StringSpec(body) {
 
-    private lateinit var schema: Schema
 
     override fun beforeSpec(spec: Spec) {
         super.beforeSpec(spec)
         val db = DB.newEmbeddedDB(0).also { it.start() }
-        schema = Schema(DatabaseConfig(port = db.configuration.port))
-//        schema = Schema(DatabaseConfig(port = 3306))
+        Database.connect(DatabaseConfig(port = db.configuration.port))
+//        Database.connect(DatabaseConfig(port = 3306))
     }
 
     override fun beforeTest(testCase: TestCase) {
         super.beforeTest(testCase)
-        schema.rebuildDB()
+        Database.rebuild()
         tables.forEach {
-            schema.mockTable(it)
+            Database.mock(it)
         }
     }
 }

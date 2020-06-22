@@ -31,7 +31,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import tech.cuda.datahub.service.config.DatabaseConfig
-import tech.cuda.datahub.service.utils.Schema
+import tech.cuda.datahub.service.Database
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -47,7 +47,6 @@ open class RestfulTestToolbox(private vararg val tables: String = arrayOf()) : A
     @Autowired
     lateinit var template: TestRestTemplate
     lateinit var postman: Postman
-    private lateinit var schema: Schema
     val mapper: ObjectMapper = ObjectMapper()
         .registerModule(KotlinModule())
         .registerModule(JavaTimeModule().addDeserializer(LocalDateTime::class.java,
@@ -59,18 +58,18 @@ open class RestfulTestToolbox(private vararg val tables: String = arrayOf()) : A
     @BeforeAll
     fun beforeAll() {
         val db = DB.newEmbeddedDB(0).also { it.start() }
-//        schema = Schema(DatabaseConfig(port = db.configuration.port))
-        schema = Schema(DatabaseConfig(port = 3306))
+//        Database.connect(DatabaseConfig(port = db.configuration.port))
+        Database.connect(DatabaseConfig(port = 3306))
     }
 
     @BeforeEach
     fun beforeEach() {
-        schema.rebuildDB()
+        Database.rebuild()
         tables.forEach {
-            schema.mockTable(it)
+            Database.mock(it)
         }
         if ("users" !in tables) {
-            schema.mockTable("users")
+            Database.mock("users")
         }
         this.postman = Postman(template)
         this.postman.login()
