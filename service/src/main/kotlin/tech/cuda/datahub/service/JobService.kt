@@ -21,6 +21,7 @@ import tech.cuda.datahub.service.dao.JobDAO
 import tech.cuda.datahub.service.dto.JobDTO
 import tech.cuda.datahub.service.dto.TaskDTO
 import tech.cuda.datahub.service.dto.toJobDTO
+import tech.cuda.datahub.service.exception.DirtyDataException
 import tech.cuda.datahub.service.exception.NotFoundException
 import tech.cuda.datahub.service.exception.OperationNotAllowException
 import tech.cuda.datahub.service.mysql.function.toDate
@@ -86,8 +87,10 @@ object JobService : Service(JobDAO) {
         if (!task.format.isValid(task.period)) {
             throw OperationNotAllowException(I18N.scheduleFormat, I18N.illegal)
         }
-        // 只有当天需要调度的任务才会生成作业
+        // 只有当天需要调度的任务才会生成作业, 如果当天的作业已生成，则跳过创建，直接返回
         if (task.format.shouldSchedule(task.period)) {
+            val now = LocalDateTime.now()
+            val (existsJobs, existsCount) = listing(1, 25, taskId = task.id, after = now, before = now)
             if (task.period != SchedulePeriod.HOUR) { // 非小时任务只会生成一个作业
                 val job = JobPO {
                     taskId = task.id
@@ -95,28 +98,35 @@ object JobService : Service(JobDAO) {
                     hour = task.format.hour!! // 非小时 hour 一定不为 null
                     minute = task.format.minute
                     isRemove = false
-                    createTime = LocalDateTime.now()
-                    updateTime = LocalDateTime.now()
+                    createTime = now
+                    updateTime = now
                 }
-                JobDAO.add(job)
-                return listOf(job.toJobDTO())
+                return when (existsCount) {
+                    0 -> JobDAO.add(job).run { listOf(job.toJobDTO()) }
+                    1 -> existsJobs
+                    else -> throw DirtyDataException(I18N.task, task.id, task.period, I18N.job, existsJobs.map { it.id }.joinToString(", "))
+                }
             } else { // 小时任务会生成 24 个作业
-                return (0..23).map { hr ->
-                    val job = JobPO {
-                        taskId = task.id
-                        status = JobStatus.INIT
-                        hour = hr
-                        minute = task.format.minute
-                        isRemove = false
-                        createTime = LocalDateTime.now()
-                        updateTime = LocalDateTime.now()
+                return when (existsCount) {
+                    0 -> (0..23).map { hr ->
+                        val job = JobPO {
+                            taskId = task.id
+                            status = JobStatus.INIT
+                            hour = hr
+                            minute = task.format.minute
+                            isRemove = false
+                            createTime = now
+                            updateTime = now
+                        }
+                        JobDAO.add(job)
+                        job.toJobDTO()
                     }
-                    JobDAO.add(job)
-                    job.toJobDTO()
+                    24 -> existsJobs
+                    else -> throw DirtyDataException(I18N.task, task.id, task.period, I18N.job, existsJobs.map { it.id }.joinToString(", "))
                 }
             }
         }
-        return listOf()
+        return listOf() // 如果任务当天不应该调度，则直接返回空列表
     }
 
     /**

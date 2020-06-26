@@ -56,7 +56,6 @@ class JobServiceTest : TestWithMaria({
             jobs.size shouldBe if (page == queryTimes) lastPageCount else pageSize
             count shouldBe total
         }
-        val (tasks, count) = JobService.listing(1, 13, taskId = 3)
     }
 
     "按任务 ID 分页查询" {
@@ -110,13 +109,21 @@ class JobServiceTest : TestWithMaria({
         with(JobService.listing(1, 100, taskId = 8, before = now, after = now)) {
             this.second shouldBe 24
             val jobs = this.first.map { it.hour to it }.toMap()
-            for (hr in 0..23) {
+            val existsJobsTimestamp = (0..23).map { hr ->
                 val job = jobs[hr]
                 job shouldNotBe null
                 job!!
                 job.hour shouldBe hr
                 job.minute shouldBe 38
                 job.status shouldBe JobStatus.INIT
+                job.createTime
+            }
+            // 再次创建只会返回已创建的作业
+            Thread.sleep(1000)
+            val jobsCreateAgain = JobService.create(TaskService.findById(8)!!)
+            jobsCreateAgain.size shouldBe 24
+            jobsCreateAgain.forEach {
+                it.createTime shouldBe existsJobsTimestamp[it.hour]
             }
         }
 
@@ -128,6 +135,10 @@ class JobServiceTest : TestWithMaria({
             job.status shouldBe JobStatus.INIT
             job.hour shouldBe 16
             job.minute shouldBe 59
+            Thread.sleep(1000)
+            val jobCreateAgain = JobService.create(TaskService.findById(112)!!)
+            jobCreateAgain.size shouldBe 1
+            jobCreateAgain.first().createTime shouldBe job.createTime
         }
 
         // 当天不应调度的任务
