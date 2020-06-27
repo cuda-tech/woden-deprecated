@@ -13,34 +13,42 @@
  */
 package tech.cuda.datahub.scheduler.tracker
 
-import me.liuwj.ktorm.entity.findList
-import tech.cuda.datahub.scheduler.ops.OperatorType
-import tech.cuda.datahub.scheduler.ops.VirtualOperator
-import org.apache.log4j.Logger
-import org.quartz.Scheduler
-import org.quartz.impl.StdSchedulerFactory
-import tech.cuda.datahub.service.dao.Tasks
-
+import tech.cuda.datahub.service.JobService
+import tech.cuda.datahub.service.TaskService
 
 /**
+ * 作业 Tracker，每当跨天的时候，生成当天应该调度的作业
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class JobTracker {
-    private val logger: Logger = Logger.getLogger(JobTracker::class.java)
-    val scheduler: Scheduler = StdSchedulerFactory.getDefaultScheduler()
+class JobTracker(private val afterJobGenerated: () -> Unit = {}) : Tracker() {
 
-
-    fun start() {
-        logger.info("DataHub Scheduler start")
-        scheduler.start()
-        scheduler.triggerVirtualOperator()
+    /**
+     * 对当前生效的任务，分批地生成调度作业
+     * 如果当天不应该调度，或作业已经生成，则不会生成作业（这个逻辑由 JobService 控制）
+     */
+    private fun generateTodayJob() {
+        logger.info("generate today's jobs")
+        var page = 0
+        val pageSize = 100
+        do {
+            page++
+            val (tasks, count) = TaskService.listing(page, pageSize, isValid = true)
+            tasks.forEach { JobService.create(it) }
+        } while ((page - 1) * pageSize + tasks.size < count)
+        afterJobGenerated()
+        logger.info("generate today's jobs done")
     }
 
-    private fun Scheduler.triggerVirtualOperator() {
-//        Tasks.findList { it.type eq OperatorType.Virtual }.forEach {
-//            VirtualOperator(it).triggerChildren(this)
-//        }
-    }
+    override fun onStarted() = generateTodayJob()
+
+    override fun onDestroyed() {}
+
+    override fun onDateChange() = generateTodayJob()
+
+    override fun onHourChange() {}
+
+    override fun onHeartBeat() {}
+
 
 }

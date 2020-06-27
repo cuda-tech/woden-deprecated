@@ -13,4 +13,44 @@
  */
 package tech.cuda.datahub.scheduler.tracker
 
-class JobTrackerTest
+import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.*
+import tech.cuda.datahub.scheduler.TestWithDistribution
+import tech.cuda.datahub.service.JobService
+import tech.cuda.datahub.service.po.dtype.JobStatus
+import java.time.LocalDateTime
+
+class JobTrackerTest : TestWithDistribution("jobs", "tasks") {
+
+    /**
+     * 周调度：1:6, 2:9, 3:7, 4:5, 5:10, 6:6, 7:6
+     * 天调度：73
+     * 小时调度: 47
+     *
+     * 2010-08-06: 周五(10) + MONTH(1) + DAY(73) + HOUR(47*24) = 1212
+     * 2010-08-07: 周六(6) + MONTH(2) + DAY(73) + HOUR(47*24) = 1209
+     * 2010-08-08: 周日(6) + YEAR(1) + MONTH(1) + DAY(73) + HOUR(47*24) = 1209
+     * 2010-08-09: 周一(6) + ONCE(1) + MONTH(1) + DAY(73) + HOUR(47*24) = 1209
+     * 2010-08-10: 周二(9) + ONCE(1) + MONTH(4) + DAY(73) + HOUR(47*24) = 1215
+     * 2010-08-11: 周三(7) + MONTH(2) + DAY(73) + HOUR(47*24) = 1210
+     * 2010-08-12: 周四(5) + MONTH(1) + DAY(73) + HOUR(47*24) = 1207
+     */
+    @Test
+    fun testGenerateJob() {
+        val expectCount = listOf(1212, 1209, 1209, 1209, 1215, 1210, 1207)
+        (6..12).forEachIndexed { index, day ->
+            supposeNowIs(2010, 8, day, 0, 1) {
+                runBlocking {
+                    val now = LocalDateTime.now()
+                    JobService.listing(1, 10, status = JobStatus.INIT, after = now, before = now).second shouldBe 0
+                    val jobTracker = JobTracker(afterJobGenerated = {
+                        JobService.listing(1, 10, status = JobStatus.INIT, after = now, before = now).second shouldBe expectCount[index]
+                    })
+                    jobTracker.start()
+                    jobTracker.cancelAndAwait()
+                }
+            }
+        }
+    }
+
+}
