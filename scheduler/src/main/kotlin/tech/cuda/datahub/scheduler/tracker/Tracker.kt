@@ -94,10 +94,11 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
     suspend fun cancelAndAwait() {
         if (this::job.isInitialized) {
             try {
+                delay(1000)
                 this.job.cancel()
                 this.job.await()
             } catch (e: CancellationException) {
-                logger.error("cancel $className")
+                logger.info("cancel $className")
             }
         } else {
             logger.error("try to cancel a not started $className")
