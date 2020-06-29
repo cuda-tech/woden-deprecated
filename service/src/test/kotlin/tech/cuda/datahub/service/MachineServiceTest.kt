@@ -164,21 +164,49 @@ class MachineServiceTest : TestWithMaria({
         MachineService.findByHostname("not exists") shouldBe null
     }
 
+    "按 MAC 查找服务器" {
+        val machine = MachineService.findByMac("9E-EE-49-FA-00-F4")
+        machine shouldNotBe null
+        machine!!
+        machine.id shouldBe 3
+        machine.hostname shouldBe "nknvleif"
+        machine.ip shouldBe "17.212.169.100"
+        machine.mac shouldBe "9E-EE-49-FA-00-F4"
+        machine.cpuLoad shouldBe 98
+        machine.memLoad shouldBe 48
+        machine.diskUsage shouldBe 31
+        machine.createTime shouldBe "2035-11-05 14:17:43".toLocalDateTime()
+        machine.updateTime shouldBe "2036-03-31 18:40:59".toLocalDateTime()
+
+        MachineService.findByMac("FE-C6-DA-85-32-23") shouldBe null
+        MachineService.findByMac("not exists") shouldBe null
+    }
+
     "创建服务器" {
-        val machine = MachineService.create("192.168.1.1")
-        machine.hostname shouldBe ""
+        val machine = MachineService.create("192.168.1.1", "test_create", "mac_addr")
+        machine.hostname shouldBe "test_create"
+        machine.mac shouldBe "mac_addr"
         machine.ip shouldBe "192.168.1.1"
         machine.cpuLoad shouldBe 0
         machine.memLoad shouldBe 0
         machine.diskUsage shouldBe 0
         machine.createTime shouldBeLessThanOrEqualTo LocalDateTime.now()
         machine.updateTime shouldBeLessThanOrEqualTo LocalDateTime.now()
-    }
 
-    "创建同 IP 服务器抛异常" {
+        // IP 已存在
         shouldThrow<DuplicateException> {
-            MachineService.create("107.116.90.29")
+            MachineService.create("107.116.90.29", "hostname", "mac")
         }.message shouldBe "IP 地址 107.116.90.29 已存在"
+
+        // hostname 已存在
+        shouldThrow<DuplicateException> {
+            MachineService.create("192.168.1.2", "tejxajfq", "mac not exists")
+        }.message shouldBe "主机名 tejxajfq 已存在"
+
+        // mac 已存在
+        shouldThrow<DuplicateException> {
+            MachineService.create("192.168.1.2", "host name not exists", "1F-72-5B-F7-10-AB")
+        }.message shouldBe "网卡 MAC 地址 1F-72-5B-F7-10-AB 已存在"
     }
 
     "更新服务器信息" {
@@ -197,34 +225,39 @@ class MachineServiceTest : TestWithMaria({
         machine.memLoad shouldBe 2
         machine.diskUsage shouldBe 3
         machine.updateTime shouldBeGreaterThanOrEqualTo updateTime
-    }
 
-    "更新不存在或已删除的服务器抛异常" {
+        // 已删除
         shouldThrow<NotFoundException> {
             MachineService.update(7, hostname = "anything")
         }.message shouldBe "调度服务器 7 不存在或已被删除"
+
+        // 不存在
         shouldThrow<NotFoundException> {
             MachineService.update(300, hostname = "anything")
         }.message shouldBe "调度服务器 300 不存在或已被删除"
-    }
 
-    "更新已存在的 IP 抛异常" {
+        // IP 已存在
         shouldThrow<DuplicateException> {
             MachineService.update(1, ip = "17.212.169.100")
         }.message shouldBe "IP 地址 17.212.169.100 已存在"
+
+        // hostname 已存在
+        shouldThrow<DuplicateException> {
+            MachineService.update(1, hostname = "tipwcfcc")
+        }.message shouldBe "主机名 tipwcfcc 已存在"
     }
 
     "删除服务器" {
         MachineService.findById(1) shouldNotBe null
         MachineService.remove(1)
         MachineService.findById(1) shouldBe null
-    }
 
-    "删除不存在或已删除的服务器抛异常" {
+        // 不存在
         shouldThrow<NotFoundException> {
             MachineService.remove(7)
         }.message shouldBe "调度服务器 7 不存在或已被删除"
 
+        // 已删除
         shouldThrow<NotFoundException> {
             MachineService.remove(300)
         }.message shouldBe "调度服务器 300 不存在或已被删除"

@@ -19,7 +19,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
 import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.MachineService
-import java.lang.Exception
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -70,74 +69,6 @@ class MachineController {
             Response.Failed.WithError("${I18N.machine} $id ${I18N.notExistsOrHasBeenRemove}")
         } else {
             Response.Success.data("machine" to MachineService.findById(id))
-        }
-    }
-
-    /**
-     * @api {post} /api/machine 新建机器
-     * @apiDescription 新建一台调度服务器，并将新建后的信息返回
-     * @apiGroup Machine
-     * @apiVersion 0.1.0
-     * @apiHeader {String} token 用户授权 token
-     * @apiParam {String} ip 服务器 IP
-     * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"machine":{"id":247,"hostname":"","mac":"","ip":"192.168.1.20","cpuLoad":0,"memLoad":0,"diskUsage":0,"createTime":"2020-05-23 02:00:43","updateTime":"2020-05-23 02:00:43"}}}
-     * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"IP 地址 192.168.1.1 已存在"}
-     */
-    @PostMapping
-    fun create(@RequestParam(required = true) ip: String): ResponseData {
-        return try {
-            val machine = MachineService.create(ip)
-            Response.Success.data("machine" to machine)
-        } catch (e: Exception) {
-            Response.Failed.WithError(e.message ?: "服务错误")
-        }
-    }
-
-    /**
-     * @api {put} /api/machine/{id} 更新机器信息
-     * @apiDescription 更新指定 ID 的机器信息，如果该指定机器已被删除或不存在则失败
-     * @apiGroup Machine
-     * @apiVersion 0.1.0
-     * @apiHeader {String} token 用户授权 token
-     * @apiParam {String} [hostname = null] 机器 hostname，如果不提供则不更新
-     * @apiParam {String} [ip = null] 机器 IP，如果不提供则不更新
-     * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"machine":{"id":3,"hostname":"nknvleif","mac":"9E-EE-49-FA-00-F4","ip":"192.168.1.21","cpuLoad":98,"memLoad":48,"diskUsage":31,"createTime":"2035-11-05 14:17:43","updateTime":"2020-05-23 12:28:03"}}}
-     * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"IP 地址 192.168.1.21 已存在"}
-     */
-    @PutMapping("{id}")
-    fun update(@PathVariable id: Int,
-               @RequestParam(required = false) hostname: String?,
-               @RequestParam(required = false) ip: String?): ResponseData {
-        return try {
-            val machine = MachineService.update(id, hostname = hostname, ip = ip)
-            Response.Success.data("machine" to machine)
-        } catch (e: Exception) {
-            Response.Failed.WithError(e.message ?: "服务错误")
-        }
-    }
-
-    /**
-     * @api {delete} /api/machine/{id} 删除机器
-     * @apiDescription 删除指定 ID 的机器，如果该指定机器已被删除或不存在则失败
-     * @apiGroup Machine
-     * @apiVersion 0.1.0
-     * @apiHeader {String} token 用户授权 token
-     * @apiSuccessExample 请求成功
-     * {"status":"success","message":"调度服务器 1 已被删除"}
-     * @apiSuccessExample 请求失败
-     * {"status":"failed","error":"调度服务器 1 不存在或已被删除"}
-     */
-    @DeleteMapping("{id}")
-    fun remove(@PathVariable id: Int): ResponseData {
-        return try {
-            MachineService.remove(id)
-            Response.Success.message("${I18N.machine} $id ${I18N.hasBeenRemove}")
-        } catch (e: Exception) {
-            Response.Failed.WithError(e.message ?: "服务错误")
         }
     }
 
