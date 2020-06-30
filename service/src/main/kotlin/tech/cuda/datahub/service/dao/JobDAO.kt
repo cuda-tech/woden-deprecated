@@ -36,6 +36,11 @@ internal object JobDAO : Table<JobPO>("jobs") {
     @COMMENT("任务 ID")
     val taskId by int("task_id").bindTo { it.taskId }
 
+    @BIGINT
+    @UNSIGNED
+    @COMMENT("执行机器 ID")
+    val machineId by int("machine_id").bindTo { it.machineId }
+
     @VARCHAR(10)
     @COMMENT("作业状态")
     val status by enum("status", typeRef<JobStatus>()).bindTo { it.status }

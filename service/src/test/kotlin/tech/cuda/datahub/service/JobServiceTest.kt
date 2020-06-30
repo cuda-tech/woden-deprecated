@@ -18,6 +18,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import tech.cuda.datahub.TestWithMaria
 import tech.cuda.datahub.service.dao.JobDAO
+import tech.cuda.datahub.service.dao.MachineDAO
 import tech.cuda.datahub.service.dao.TaskDAO
 import tech.cuda.datahub.service.dto.TaskDTO
 import tech.cuda.datahub.service.exception.NotFoundException
@@ -36,6 +37,7 @@ class JobServiceTest : TestWithMaria({
         job shouldNotBe null
         job!!
         job.taskId shouldBe 229
+        job.machineId shouldBe 5
         job.status shouldBe JobStatus.SUCCESS
         job.hour shouldBe 16
         job.minute shouldBe 30
@@ -98,6 +100,7 @@ class JobServiceTest : TestWithMaria({
         val taskId = 3
         val status = JobStatus.SUCCESS
         JobService.listing(1, 13, taskId = taskId, status = status).second shouldBe 3
+        JobService.listing(1, 13, taskId = taskId, status = status, machineId = 15).second shouldBe 1
         JobService.listing(1, 13, taskId = 4, status = status).second shouldBe 0
     }
 
@@ -113,6 +116,7 @@ class JobServiceTest : TestWithMaria({
                 val job = jobs[hr]
                 job shouldNotBe null
                 job!!
+                job.machineId shouldBe null
                 job.hour shouldBe hr
                 job.minute shouldBe 38
                 job.status shouldBe JobStatus.INIT
@@ -132,6 +136,7 @@ class JobServiceTest : TestWithMaria({
         with(JobService.listing(1, 100, taskId = 112, before = now, after = now)) {
             this.second shouldBe 1
             val job = this.first.first()
+            job.machineId shouldBe null
             job.status shouldBe JobStatus.INIT
             job.hour shouldBe 16
             job.minute shouldBe 59
@@ -162,9 +167,10 @@ class JobServiceTest : TestWithMaria({
 
     "更新作业" {
 
-        JobService.update(4, JobStatus.INIT)
+        JobService.update(4, status = JobStatus.INIT, machineId = 1)
         val job = JobService.findById(4)!!
         job.status shouldBe JobStatus.INIT
+        job.machineId shouldBe 1
         job.updateTime shouldNotBe "2026-01-26 23:09:37".toLocalDateTime()
 
         shouldThrow<NotFoundException> {
@@ -174,6 +180,14 @@ class JobServiceTest : TestWithMaria({
         shouldThrow<NotFoundException> {
             JobService.update(10086, JobStatus.SUCCESS)
         }.message shouldBe "调度作业 10086 不存在或已被删除"
+
+        shouldThrow<NotFoundException> {
+            JobService.update(4, machineId = 2)
+        }.message shouldBe "调度服务器 2 不存在或已被删除"
+
+        shouldThrow<NotFoundException> {
+            JobService.update(4, machineId = 247)
+        }.message shouldBe "调度服务器 247 不存在或已被删除"
     }
 
-}, TaskDAO, JobDAO)
+}, TaskDAO, JobDAO, MachineDAO)

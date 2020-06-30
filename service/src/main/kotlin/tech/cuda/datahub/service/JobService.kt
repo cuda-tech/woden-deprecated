@@ -46,6 +46,7 @@ object JobService : Service(JobDAO) {
     /**
      * 分页查询作业信息，结果按创建时间倒序返回
      * 如果提供了[taskId]，则只返回该任务的作业
+     * 如果提供了[machineId]，则只返回该机器执行的作业
      * 如果提供了[status]，则只返回对应状态的作业
      * 如果提供了[after]，则只返回创建日期晚于它的记录
      * 如果提供了[before]，则只返回创建日期早于它的记录
@@ -54,12 +55,14 @@ object JobService : Service(JobDAO) {
         pageId: Int,
         pageSize: Int,
         taskId: Int? = null,
+        machineId: Int? = null,
         status: JobStatus? = null,
         after: LocalDateTime? = null,
         before: LocalDateTime? = null
     ): Pair<List<JobDTO>, Int> {
         val conditions = mutableListOf(JobDAO.isRemove eq false)
         taskId?.let { conditions.add(JobDAO.taskId eq taskId) }
+        machineId?.let { conditions.add(JobDAO.machineId eq machineId) }
         status?.let { conditions.add(JobDAO.status eq status) }
         after?.let { conditions.add(JobDAO.createTime.toDate() greaterEq after.toLocalDate()) }
         before?.let { conditions.add(JobDAO.createTime.toDate() lessEq before.toLocalDate()) }
@@ -94,6 +97,7 @@ object JobService : Service(JobDAO) {
             if (task.period != SchedulePeriod.HOUR) { // 非小时任务只会生成一个作业
                 val job = JobPO {
                     taskId = task.id
+                    machineId = null
                     status = JobStatus.INIT
                     hour = task.format.hour!! // 非小时 hour 一定不为 null
                     minute = task.format.minute
@@ -111,6 +115,7 @@ object JobService : Service(JobDAO) {
                     0 -> (0..23).map { hr ->
                         val job = JobPO {
                             taskId = task.id
+                            machineId = null
                             status = JobStatus.INIT
                             hour = hr
                             minute = task.format.minute
@@ -131,14 +136,26 @@ object JobService : Service(JobDAO) {
 
     /**
      * 更新指定[id]的作业信息
-     * 根据业务背景，这里只允许更新 status
+     * 如果指定[id]的作业不存在或已被删除，则抛出 NotFoundException
+     * 如果试图更新[machineId]，并且该机器不存在或已被删除，则抛出 NotFoundException
      */
-    fun update(id: Int, status: JobStatus): JobDTO {
+    fun update(id: Int, status: JobStatus? = null, machineId: Int? = null): JobDTO {
         val job = find<JobPO>(JobDAO.id eq id and (JobDAO.isRemove eq false))
             ?: throw NotFoundException(I18N.job, id, I18N.notExistsOrHasBeenRemove)
-        job.status = status
-        job.updateTime = LocalDateTime.now()
-        job.flushChanges()
+        status?.let {
+            // todo: 作业状态可达性判断
+            job.status = status
+        }
+        machineId?.let {
+            MachineService.findById(machineId)
+                ?: throw NotFoundException(I18N.machine, machineId, I18N.notExistsOrHasBeenRemove)
+            // todo: 机器存活性判断
+            job.machineId = machineId
+        }
+        anyNotNull(status, machineId)?.let {
+            job.updateTime = LocalDateTime.now()
+            job.flushChanges()
+        }
         return job.toJobDTO()
     }
 

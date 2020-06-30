@@ -27,6 +27,7 @@ internal interface JobPO : Entity<JobPO> {
 
     val id: Int
     var taskId: Int
+    var machineId: Int?
     var status: JobStatus
     var hour: Int
     var minute: Int
