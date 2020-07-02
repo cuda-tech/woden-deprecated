@@ -28,7 +28,7 @@ class MachineTrackerTest : TestWithDistribution("machines") {
     @Test
     fun testStart() = runBlocking {
         mockkObject(MachineUtil)
-        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("17.212.169.100", "9E-EE-49-FA-00-F4", "nknvleif")
+        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("17.212.169.100", "9E-EE-49-FA-00-F4", "nknvleif", false)
         val machineTracker = MachineTracker(afterStarted = {
             it.id shouldBe 3
             it.ip shouldBe "17.212.169.100"
@@ -46,7 +46,7 @@ class MachineTrackerTest : TestWithDistribution("machines") {
     @Test
     fun testStartWhenIpAndHostChange() = runBlocking {
         mockkObject(MachineUtil)
-        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("192.168.1.1", "9E-EE-49-FA-00-F4", "HOSTNAME")
+        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("192.168.1.1", "9E-EE-49-FA-00-F4", "HOSTNAME", false)
         val machineTracker = MachineTracker(afterStarted = {
             it.id shouldBe 3
             it.ip shouldBe "192.168.1.1"
@@ -64,7 +64,7 @@ class MachineTrackerTest : TestWithDistribution("machines") {
     @Test
     fun testStartWhenNotRegister() = runBlocking {
         mockkObject(MachineUtil)
-        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("192.168.1.1", "01-23-45-67-89-AB", "HOSTNAME")
+        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("192.168.1.1", "01-23-45-67-89-AB", "HOSTNAME", false)
         val machineTracker = MachineTracker(afterStarted = {
             it.id shouldBe 247
             it.ip shouldBe "192.168.1.1"

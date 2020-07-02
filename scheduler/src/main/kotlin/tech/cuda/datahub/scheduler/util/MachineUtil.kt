@@ -29,8 +29,10 @@ import kotlin.math.ceil
  */
 object MachineUtil {
 
-    data class SystemInfo(val ip: String, val mac: String, val hostname: String)
+    data class SystemInfo(val ip: String, val mac: String, val hostname: String, val isWindows: Boolean = false)
     data class LoadInfo(val cpu: Int, val memory: Int, val diskUsage: Int)
+
+    val systemInfo: SystemInfo
 
     private val processor = SystemInfo().hardware.processor
     private var prevTicks = processor.systemCpuLoadTicks
@@ -52,32 +54,31 @@ object MachineUtil {
             it[0].toByte() == this[0] && it[1].toByte() == this[1] && it[2].toByte() == this[2]
         }
 
-    /**
-     * 获取系统的 hostname、IP、MAC
-     * 如果存在多张正在使用中的网卡，则抛出 HardwareException
-     */
-    val systemInfo: SystemInfo
-        get() {
-            val networkInterfaces = NetworkInterface.getNetworkInterfaces().toList().filter {
-                it != null && it.hardwareAddress != null && it.isUp // 只保留使用中的网卡
-                    && !it.isVirtual // 过滤掉虚拟网卡
-                    && !it.displayName.toUpperCase().contains("BLUETOOTH") // 过滤掉蓝牙，quick & dirty 地通过设备名来判断是否为蓝牙
-                    && !it.hardwareAddress.isVMMac // 过滤掉虚拟机网卡
-            }
-            return when (networkInterfaces.size) {
-                0 -> throw HardwareException()
-                1 -> {
-                    val networkInterface = networkInterfaces.first()
-                    val mac = networkInterface.hardwareAddress.joinToString("-") { String.format("%02X", it) }
-                    val ip = networkInterface.inetAddresses.toList().first {
-                        !it.isLoopbackAddress && !it.hostAddress.contains(':')
-                    }.hostAddress
-                    val hostname = InetAddress.getLocalHost().hostName
-                    SystemInfo(ip, mac, hostname)
-                }
-                else -> throw  HardwareException()
-            }
+
+    init {
+        // 获取系统的 hostname、IP、MAC
+        // 如果存在多张正在使用中的网卡，则抛出 HardwareException
+        val networkInterfaces = NetworkInterface.getNetworkInterfaces().toList().filter {
+            it != null && it.hardwareAddress != null && it.isUp // 只保留使用中的网卡
+                && !it.isVirtual // 过滤掉虚拟网卡
+                && !it.displayName.toUpperCase().contains("BLUETOOTH") // 过滤掉蓝牙，quick & dirty 地通过设备名来判断是否为蓝牙
+                && !it.hardwareAddress.isVMMac // 过滤掉虚拟机网卡
         }
+        systemInfo = when (networkInterfaces.size) {
+            0 -> throw HardwareException()
+            1 -> {
+                val networkInterface = networkInterfaces.first()
+                val mac = networkInterface.hardwareAddress.joinToString("-") { String.format("%02X", it) }
+                val ip = networkInterface.inetAddresses.toList().first {
+                    !it.isLoopbackAddress && !it.hostAddress.contains(':')
+                }.hostAddress
+                val hostname = InetAddress.getLocalHost().hostName
+                SystemInfo(ip, mac, hostname, System.getProperty("os.name").toLowerCase().contains("windows"))
+            }
+            else -> throw  HardwareException()
+        }
+    }
+
 
     private fun percent(free: Number, total: Number) = ceil(100.0 - (100.0 * free.toDouble() / total.toDouble())).toInt()
 
