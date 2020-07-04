@@ -13,16 +13,26 @@
  */
 package tech.cuda.datahub.scheduler.ops
 
-import org.quartz.JobExecutionContext
-import tech.cuda.datahub.service.model.Task
+import tech.cuda.datahub.service.dto.TaskDTO
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class DataXOperator(task: Task) : Operator(task) {
-    override fun process(context: JobExecutionContext?) {
-        logger.info("start dataX job")
+class DataXOperator(task: TaskDTO) : Operator(task) {
+    override val isFinish: Boolean
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+    override val isSuccess: Boolean
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+    override val output: String
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    override fun start() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun kill() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 }

@@ -13,15 +13,18 @@
  */
 package tech.cuda.datahub.scheduler.ops
 
-import org.quartz.JobExecutionContext
-import tech.cuda.datahub.service.model.Task
+import tech.cuda.datahub.service.dto.TaskDTO
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class HiveOperator(task: Task) : Operator(task) {
-    override fun process(context: JobExecutionContext?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+class HiveOperator(task: TaskDTO) : BashBaseOperator(task, "hive") {
+
+    override fun kill() {
+        // 首先需要 yarn kill 作业
+
+        // 然后才能 kill 掉进程
+        super.kill()
     }
 }

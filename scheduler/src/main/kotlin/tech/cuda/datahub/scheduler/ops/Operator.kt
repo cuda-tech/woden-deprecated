@@ -13,51 +13,51 @@
  */
 package tech.cuda.datahub.scheduler.ops
 
-import me.liuwj.ktorm.entity.findListByIds
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.runBlocking
 import org.apache.log4j.Logger
-import org.quartz.*
-import tech.cuda.datahub.service.dao.Tasks
-import tech.cuda.datahub.service.model.Task
+import tech.cuda.datahub.i18n.I18N
+import tech.cuda.datahub.service.FileMirrorService
+import tech.cuda.datahub.service.dto.TaskDTO
+import tech.cuda.datahub.service.exception.NotFoundException
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-abstract class Operator(private val task: Task) : org.quartz.Job {
+abstract class Operator(task: TaskDTO) {
 
-    val logger = Logger.getLogger(this.javaClass)!!
-    private val childrenOperators = Tasks.findListByIds(task.children.keys).map {
-//        when (it.type) {
-//            OperatorType.Bash -> BashOperator(task)
-//            OperatorType.DataX -> DataXOperator(task)
-//            OperatorType.Hive -> HiveOperator(task)
-//            OperatorType.Mail -> MailOperator(task)
-//            OperatorType.Python -> PythonOperator(task)
-//            else -> throw Exception("unsupported operator type")
-//        }
+    protected val logger: Logger = Logger.getLogger(this.javaClass)
+    protected val mirror = FileMirrorService.findById(task.mirrorId)
+        ?: throw NotFoundException(I18N.task, task.id, I18N.fileMirror, task.mirrorId, I18N.notExistsOrHasBeenRemove)
+    protected lateinit var job: Deferred<Unit>
+
+    abstract val isFinish: Boolean
+    abstract val isSuccess: Boolean
+    abstract val output: String
+
+    /**
+     * 异步地启动作业
+     */
+    abstract fun start()
+
+    /**
+     * 异步地 kill 作业
+     */
+    abstract fun kill()
+
+    /**
+     * 同步地等待作业执行完毕，一般只用于单测，所以这里会向上层抛出异常
+     */
+    fun join() = runBlocking {
+        if (this@Operator::job.isInitialized) {
+            job.await()
+        }
     }
 
+    /**
+     * 将 Windows 文件路径转为 WSL 文件路径
+     */
+    protected fun String.toWSL() = this.replace("\\", "/").replace("C:", "/mnt/c")
 
-    abstract fun process(context: JobExecutionContext?)
-
-    override fun execute(context: JobExecutionContext?) {
-        process(context)
-        triggerChildren(context)
-    }
-
-
-    fun triggerChildren(scheduler: Scheduler) {
-//        childrenOperators.forEach {
-//            val jobDetail = JobBuilder.newJob(it.javaClass)
-//                .withIdentity("${it.task.id}", "group todo").build()
-//            val trigger = TriggerBuilder.newTrigger().startNow()
-//                .withSchedule(SimpleScheduleBuilder.simpleSchedule()).build()
-//            scheduler.scheduleJob(jobDetail, trigger)
-//        }
-
-    }
-
-    private fun triggerChildren(context: JobExecutionContext?) {
-        triggerChildren(context!!.scheduler)
-    }
 }
