@@ -18,6 +18,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.coroutines.runBlocking
 import tech.cuda.datahub.scheduler.TestWithDistribution
 import tech.cuda.datahub.scheduler.util.MachineUtil
@@ -41,6 +42,7 @@ class MachineTrackerTest : TestWithDistribution("machines") {
         })
         machineTracker.start()
         machineTracker.cancelAndAwait()
+        unmockkObject(MachineUtil)
     }
 
     @Test
@@ -59,6 +61,7 @@ class MachineTrackerTest : TestWithDistribution("machines") {
         })
         machineTracker.start()
         machineTracker.cancelAndAwait()
+        unmockkObject(MachineUtil)
     }
 
     @Test
@@ -76,6 +79,7 @@ class MachineTrackerTest : TestWithDistribution("machines") {
         })
         machineTracker.start()
         machineTracker.cancelAndAwait()
+        unmockkObject(MachineUtil)
     }
 
 }
