@@ -43,6 +43,7 @@ abstract class BashBaseOperator(taskDTO: TaskDTO, private val type: String) : Op
         it.streamHandler = PumpStreamHandler(std, std)
         it.processDestroyer = killer
     }
+    protected open val commands: String get() = mirror.content
 
     override val output: String
         get() = this.std.toString()
@@ -62,7 +63,7 @@ abstract class BashBaseOperator(taskDTO: TaskDTO, private val type: String) : Op
         // 先将命令写入到临时文件
         val tempFile = File.createTempFile(type + '_', ".temp").also {
             val writer = BufferedWriter(FileWriter(it))
-            writer.write(mirror.content)
+            writer.write(commands)
             writer.flush()
             writer.close()
         }
