@@ -14,6 +14,7 @@
 package tech.cuda.datahub.webserver
 
 import ch.vorburger.mariadb4j.DB
+import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
@@ -57,9 +58,12 @@ open class RestfulTestToolbox(private vararg val tables: String = arrayOf()) : A
 
     @BeforeAll
     fun beforeAll() {
-        val db = DB.newEmbeddedDB(0).also { it.start() }
-//        Database.connect(DatabaseConfig(port = db.configuration.port))
-        Database.connect(DatabaseConfig(port = 3306))
+        val db = DB.newEmbeddedDB(DBConfigurationBuilder.newBuilder().also {
+            it.port = 0
+            it.baseDir = System.getProperty("java.io.tmpdir") +  this.javaClass.simpleName
+        }.build()).also { it.start() }
+        Database.connect(DatabaseConfig(port = db.configuration.port))
+//        Database.connect(DatabaseConfig(port = 3306))
     }
 
     @BeforeEach

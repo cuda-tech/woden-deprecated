@@ -14,6 +14,7 @@
 package tech.cuda.datahub
 
 import ch.vorburger.mariadb4j.DB
+import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestCase
@@ -32,7 +33,10 @@ open class TestWithMaria(body: StringSpec.() -> Unit = {}, private vararg val ta
 
     override fun beforeSpec(spec: Spec) {
         super.beforeSpec(spec)
-        val db = DB.newEmbeddedDB(0).also { it.start() }
+        val db = DB.newEmbeddedDB(DBConfigurationBuilder.newBuilder().also {
+            it.port = 0
+            it.baseDir = System.getProperty("java.io.tmpdir") +  this.javaClass.simpleName
+        }.build()).also { it.start() }
         Database.connect(DatabaseConfig(port = db.configuration.port))
 //        Database.connect(DatabaseConfig(port = 3306))
     }
