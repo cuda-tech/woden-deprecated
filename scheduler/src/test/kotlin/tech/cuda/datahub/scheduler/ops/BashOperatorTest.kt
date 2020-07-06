@@ -13,6 +13,7 @@
  */
 package tech.cuda.datahub.scheduler.ops
 
+import io.kotest.core.spec.DoNotParallelize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import tech.cuda.datahub.scheduler.TestWithDistribution
@@ -22,6 +23,7 @@ import tech.cuda.datahub.service.TaskService
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@DoNotParallelize
 class BashOperatorTest : TestWithDistribution("tasks", "file_mirrors"), TempFileGetter {
 
     @Test
@@ -37,7 +39,7 @@ class BashOperatorTest : TestWithDistribution("tasks", "file_mirrors"), TempFile
         var bufferOutput = ""
         while (!bash.isFinish) {
             bufferOutput = bash.output
-            Thread.sleep(500)
+            Thread.sleep(123)
         }
         bufferOutput shouldBe "hello\n"
 
