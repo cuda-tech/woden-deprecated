@@ -29,12 +29,12 @@ interface TempFileGetter {
 
     fun getTempFile(prefix: String = "", suffix: String = ".temp"): File {
         val files = File(System.getProperty("java.io.tmpdir")).listFiles()?.filter {
-            val nameMatch = it.name.startsWith(prefix) && it.name.endsWith(suffix)
-            val in5Sec = Duration.between(LocalDateTime.now(), LocalDateTime.ofInstant(
+            it.name.startsWith(prefix)
+                && it.name.endsWith(suffix)
+                && Duration.between(LocalDateTime.now(), LocalDateTime.ofInstant(
                 Files.readAttributes(it.toPath(), BasicFileAttributes::class.java).creationTime().toInstant(),
                 ZoneId.systemDefault()
             )).seconds < 5
-            nameMatch && in5Sec
         } ?: listOf()
         files.size shouldBe 1
         return files.first()!!
