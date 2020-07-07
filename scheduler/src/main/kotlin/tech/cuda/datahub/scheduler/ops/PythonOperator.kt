@@ -13,15 +13,20 @@
  */
 package tech.cuda.datahub.scheduler.ops
 
-import org.quartz.JobExecutionContext
-import tech.cuda.datahub.service.model.Task
+import tech.cuda.datahub.service.dto.TaskDTO
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class PythonOperator(task: Task) : Operator(task) {
-    override fun process(context: JobExecutionContext?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+class PythonOperator(task: TaskDTO, type: String = "python") : BashBaseOperator(task, type) {
+    private val initScript = """
+        from functools import partial
+        print = partial(print, flush = True) # 为了将 print 实时地输出到 std
+    """.trimIndent()
+
+    override val commands: String
+        get() {
+            return "$initScript\n${mirror.content}"
+        }
 }
