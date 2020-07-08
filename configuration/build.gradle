@@ -1,0 +1,9 @@
+apply plugin: 'kotlin'
+
+dependencies {
+    implementation 'javax.mail:mail:1.4.7'
+    implementation 'com.alibaba:druid:1.1.20'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0'
+}
+
+description = 'configuration'

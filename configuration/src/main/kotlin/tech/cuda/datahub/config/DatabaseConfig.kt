@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.service.config
+package tech.cuda.datahub.config
 
 import com.alibaba.druid.filter.Filter
 import java.util.*

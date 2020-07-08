@@ -20,8 +20,7 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import tech.cuda.datahub.service.Database
-import tech.cuda.datahub.service.config.DatabaseConfig
-import java.io.File
+import tech.cuda.datahub.config.DatabaseConfig
 import java.time.*
 
 

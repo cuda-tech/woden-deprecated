@@ -19,7 +19,7 @@ import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestCase
 import me.liuwj.ktorm.schema.Table
-import tech.cuda.datahub.service.config.DatabaseConfig
+import tech.cuda.datahub.config.DatabaseConfig
 import tech.cuda.datahub.service.Database
 
 /**
