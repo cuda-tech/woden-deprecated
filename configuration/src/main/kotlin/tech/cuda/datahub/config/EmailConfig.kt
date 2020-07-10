@@ -15,21 +15,31 @@ package tech.cuda.datahub.config
 
 import com.sun.mail.util.MailSSLSocketFactory
 import java.util.*
+import javax.mail.Authenticator
+import javax.mail.PasswordAuthentication
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
 data class EmailConfig(
-    val smtpHost: String, // e.g smtp.163.com
-    val sender: String, // e.g someone@163.com
-    val password: String, // SMTP授权密码
-    val port: Int = 25,
-    val protocol: String = "SMTP",
-    val encoding: String = "UTF-8",
+    private val smtpHost: String, // e.g smtp.163.com
+    private val sender: String, // e.g someone@163.com
+    private val password: String, // SMTP授权密码
+    private val port: Int = 465,
+    private val protocol: String = "SMTP",
+    private val encoding: String = "UTF-8",
+
+    val auth: Authenticator = object : Authenticator() {
+        override fun getPasswordAuthentication(): PasswordAuthentication {
+            return PasswordAuthentication(sender, password)
+        }
+    },
     val properties: Properties = Properties().also {
-        it["mail.transport.protocol"] = "smtp"
+        it["mail.transport.protocol"] = protocol
         it["mail.smtp.host"] = smtpHost
+        it["mail.from"] = sender
+        it["mail.smtp.socketFactory.port"] = port
         it["mail.smtp.auth"] = "true"
         it["mail.smtp.ssl.enable"] = true
         it["mail.smtp.ssl.socketFactory"] = MailSSLSocketFactory().also { sf -> sf.isTrustAllHosts = true }

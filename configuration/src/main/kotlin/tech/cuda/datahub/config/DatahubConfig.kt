@@ -25,7 +25,7 @@ object DatahubConfig {
     init {
         val userDefineConfig = "" // todo
         val defaultConfig = ""
-        email = EmailConfig("", "", "")
+        email = EmailConfig("localhost", "admin@datahub", "password")
         scheduler = SchedulerConfig("")
         database = DatabaseConfig()
     }

@@ -13,4 +13,45 @@
  */
 package tech.cuda.datahub.scheduler.ops
 
-class MailOperatorTest
+import com.icegreen.greenmail.util.*
+import io.kotest.core.spec.style.AnnotationSpec
+import io.kotest.matchers.collections.shouldContainInOrder
+import io.kotest.matchers.shouldBe
+
+
+/**
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
+ * @since 1.0.0
+ */
+class MailOperatorTest : AnnotationSpec() {
+
+    private val greenMail = GreenMail(ServerSetup.SMTPS)
+
+    @BeforeAll
+    fun startMailServer() {
+        greenMail.start()
+        greenMail.setUser("admin@datahub", "admin@datahub", "password")
+    }
+
+    @AfterAll
+    fun stopMailServer() {
+        greenMail.stop()
+    }
+
+    @Test
+    fun send() {
+        val receivers = listOf("user1@test1", "user2@test2", "user3@test3")
+        val op = MailOperator(to = receivers, title = "test email", content = "this is a test email")
+        op.start()
+
+        val mails = greenMail.receivedMessages
+        mails.size shouldBe 3
+        mails.forEach {
+            it.subject shouldBe "test email"
+            GreenMailUtil.getBody(it) shouldBe "this is a test email"
+            it.allRecipients.map { addr -> addr.toString() } shouldContainInOrder receivers
+            it.from.size shouldBe 1
+            it.from.first().toString() shouldBe "admin@datahub"
+        }
+    }
+}
