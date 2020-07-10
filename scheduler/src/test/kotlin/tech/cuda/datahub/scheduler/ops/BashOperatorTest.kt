@@ -36,12 +36,16 @@ class BashOperatorTest : TestWithDistribution("tasks", "file_mirrors"), TempFile
         bash.isSuccess shouldBe false
         bash.output shouldBe ""
 
-        var bufferOutput = ""
+        var hasBufferOutput = false
         while (!bash.isFinish) {
-            bufferOutput = bash.output
+            if (bash.output != "") {
+                bash.output shouldBe "hello\n"
+                hasBufferOutput = true
+                break
+            }
             Thread.sleep(123)
         }
-        bufferOutput shouldBe "hello\n"
+        hasBufferOutput shouldBe true
 
         bash.join()
         bash.isFinish shouldBe true

@@ -41,12 +41,16 @@ class PythonOperatorTest : TestWithDistribution("tasks", "file_mirrors"), TempFi
         python.isSuccess shouldBe false
         python.output shouldBe ""
 
-        var bufferOutput = ""
+        var hasBufferOutput = false
         while (!python.isFinish) {
-            bufferOutput = python.output
+            if (python.output != "") {
+                python.output shouldBe "hello\n"
+                hasBufferOutput = true
+                break
+            }
             Thread.sleep(123)
         }
-        bufferOutput shouldBe "hello\n"
+        hasBufferOutput shouldBe true
 
         python.join()
         python.isFinish shouldBe true
