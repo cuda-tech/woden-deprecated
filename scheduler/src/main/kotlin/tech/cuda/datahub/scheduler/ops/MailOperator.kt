@@ -13,6 +13,8 @@
  */
 package tech.cuda.datahub.scheduler.ops
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import tech.cuda.datahub.config.DatahubConfig
 import tech.cuda.datahub.service.exception.OperationNotAllowException
 import javax.mail.*
@@ -23,27 +25,34 @@ import javax.mail.internet.MimeMessage
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class MailOperator(
-    private val to: List<String>,
-    private val title: String,
-    private val content: String
-) : Operator() {
+class MailOperator(private val to: List<String>, private val title: String, private val content: String) : Operator() {
     override val isFinish: Boolean
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-    override val isSuccess: Boolean
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-    override val output: String
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = this.job.isCompleted
 
+    override val isSuccess: Boolean
+        get() = isFinish && !hasException
+
+    override val output: String
+        get() = ""
+
+    private var hasException = false
 
 
     override fun start() {
-        val message = MimeMessage(Session.getInstance(DatahubConfig.email.properties, DatahubConfig.email.auth))
-        message.setRecipients(MimeMessage.RecipientType.TO, InternetAddress.parse(to.joinToString(",")))
-        message.setFrom()
-        message.subject = title
-        message.setText(content)
-        Transport.send(message)
+        this.job = GlobalScope.async {
+            try {
+                val message = MimeMessage(Session.getInstance(DatahubConfig.email.properties, DatahubConfig.email.auth))
+                message.setRecipients(MimeMessage.RecipientType.TO, InternetAddress.parse(to.joinToString(",")))
+                message.setFrom()
+                message.subject = title
+                message.setText(content)
+                Transport.send(message)
+            } catch (e: Throwable) {
+                hasException = true
+                e.printStackTrace()
+                throw e
+            }
+        }
     }
 
     override fun kill() = throw OperationNotAllowException("Sending Email could not be stip")

@@ -14,26 +14,30 @@
 package tech.cuda.datahub.scheduler.ops
 
 import com.icegreen.greenmail.util.*
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.DoNotParallelize
 import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
+import tech.cuda.datahub.service.exception.OperationNotAllowException
 
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@DoNotParallelize
 class MailOperatorTest : AnnotationSpec() {
 
     private val greenMail = GreenMail(ServerSetup.SMTPS)
 
-    @BeforeAll
+    @BeforeEach
     fun startMailServer() {
         greenMail.start()
         greenMail.setUser("admin@datahub", "admin@datahub", "password")
     }
 
-    @AfterAll
+    @AfterEach
     fun stopMailServer() {
         greenMail.stop()
     }
@@ -43,6 +47,11 @@ class MailOperatorTest : AnnotationSpec() {
         val receivers = listOf("user1@test1", "user2@test2", "user3@test3")
         val op = MailOperator(to = receivers, title = "test email", content = "this is a test email")
         op.start()
+        op.isFinish shouldBe false
+        op.isSuccess shouldBe false
+        op.join()
+        op.isFinish shouldBe true
+        op.isSuccess shouldBe true
 
         val mails = greenMail.receivedMessages
         mails.size shouldBe 3
@@ -54,4 +63,15 @@ class MailOperatorTest : AnnotationSpec() {
             it.from.first().toString() shouldBe "admin@datahub"
         }
     }
+
+    @Test
+    fun kill() {
+        val receivers = listOf("user1@test1", "user2@test2", "user3@test3")
+        val op = MailOperator(to = receivers, title = "test email", content = "this is a test email")
+        op.start()
+        shouldThrow<OperationNotAllowException> {
+            op.kill()
+        }
+    }
+
 }
