@@ -75,6 +75,10 @@ class InstanceServiceTest : TestWithMaria({
         instance.log shouldBe ""
 
         shouldThrow<OperationNotAllowException> {
+            InstanceService.create(JobService.findById(9)!!)
+        }.message shouldBe "调度作业 9 状态 INIT 禁止创建调度实例"
+
+        shouldThrow<OperationNotAllowException> {
             InstanceService.create(JobService.findById(2)!!)
         }.message shouldBe "调度作业 2 状态 FAILED 禁止创建调度实例"
 
@@ -92,6 +96,7 @@ class InstanceServiceTest : TestWithMaria({
     }
 
     "更新实例" {
+        // RUNNING -> SUCCESS
         with(InstanceService.findById(4)!!) {
             this.status shouldBe InstanceStatus.RUNNING
             this.updateTime shouldBe "2008-05-07 09:46:51".toLocalDateTime()
@@ -105,6 +110,7 @@ class InstanceServiceTest : TestWithMaria({
             this.updateTime shouldNotBe "2008-05-07 09:46:51".toLocalDateTime()
         }
 
+        // RUNNING -> FAILED
         with(InstanceService.findById(6)!!) {
             this.status shouldBe InstanceStatus.RUNNING
             this.updateTime shouldBe "2031-08-14 05:57:33".toLocalDateTime()
@@ -117,6 +123,20 @@ class InstanceServiceTest : TestWithMaria({
             this.status shouldBe InstanceStatus.FAILED
             this.updateTime shouldNotBe "2031-08-14 05:57:33".toLocalDateTime()
         }
+
+        // 更新 log
+        with(InstanceService.findById(9)!!) {
+            this.status shouldBe InstanceStatus.RUNNING
+            this.log shouldBe "jqgonydh"
+            this.updateTime shouldBe "2028-09-17 16:27:27".toLocalDateTime()
+        }
+        InstanceService.update(9, log = "update log")
+        with(InstanceService.findById(9)!!) {
+            this.status shouldBe InstanceStatus.RUNNING
+            this.log shouldBe "update log"
+            this.updateTime shouldNotBe "2028-09-17 16:27:27".toLocalDateTime()
+        }
+
 
         shouldThrow<OperationNotAllowException> {
             InstanceService.update(4, InstanceStatus.FAILED)

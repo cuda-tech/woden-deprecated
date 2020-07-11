@@ -63,10 +63,10 @@ object InstanceService : Service(InstanceDAO) {
 
     /**
      * 根据[job]的信息一个调度实例并返回
-     * 如果[job]的状态不为 WIP，则抛出 OperationNotAllowException
+     * 如果[job]的状态不为 READY，则抛出 OperationNotAllowException
      */
     fun create(job: JobDTO): InstanceDTO = Database.global.useTransaction {
-        if (job.status != JobStatus.INIT) {
+        if (job.status != JobStatus.READY) {
             throw OperationNotAllowException(I18N.job, job.id, I18N.status, job.status, I18N.createInstanceNotAllow)
         }
         val instance = InstancePO {
@@ -83,20 +83,26 @@ object InstanceService : Service(InstanceDAO) {
 
     /**
      * 更新指定实例[id]的信息
-     * 根据当前业务情况，只支持修改[status]
      * 如果指定[id]的实例不存在或已被删除，则抛出 NotFoundException
      * 为了保证状态的单向性，状态只能从 Running -> Success | Failed
      * 因此如果试图将状态[status]更新为 Running，或者实例[id]的状态不为 Running， 则抛出 OperationNotAllowException
      */
-    fun update(id: Int, status: InstanceStatus): InstanceDTO = Database.global.useTransaction {
+    fun update(id: Int, status: InstanceStatus? = null, log: String? = null): InstanceDTO = Database.global.useTransaction {
         val instance = find<InstancePO>(InstanceDAO.id eq id and (InstanceDAO.isRemove eq false))
             ?: throw NotFoundException(I18N.instance, I18N.notExistsOrHasBeenRemove)
-        if (status == InstanceStatus.RUNNING || instance.status != InstanceStatus.RUNNING) {
-            throw OperationNotAllowException(I18N.instance, id, I18N.status, instance.status, I18N.canNotUpdateTo, status)
+        status?.let {
+            if (status == InstanceStatus.RUNNING || instance.status != InstanceStatus.RUNNING) {
+                throw OperationNotAllowException(I18N.instance, id, I18N.status, instance.status, I18N.canNotUpdateTo, status)
+            }
+            instance.status = status
         }
-        instance.status = status
-        instance.updateTime = LocalDateTime.now()
-        instance.flushChanges()
+        log?.let {
+            instance.log = log
+        }
+        anyNotNull(status, log)?.let {
+            instance.updateTime = LocalDateTime.now()
+            instance.flushChanges()
+        }
         return instance.toInstanceDTO()
     }
 
