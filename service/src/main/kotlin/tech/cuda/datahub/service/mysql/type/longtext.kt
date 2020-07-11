@@ -14,6 +14,7 @@
 package tech.cuda.datahub.service.mysql.type
 
 import me.liuwj.ktorm.schema.BaseTable
+import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.SqlType
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -23,7 +24,7 @@ import java.sql.Types
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-fun <E : Any> BaseTable<E>.longtext(name: String): BaseTable<E>.ColumnRegistration<String> {
+fun <E : Any> BaseTable<E>.longtext(name: String): Column<String> {
     return registerColumn(name, LongTextSqlType)
 }
 

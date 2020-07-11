@@ -16,7 +16,7 @@ package tech.cuda.datahub.service
 import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.asc
 import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.entity.add
+import me.liuwj.ktorm.global.add
 import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.dao.FileMirrorDAO
 import tech.cuda.datahub.service.dto.FileMirrorDTO
@@ -62,7 +62,7 @@ object FileMirrorService : Service(FileMirrorDAO) {
      * 如果给定的节点是文件夹类型，则抛出 IllegalArgumentException
      */
     fun create(fileId: Int, message: String): FileMirrorDTO {
-        if(FileService.findById(fileId)?.type == FileType.DIR){
+        if (FileService.findById(fileId)?.type == FileType.DIR) {
             throw OperationNotAllowException(I18N.dir, I18N.createMirrorNotAllow)
         }
         val content = FileService.getContent(fileId).content!!

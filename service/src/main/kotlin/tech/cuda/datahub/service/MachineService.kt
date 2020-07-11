@@ -17,7 +17,8 @@ import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.asc
 import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.entity.add
+import me.liuwj.ktorm.global.add
+import me.liuwj.ktorm.global.global
 import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.dao.MachineDAO
 import tech.cuda.datahub.service.dto.MachineDTO
@@ -31,7 +32,6 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@Suppress("DEPRECATION")
 object MachineService : Service(MachineDAO) {
 
     /**

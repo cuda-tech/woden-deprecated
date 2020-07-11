@@ -15,7 +15,9 @@ package tech.cuda.datahub.service
 
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.entity.add
+import me.liuwj.ktorm.global.add
+import me.liuwj.ktorm.global.global
+import me.liuwj.ktorm.global.select
 import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.dao.FileDAO
 import tech.cuda.datahub.service.dto.*

@@ -29,39 +29,39 @@ internal object JobDAO : Table<JobPO>("jobs") {
     @AUTO_INCREMENT
     @PRIMARY_KEY
     @COMMENT("作业 ID")
-    val id by int("id").primaryKey().bindTo { it.id }
+    val id = int("id").primaryKey().bindTo { it.id }
 
     @BIGINT
     @UNSIGNED
     @COMMENT("任务 ID")
-    val taskId by int("task_id").bindTo { it.taskId }
+    val taskId = int("task_id").bindTo { it.taskId }
 
     @BIGINT
     @UNSIGNED
     @COMMENT("执行机器 ID")
-    val machineId by int("machine_id").bindTo { it.machineId }
+    val machineId = int("machine_id").bindTo { it.machineId }
 
     @VARCHAR(10)
     @COMMENT("作业状态")
-    val status by enum("status", typeRef<JobStatus>()).bindTo { it.status }
+    val status = enum("status", typeRef<JobStatus>()).bindTo { it.status }
 
     @TINYINT
     @COMMENT("执行时间（小时)")
-    val hour by int("hour").bindTo { it.hour }
+    val hour = int("hour").bindTo { it.hour }
 
     @TINYINT
     @COMMENT("执行时间（小时)")
-    val minute by int("minute").bindTo { it.minute }
+    val minute = int("minute").bindTo { it.minute }
 
     @BOOL
     @COMMENT("逻辑删除")
-    val isRemove by boolean("is_remove").bindTo { it.isRemove }
+    val isRemove = boolean("is_remove").bindTo { it.isRemove }
 
     @DATETIME
     @COMMENT("创建时间")
-    val createTime by datetime("create_time").bindTo { it.createTime }
+    val createTime = datetime("create_time").bindTo { it.createTime }
 
     @DATETIME
     @COMMENT("更新时间")
-    val updateTime by datetime("update_time").bindTo { it.updateTime }
+    val updateTime = datetime("update_time").bindTo { it.updateTime }
 }

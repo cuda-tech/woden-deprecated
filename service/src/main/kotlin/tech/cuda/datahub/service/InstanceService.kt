@@ -14,8 +14,11 @@
 package tech.cuda.datahub.service
 
 import me.liuwj.ktorm.database.Database
-import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.entity.add
+import me.liuwj.ktorm.dsl.and
+import me.liuwj.ktorm.dsl.desc
+import me.liuwj.ktorm.dsl.eq
+import me.liuwj.ktorm.global.add
+import me.liuwj.ktorm.global.global
 import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.dao.InstanceDAO
 import tech.cuda.datahub.service.dto.InstanceDTO
@@ -32,7 +35,6 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@Suppress("DEPRECATION")
 object InstanceService : Service(InstanceDAO) {
     /**
      * 通过[id]查找实例

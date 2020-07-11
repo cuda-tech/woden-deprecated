@@ -30,25 +30,25 @@ internal object GroupDAO : Table<GroupPO>("groups") {
     @PRIMARY_KEY
     @NOT_NULL
     @COMMENT("项目组 ID")
-    val id by int("id").primaryKey().bindTo { it.id }
+    val id = int("id").primaryKey().bindTo { it.id }
 
     @VARCHAR(64)
     @COMMENT("项目组名称")
-    val name by varchar("name").bindTo { it.name }
+    val name = varchar("name").bindTo { it.name }
 
     @BOOL
     @NOT_NULL
     @COMMENT("逻辑删除")
-    val isRemove by boolean("is_remove").bindTo { it.isRemove }
+    val isRemove = boolean("is_remove").bindTo { it.isRemove }
 
     @DATETIME
     @NOT_NULL
     @COMMENT("创建时间")
-    val createTime by datetime("create_time").bindTo { it.createTime }
+    val createTime = datetime("create_time").bindTo { it.createTime }
 
     @DATETIME
     @NOT_NULL
     @COMMENT("更新时间")
-    val updateTime by datetime("update_time").bindTo { it.updateTime }
+    val updateTime = datetime("update_time").bindTo { it.updateTime }
 }
 

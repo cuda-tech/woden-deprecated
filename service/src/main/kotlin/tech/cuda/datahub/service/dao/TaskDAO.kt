@@ -32,85 +32,85 @@ internal object TaskDAO : Table<TaskPO>("tasks") {
     @COMMENT("任务 ID")
     @PRIMARY_KEY
     @AUTO_INCREMENT
-    val id by int("id").primaryKey().bindTo { it.id }
+    val id = int("id").primaryKey().bindTo { it.id }
 
     @BIGINT
     @COMMENT("镜像 ID")
-    val mirrorId by int("mirror_id").bindTo { it.mirrorId }
+    val mirrorId = int("mirror_id").bindTo { it.mirrorId }
 
     @BIGINT
     @COMMENT("项目组 ID")
-    val groupId by int("group_id").bindTo { it.groupId }
+    val groupId = int("group_id").bindTo { it.groupId }
 
     @VARCHAR(512)
     @COMMENT("任务名")
-    val name by varchar("name").bindTo { it.name }
+    val name = varchar("name").bindTo { it.name }
 
     @JSON
     @COMMENT("负责人")
-    val owners by json("owners", typeRef<Set<Int>>()).bindTo { it.owners }
+    val owners = json("owners", typeRef<Set<Int>>()).bindTo { it.owners }
 
     @TEXT
     @COMMENT("执行参数")
-    val args by json("args", typeRef<Map<String, Any>>()).bindTo { it.args }
+    val args = json("args", typeRef<Map<String, Any>>()).bindTo { it.args }
 
     @BOOL
     @COMMENT("执行失败是否跳过")
-    val isSoftFail by boolean("is_soft_fail").bindTo { it.isSoftFail }
+    val isSoftFail = boolean("is_soft_fail").bindTo { it.isSoftFail }
 
     @VARCHAR(10)
     @COMMENT("调度周期")
-    val period by enum("period", typeRef<SchedulePeriod>()).bindTo { it.period }
+    val period = enum("period", typeRef<SchedulePeriod>()).bindTo { it.period }
 
     @JSON
     @COMMENT("调度时间格式")
-    val format by json("format", typeRef<ScheduleFormat>()).bindTo { it.format }
+    val format = json("format", typeRef<ScheduleFormat>()).bindTo { it.format }
 
     @VARCHAR(32)
     @COMMENT("执行队列")
-    val queue by varchar("queue").bindTo { it.queue }
+    val queue = varchar("queue").bindTo { it.queue }
 
     @VARCHAR(10)
     @COMMENT("调度优先级")
-    val priority by enum("priority", typeRef<SchedulePriority>()).bindTo { it.priority }
+    val priority = enum("priority", typeRef<SchedulePriority>()).bindTo { it.priority }
 
     @INT
     @COMMENT("最大等待时间（分钟）")
-    val pendingTimeout by int("pending_timeout").bindTo { it.pendingTimeout }
+    val pendingTimeout = int("pending_timeout").bindTo { it.pendingTimeout }
 
     @INT
     @COMMENT("最大执行时间（分钟）")
-    val runningTimeout by int("running_timeout").bindTo { it.runningTimeout }
+    val runningTimeout = int("running_timeout").bindTo { it.runningTimeout }
 
     @JSON
     @COMMENT("父任务列表")
-    val parent by json("parent", typeRef<Map<Int, ScheduleDependencyInfo>>()).bindTo { it.parent }
+    val parent = json("parent", typeRef<Map<Int, ScheduleDependencyInfo>>()).bindTo { it.parent }
 
     @JSON
     @COMMENT("子任务列表")
-    val children by json("children", typeRef<Set<Int>>()).bindTo { it.children }
+    val children = json("children", typeRef<Set<Int>>()).bindTo { it.children }
 
     @SMALLINT
     @COMMENT("重试次数")
-    val retries by int("retries").bindTo { it.retries }
+    val retries = int("retries").bindTo { it.retries }
 
     @INT
     @COMMENT("重试间隔")
-    val retryDelay by int("retry_delay").bindTo { it.retryDelay }
+    val retryDelay = int("retry_delay").bindTo { it.retryDelay }
 
     @BOOL
     @COMMENT("调度是否生效")
-    val isValid by boolean("is_valid").bindTo { it.isValid }
+    val isValid = boolean("is_valid").bindTo { it.isValid }
 
     @BOOL
     @COMMENT("逻辑删除")
-    val isRemove by boolean("is_remove").bindTo { it.isRemove }
+    val isRemove = boolean("is_remove").bindTo { it.isRemove }
 
     @DATETIME
     @COMMENT("创建时间")
-    val createTime by datetime("create_time").bindTo { it.createTime }
+    val createTime = datetime("create_time").bindTo { it.createTime }
 
     @DATETIME
     @COMMENT("更新时间")
-    val updateTime by datetime("update_time").bindTo { it.updateTime }
+    val updateTime = datetime("update_time").bindTo { it.updateTime }
 }

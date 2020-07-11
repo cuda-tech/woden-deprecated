@@ -17,10 +17,11 @@ import com.alibaba.druid.pool.DruidDataSourceFactory
 import com.google.common.base.Charsets
 import com.google.common.io.Resources
 import me.liuwj.ktorm.database.Database
+import me.liuwj.ktorm.global.connectGlobally
 import me.liuwj.ktorm.schema.Table
 import org.apache.log4j.Logger
 import org.reflections.Reflections
-import tech.cuda.datahub.service.config.DatabaseConfig
+import tech.cuda.datahub.config.DatabaseConfig
 import tech.cuda.datahub.service.exception.OperationNotAllowException
 
 
@@ -45,7 +46,7 @@ object Database {
 
     fun connect(dbConfig: DatabaseConfig) {
         this.dbConfig = dbConfig
-        this.db = Database.connect(DruidDataSourceFactory.createDataSource(dbConfig.properties))
+        this.db = Database.connectGlobally(DruidDataSourceFactory.createDataSource(dbConfig.properties))
         this.db.useConnection { conn ->
             conn.prepareStatement("create database if not exists ${dbConfig.dbName} default character set = 'utf8'").use { it.execute() }
             conn.catalog = dbConfig.dbName

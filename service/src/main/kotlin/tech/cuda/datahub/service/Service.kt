@@ -17,6 +17,7 @@ import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.expression.BinaryExpression
 import me.liuwj.ktorm.expression.OrderByExpression
+import me.liuwj.ktorm.global.select
 import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.Table
 import java.lang.IllegalArgumentException
@@ -26,6 +27,7 @@ import kotlin.math.max
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@Suppress("UNCHECKED_CAST")
 abstract class Service(private val table: Table<*>) {
 
     /**

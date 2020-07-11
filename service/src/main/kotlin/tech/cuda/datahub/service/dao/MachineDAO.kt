@@ -28,42 +28,42 @@ internal object MachineDAO : Table<MachinePO>("machines") {
     @AUTO_INCREMENT
     @PRIMARY_KEY
     @COMMENT("服务器 ID")
-    val id by int("id").primaryKey().bindTo { it.id }
+    val id = int("id").primaryKey().bindTo { it.id }
 
     @VARCHAR(128)
     @COMMENT("服务器名称")
-    val hostname by varchar("hostname").bindTo { it.hostname }
+    val hostname = varchar("hostname").bindTo { it.hostname }
 
     @VARCHAR(17)
     @COMMENT("服务器 MAC 地址")
-    val mac by varchar("mac").bindTo { it.mac }
+    val mac = varchar("mac").bindTo { it.mac }
 
 
     @VARCHAR(15)
     @COMMENT("服务器 IP 地址")
-    val ip by varchar("ip").bindTo { it.ip }
+    val ip = varchar("ip").bindTo { it.ip }
 
     @TINYINT(4)
     @COMMENT("CPU 负载")
-    val cpuLoad by int("cpu_load").bindTo { it.cpuLoad }
+    val cpuLoad = int("cpu_load").bindTo { it.cpuLoad }
 
     @TINYINT(4)
     @COMMENT("内存负载")
-    val memLoad by int("mem_load").bindTo { it.memLoad }
+    val memLoad = int("mem_load").bindTo { it.memLoad }
 
     @TINYINT(4)
     @COMMENT("磁盘负载")
-    val diskUsage by int("disk_usage").bindTo { it.diskUsage }
+    val diskUsage = int("disk_usage").bindTo { it.diskUsage }
 
     @BOOL
     @COMMENT("逻辑删除")
-    val isRemove by boolean("is_remove").bindTo { it.isRemove }
+    val isRemove = boolean("is_remove").bindTo { it.isRemove }
 
     @DATETIME
     @COMMENT("创建时间")
-    val createTime by datetime("create_time").bindTo { it.createTime }
+    val createTime = datetime("create_time").bindTo { it.createTime }
 
     @DATETIME
     @COMMENT("更新时间")
-    val updateTime by datetime("update_time").bindTo { it.updateTime }
+    val updateTime = datetime("update_time").bindTo { it.updateTime }
 }
