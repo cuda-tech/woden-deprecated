@@ -4,6 +4,7 @@ allprojects {
     version = '1.0.0-SNAPSHOT'
     allprojects {
         repositories {
+            jcenter()
             maven { url 'https://maven.aliyun.com/repository/google/' }
             maven { url 'https://maven.aliyun.com/repository/jcenter/' }
         }
@@ -42,7 +43,7 @@ subprojects {
         testImplementation 'io.kotest:kotest-property-jvm:4.0.0'
         testImplementation 'ch.vorburger.mariaDB4j:mariaDB4j:2.4.0'
         testImplementation 'com.nhaarman:mockito-kotlin:1.6.0'
-        testImplementation "io.mockk:mockk:1.10.0"
+        testImplementation 'io.mockk:mockk:1.10.0'
     }
 
     sourceCompatibility = '1.8'
