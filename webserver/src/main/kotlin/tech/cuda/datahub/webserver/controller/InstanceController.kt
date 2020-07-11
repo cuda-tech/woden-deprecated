@@ -15,9 +15,7 @@ package tech.cuda.datahub.webserver.controller
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
-import tech.cuda.datahub.service.model.Instance
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -27,9 +25,5 @@ import tech.cuda.datahub.service.model.Instance
 @EnableAutoConfiguration
 @RequestMapping("/api/instance")
 class InstanceController {
-    @RequestMapping("listing")
-    @ResponseBody
-    fun listing(): List<Instance> {
-        return listOf()
-    }
+
 }

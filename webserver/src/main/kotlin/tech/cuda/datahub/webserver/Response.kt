@@ -13,6 +13,8 @@
  */
 package tech.cuda.datahub.webserver
 
+import com.google.common.collect.Maps
+
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
@@ -24,21 +26,19 @@ object Response {
     fun withError(status: String, message: Any) = mapOf("status" to status, "error" to message)
 
     object Success {
-        const val status = "success"
-        fun WithData(data: Any) = withData(status, data)
-        fun WithMessage(message: Any) = withMessage(status, message)
-        fun Update(data: Any) = withMessage(status, "$data has been update")
-        fun Remove(data: Any) = withMessage(status, "$data has been removed")
+        private const val status = "success"
+        fun <K, V> data(vararg pairs: Pair<K, V>) = withData(status,
+            if (pairs.isNotEmpty()) pairs.toMap(Maps.newLinkedHashMapWithExpectedSize(pairs.size))
+            else Maps.newLinkedHashMap<K, V>()
+        )
 
-
+        fun message(message: Any) = withMessage(status, message)
     }
 
     object Failed {
-        const val status = "failed"
+        private const val status = "failed"
         fun WithError(error: Any) = withError(status, error)
-        fun DataNotFound(data: Any) = withError(status, "$data not found")
-        fun PermissionDenied(message: Any) = withError(status, "permission denied: $message")
-        fun IllegalArgument(message: Any) = withError(status, "illegal argument: $message")
+        fun DataNotFound(data: Any?) = withError(status, "$data not found")
     }
 
 }

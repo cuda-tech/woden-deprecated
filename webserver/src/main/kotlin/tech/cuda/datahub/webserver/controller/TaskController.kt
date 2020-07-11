@@ -15,9 +15,7 @@ package tech.cuda.datahub.webserver.controller
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
-import tech.cuda.datahub.service.model.Task
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -28,10 +26,5 @@ import tech.cuda.datahub.service.model.Task
 @RequestMapping("/api/task")
 class TaskController {
 
-    @RequestMapping("listing")
-    @ResponseBody
-    fun listing(): List<Task> {
-        return listOf()
-    }
 
 }
