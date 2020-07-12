@@ -43,7 +43,7 @@ abstract class BashBaseOperator(taskDTO: TaskDTO, private val type: String) : Op
         it.streamHandler = PumpStreamHandler(std, std)
         it.processDestroyer = killer
     }
-    protected open val commands: String get() = mirror.content
+    protected open val commands: String get() = mirror?.content ?: ""
 
     override val output: String
         get() = this.std.toString()

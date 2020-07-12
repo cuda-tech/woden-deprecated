@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.apache.log4j.Logger
 import tech.cuda.datahub.i18n.I18N
 import tech.cuda.datahub.service.FileMirrorService
+import tech.cuda.datahub.service.dto.FileMirrorDTO
 import tech.cuda.datahub.service.dto.TaskDTO
 import tech.cuda.datahub.service.exception.NotFoundException
 
@@ -25,11 +26,15 @@ import tech.cuda.datahub.service.exception.NotFoundException
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-abstract class Operator(task: TaskDTO) {
+abstract class Operator(task: TaskDTO? = null) {
 
     protected val logger: Logger = Logger.getLogger(this.javaClass)
-    protected val mirror = FileMirrorService.findById(task.mirrorId)
-        ?: throw NotFoundException(I18N.task, task.id, I18N.fileMirror, task.mirrorId, I18N.notExistsOrHasBeenRemove)
+    protected val mirror: FileMirrorDTO? = if (task != null) {
+        FileMirrorService.findById(task.mirrorId) ?: throw NotFoundException(
+            I18N.task, task.id, I18N.fileMirror, task.mirrorId, I18N.notExistsOrHasBeenRemove)
+    } else {
+        null
+    }
     protected lateinit var job: Deferred<Unit>
 
     abstract val isFinish: Boolean

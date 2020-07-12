@@ -26,7 +26,5 @@ class PythonOperator(task: TaskDTO, type: String = "python") : BashBaseOperator(
     """.trimIndent()
 
     override val commands: String
-        get() {
-            return "$initScript\n${mirror.content}"
-        }
+        get() = "$initScript\n${mirror?.content ?: ""}"
 }
