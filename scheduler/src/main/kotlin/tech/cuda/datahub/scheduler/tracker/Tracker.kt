@@ -48,6 +48,23 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
 
     private fun dealWithHeartBeat() = onHeartBeat()
 
+    /**
+     * 分数表达式
+     */
+    protected infix fun Int.over(v: Int) = this to v
+
+    /**
+     * 按 [batchSize] 分批执行，避免大型 SQL 查询
+     * 其中 [block] 块需要返回当前批次执行的数量，以及总共需要执行的数量，e.g current over total
+     * 后续可优化为并发执行
+     */
+    protected fun batchExecute(batchSize: Int = 100, block: (batch: Int, batchSize: Int) -> Pair<Int, Int>) {
+        var batch = 0
+        do {
+            batch++
+            val (currentBatchProcessed, total) = block(batch, batchSize)
+        } while ((batch - 1) * batchSize + currentBatchProcessed < total)
+    }
 
     fun start() {
         if (this::job.isInitialized) {
@@ -83,20 +100,24 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
         logger.info("$className started")
     }
 
-    suspend fun await() {
+    fun await() {
         if (this::job.isInitialized) {
-            this.job.await()
+            runBlocking {
+                job.await()
+            }
         } else {
             logger.error("try to join a not started $className")
         }
     }
 
-    suspend fun cancelAndAwait() {
+    fun cancelAndAwait() {
         if (this::job.isInitialized) {
             try {
-                delay(1000)
-                this.job.cancel()
-                this.job.await()
+                runBlocking {
+                    delay(1000)
+                    job.cancel()
+                    job.await()
+                }
             } catch (e: CancellationException) {
                 logger.info("cancel $className")
             }

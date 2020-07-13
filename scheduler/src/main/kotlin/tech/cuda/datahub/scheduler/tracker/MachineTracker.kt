@@ -19,7 +19,7 @@ import tech.cuda.datahub.service.dto.MachineDTO
 
 /**
  * 负责服务器注册 & 负载更新
- * [afterStarted]: Tracker 启动后的回调
+ * 其中 [afterStarted] 是启动后的回调，一般只用于单测
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */

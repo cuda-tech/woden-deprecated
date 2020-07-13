@@ -19,15 +19,18 @@ import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
-import kotlinx.coroutines.runBlocking
 import tech.cuda.datahub.scheduler.TestWithDistribution
 import tech.cuda.datahub.scheduler.util.MachineUtil
 import tech.cuda.datahub.toLocalDateTime
 
+/**
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
+ * @since 1.0.0
+ */
 class MachineTrackerTest : TestWithDistribution("machines") {
 
     @Test
-    fun testStart() = runBlocking {
+    fun testStart() {
         mockkObject(MachineUtil)
         every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("17.212.169.100", "9E-EE-49-FA-00-F4", "nknvleif", false)
         val machineTracker = MachineTracker(afterStarted = {
@@ -46,7 +49,7 @@ class MachineTrackerTest : TestWithDistribution("machines") {
     }
 
     @Test
-    fun testStartWhenIpAndHostChange() = runBlocking {
+    fun testStartWhenIpAndHostChange() {
         mockkObject(MachineUtil)
         every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("192.168.1.1", "9E-EE-49-FA-00-F4", "HOSTNAME", false)
         val machineTracker = MachineTracker(afterStarted = {
@@ -65,7 +68,7 @@ class MachineTrackerTest : TestWithDistribution("machines") {
     }
 
     @Test
-    fun testStartWhenNotRegister() = runBlocking {
+    fun testStartWhenNotRegister() {
         mockkObject(MachineUtil)
         every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("192.168.1.1", "01-23-45-67-89-AB", "HOSTNAME", false)
         val machineTracker = MachineTracker(afterStarted = {

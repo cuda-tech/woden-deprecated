@@ -18,10 +18,11 @@ import tech.cuda.datahub.service.TaskService
 
 /**
  * 作业 Tracker，每当跨天的时候，生成当天应该调度的作业
+ * 其中 [afterStarted] 是启动后的回调，一般只用于单测
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class JobTracker(private val afterJobGenerated: () -> Unit = {}) : Tracker() {
+class JobTracker(private val afterStarted: () -> Unit = {}) : Tracker() {
 
     /**
      * 对当前生效的任务，分批地生成调度作业
@@ -29,18 +30,18 @@ class JobTracker(private val afterJobGenerated: () -> Unit = {}) : Tracker() {
      */
     private fun generateTodayJob() {
         logger.info("generate today's jobs")
-        var page = 0
-        val pageSize = 100
-        do {
-            page++
-            val (tasks, count) = TaskService.listing(page, pageSize, isValid = true)
+        batchExecute { batch, batchSize ->
+            val (tasks, total) = TaskService.listing(batch, batchSize, isValid = true)
             tasks.forEach { JobService.create(it) }
-        } while ((page - 1) * pageSize + tasks.size < count)
-        afterJobGenerated()
+            tasks.size over total
+        }
         logger.info("generate today's jobs done")
     }
 
-    override fun onStarted() = generateTodayJob()
+    override fun onStarted() {
+        generateTodayJob()
+        afterStarted()
+    }
 
     override fun onDestroyed() {}
 

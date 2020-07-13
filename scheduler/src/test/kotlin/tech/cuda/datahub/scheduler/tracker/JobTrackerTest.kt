@@ -14,12 +14,15 @@
 package tech.cuda.datahub.scheduler.tracker
 
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.*
 import tech.cuda.datahub.scheduler.TestWithDistribution
 import tech.cuda.datahub.service.JobService
 import tech.cuda.datahub.service.po.dtype.JobStatus
 import java.time.LocalDateTime
 
+/**
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
+ * @since 1.0.0
+ */
 class JobTrackerTest : TestWithDistribution("jobs", "tasks") {
 
     /**
@@ -40,15 +43,13 @@ class JobTrackerTest : TestWithDistribution("jobs", "tasks") {
         val expectCount = listOf(1212, 1209, 1209, 1209, 1215, 1210, 1207)
         (6..12).forEachIndexed { index, day ->
             supposeNowIs(2010, 8, day, 0, 1) {
-                runBlocking {
-                    val now = LocalDateTime.now()
-                    JobService.listing(1, 10, status = JobStatus.INIT, after = now, before = now).second shouldBe 0
-                    val jobTracker = JobTracker(afterJobGenerated = {
-                        JobService.listing(1, 10, status = JobStatus.INIT, after = now, before = now).second shouldBe expectCount[index]
-                    })
-                    jobTracker.start()
-                    jobTracker.cancelAndAwait()
-                }
+                val now = LocalDateTime.now()
+                JobService.listing(1, 10, status = JobStatus.INIT, after = now, before = now).second shouldBe 0
+                val jobTracker = JobTracker(afterStarted = {
+                    JobService.listing(1, 10, status = JobStatus.INIT, after = now, before = now).second shouldBe expectCount[index]
+                })
+                jobTracker.start()
+                jobTracker.cancelAndAwait()
             }
         }
     }
