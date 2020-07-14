@@ -21,7 +21,7 @@ import me.liuwj.ktorm.global.connectGlobally
 import me.liuwj.ktorm.schema.Table
 import org.apache.log4j.Logger
 import org.reflections.Reflections
-import tech.cuda.datahub.config.DatabaseConfig
+import tech.cuda.datahub.config.database.DatabaseConfig
 import tech.cuda.datahub.service.exception.OperationNotAllowException
 
 
@@ -48,8 +48,8 @@ object Database {
         this.dbConfig = dbConfig
         this.db = Database.connectGlobally(DruidDataSourceFactory.createDataSource(dbConfig.properties))
         this.db.useConnection { conn ->
-            conn.prepareStatement("create database if not exists ${dbConfig.dbName} default character set = 'utf8'").use { it.execute() }
-            conn.catalog = dbConfig.dbName
+            conn.prepareStatement("create database if not exists ${dbConfig.mysql.dbName} default character set = 'utf8'").use { it.execute() }
+            conn.catalog = dbConfig.mysql.dbName
         }
     }
 
@@ -66,17 +66,17 @@ object Database {
      */
     fun build() = checkConnected {
         db.useConnection { conn ->
-            logger.info("create database ${dbConfig.dbName}")
-            conn.prepareStatement("create database if not exists ${dbConfig.dbName} default character set = 'utf8'").use { it.execute() }
-            logger.info("database ${dbConfig.dbName} have been created")
-            conn.catalog = dbConfig.dbName
+            logger.info("create database ${dbConfig.mysql.dbName}")
+            conn.prepareStatement("create database if not exists ${dbConfig.mysql.dbName} default character set = 'utf8'").use { it.execute() }
+            logger.info("database ${dbConfig.mysql.dbName} have been created")
+            conn.catalog = dbConfig.mysql.dbName
             models.forEach { table ->
                 val ddl = Class.forName("${table::class.qualifiedName}DDLKt")
                     .getMethod("getDDL", table::class.java)
                     .invoke(null, table) as String // kotlin 的扩展属性本质上是静态方法
                 logger.info("create table for class ${table.javaClass.name}:\n" + lightBlue + ddl + end)
                 conn.prepareStatement(ddl).use { it.execute() }
-                logger.info("table ${dbConfig.dbName}.${table.tableName} have been created")
+                logger.info("table ${dbConfig.mysql.dbName}.${table.tableName} have been created")
             }
         }
     }
@@ -88,12 +88,12 @@ object Database {
         db.useConnection { conn ->
             models.forEach { table ->
                 logger.info("drop table for class ${table.javaClass.name}")
-                conn.prepareStatement("drop table if exists ${dbConfig.dbName}.${table.tableName}").use { it.execute() }
-                logger.info("table ${dbConfig.dbName}.${table.tableName} have been drop")
+                conn.prepareStatement("drop table if exists ${dbConfig.mysql.dbName}.${table.tableName}").use { it.execute() }
+                logger.info("table ${dbConfig.mysql.dbName}.${table.tableName} have been drop")
             }
-            logger.info("drop database ${dbConfig.dbName}")
-            conn.prepareStatement("drop database if exists ${dbConfig.dbName}").use { it.execute() }
-            logger.info("database ${dbConfig.dbName} have been drop")
+            logger.info("drop database ${dbConfig.mysql.dbName}")
+            conn.prepareStatement("drop database if exists ${dbConfig.mysql.dbName}").use { it.execute() }
+            logger.info("database ${dbConfig.mysql.dbName} have been drop")
         }
     }
 

@@ -15,7 +15,7 @@ package tech.cuda.datahub.scheduler.ops
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import tech.cuda.datahub.config.DatahubConfig
+import tech.cuda.datahub.config.Datahub
 import tech.cuda.datahub.service.exception.OperationNotAllowException
 import javax.mail.*
 import javax.mail.internet.InternetAddress
@@ -41,7 +41,7 @@ class MailOperator(private val to: List<String>, private val title: String, priv
     override fun start() {
         this.job = GlobalScope.async {
             try {
-                val message = MimeMessage(Session.getInstance(DatahubConfig.email.properties, DatahubConfig.email.auth))
+                val message = MimeMessage(Session.getInstance(Datahub.email.properties, Datahub.email.auth))
                 message.setRecipients(MimeMessage.RecipientType.TO, InternetAddress.parse(to.joinToString(",")))
                 message.setFrom()
                 message.subject = title

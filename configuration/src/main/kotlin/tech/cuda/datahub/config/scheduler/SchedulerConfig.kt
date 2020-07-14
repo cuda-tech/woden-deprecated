@@ -11,12 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.config
+package tech.cuda.datahub.config.scheduler
+
+import com.fasterxml.jackson.annotation.JsonRootName
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-data class SchedulerConfig (
-    val role:String
+@JsonRootName("scheduler")
+data class SchedulerConfig(
+    val role: String
 )

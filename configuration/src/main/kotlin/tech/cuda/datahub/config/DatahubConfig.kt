@@ -13,20 +13,26 @@
  */
 package tech.cuda.datahub.config
 
+import com.fasterxml.jackson.annotation.JsonRootName
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.google.common.io.Resources
+import tech.cuda.datahub.config.database.DatabaseConfig
+import tech.cuda.datahub.config.email.EmailConfig
+import tech.cuda.datahub.config.scheduler.SchedulerConfig
+
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-object DatahubConfig {
-    val email: EmailConfig
+@JsonRootName("datahub")
+data class DatahubConfig(
+    val database: DatabaseConfig,
+    val email: EmailConfig,
     val scheduler: SchedulerConfig
-    val database: DatabaseConfig
+)
 
-    init {
-        val userDefineConfig = "" // todo
-        val defaultConfig = ""
-        email = EmailConfig("localhost", "admin@datahub", "password")
-        scheduler = SchedulerConfig("")
-        database = DatabaseConfig()
-    }
-}
+private val mapper = XmlMapper().registerKotlinModule()
+val Datahub = mapper.readValue<DatahubConfig>(Resources.getResource("datahub.xml"))
+

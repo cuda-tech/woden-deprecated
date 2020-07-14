@@ -22,6 +22,9 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.spring.SpringListener
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
@@ -31,10 +34,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import tech.cuda.datahub.config.DatabaseConfig
+import tech.cuda.datahub.config.Datahub
 import tech.cuda.datahub.service.Database
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -60,10 +64,19 @@ open class RestfulTestToolbox(private vararg val tables: String = arrayOf()) : A
     fun beforeAll() {
         val db = DB.newEmbeddedDB(DBConfigurationBuilder.newBuilder().also {
             it.port = 0
-            it.baseDir = System.getProperty("java.io.tmpdir") +  this.javaClass.simpleName
+            it.baseDir = System.getProperty("java.io.tmpdir") + this.javaClass.simpleName
         }.build()).also { it.start() }
-        Database.connect(DatabaseConfig(port = db.configuration.port))
-//        Database.connect(DatabaseConfig(port = 3306))
+        mockkObject(Datahub.database)
+        every { Datahub.database.properties } returns Properties().also { props ->
+            props["url"] = "jdbc:mysql://localhost:${db.configuration.port}/?characterEncoding=UTF-8"
+            props["username"] = "root"
+        }
+        Database.connect(Datahub.database)
+    }
+
+    @AfterAll
+    fun afterAll() {
+        unmockkObject(Datahub.database)
     }
 
     @BeforeEach

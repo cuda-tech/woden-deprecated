@@ -17,6 +17,8 @@ dependencies {
     implementation project(':annotation-processor')
 
     kapt project(':annotation-processor')
+
+    testImplementation project(':configuration').sourceSets.test.output
 }
 
 test {

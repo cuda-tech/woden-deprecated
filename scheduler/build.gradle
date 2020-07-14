@@ -9,6 +9,7 @@ dependencies {
 
     testImplementation 'com.icegreen:greenmail:1.5.14'
     testImplementation project(':service').sourceSets.test.output  // 依赖 service 模块的测试 resource
+    testImplementation project(':configuration').sourceSets.test.output
 }
 
 test {

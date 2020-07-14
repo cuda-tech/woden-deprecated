@@ -18,9 +18,11 @@ import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestCase
+import io.mockk.*
 import me.liuwj.ktorm.schema.Table
-import tech.cuda.datahub.config.DatabaseConfig
+import tech.cuda.datahub.config.Datahub
 import tech.cuda.datahub.service.Database
+import java.util.*
 
 /**
  * 基于 maria 数据库的测试套件，所有测试用例执行前启动 maria 数据库
@@ -35,11 +37,22 @@ open class TestWithMaria(body: StringSpec.() -> Unit = {}, private vararg val ta
         super.beforeSpec(spec)
         val db = DB.newEmbeddedDB(DBConfigurationBuilder.newBuilder().also {
             it.port = 0
-            it.baseDir = System.getProperty("java.io.tmpdir") +  this.javaClass.simpleName
+            it.baseDir = System.getProperty("java.io.tmpdir") + this.javaClass.simpleName
         }.build()).also { it.start() }
-        Database.connect(DatabaseConfig(port = db.configuration.port))
-//        Database.connect(DatabaseConfig(port = 3306))
+
+        mockkObject(Datahub.database)
+        every { Datahub.database.properties } returns Properties().also { props ->
+            props["url"] = "jdbc:mysql://localhost:${db.configuration.port}/?characterEncoding=UTF-8"
+            props["username"] = "root"
+        }
+        Database.connect(Datahub.database)
     }
+
+    override fun afterSpec(spec: Spec) {
+        super.afterSpec(spec)
+        unmockkObject(Datahub.database)
+    }
+
 
     override fun beforeTest(testCase: TestCase) {
         super.beforeTest(testCase)

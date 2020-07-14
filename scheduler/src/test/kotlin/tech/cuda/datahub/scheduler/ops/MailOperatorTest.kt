@@ -16,7 +16,10 @@ package tech.cuda.datahub.scheduler.ops
 import com.icegreen.greenmail.util.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.DoNotParallelize
-import io.kotest.core.spec.style.AnnotationSpec
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.core.test.TestCase
+import io.kotest.core.test.TestResult
+import io.kotest.fp.Tuple2
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
 import tech.cuda.datahub.service.exception.OperationNotAllowException
@@ -27,23 +30,9 @@ import tech.cuda.datahub.service.exception.OperationNotAllowException
  * @since 1.0.0
  */
 @DoNotParallelize
-class MailOperatorTest : AnnotationSpec() {
+class MailOperatorTest(private val greenMail: GreenMail = GreenMail(ServerSetup.SMTPS)) : StringSpec({
 
-    private val greenMail = GreenMail(ServerSetup.SMTPS)
-
-    @BeforeEach
-    fun startMailServer() {
-        greenMail.start()
-        greenMail.setUser("admin@datahub", "admin@datahub", "password")
-    }
-
-    @AfterEach
-    fun stopMailServer() {
-        greenMail.stop()
-    }
-
-    @Test
-    fun send() {
+    "send" {
         val receivers = listOf("user1@test1", "user2@test2", "user3@test3")
         val op = MailOperator(to = receivers, title = "test email", content = "this is a test email")
         op.start()
@@ -60,12 +49,11 @@ class MailOperatorTest : AnnotationSpec() {
             GreenMailUtil.getBody(it) shouldBe "this is a test email"
             it.allRecipients.map { addr -> addr.toString() } shouldContainInOrder receivers
             it.from.size shouldBe 1
-            it.from.first().toString() shouldBe "admin@datahub"
+            it.from.first().toString() shouldBe "root@host.com"
         }
     }
 
-    @Test
-    fun kill() {
+    "kill" {
         val receivers = listOf("user1@test1", "user2@test2", "user3@test3")
         val op = MailOperator(to = receivers, title = "test email", content = "this is a test email")
         op.start()
@@ -73,5 +61,16 @@ class MailOperatorTest : AnnotationSpec() {
             op.kill()
         }
     }
+}) {
 
+    override fun beforeTest(testCase: TestCase) {
+        super.beforeTest(testCase)
+        greenMail.start()
+        greenMail.setUser("root@host.com", "root@host.com", "root")
+    }
+
+    override fun afterTest(f: suspend (Tuple2<TestCase, TestResult>) -> Unit) {
+        super.afterTest(f)
+        greenMail.stop()
+    }
 }

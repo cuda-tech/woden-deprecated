@@ -11,8 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.config
+package tech.cuda.datahub.config.email
 
+import com.fasterxml.jackson.annotation.JsonRootName
 import com.sun.mail.util.MailSSLSocketFactory
 import java.util.*
 import javax.mail.Authenticator
@@ -22,26 +23,27 @@ import javax.mail.PasswordAuthentication
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
+@JsonRootName("email")
 data class EmailConfig(
-    private val smtpHost: String, // e.g smtp.163.com
-    private val sender: String, // e.g someone@163.com
-    private val password: String, // SMTP授权密码
-    private val port: Int = 465,
-    private val protocol: String = "SMTP",
-    private val encoding: String = "UTF-8",
+    val host: String, // e.g smtp.163.com
+    val sender: String, // e.g someone@163.com
+    val password: String, // SMTP授权密码
+    val port: Int = 465
+) {
 
     val auth: Authenticator = object : Authenticator() {
         override fun getPasswordAuthentication(): PasswordAuthentication {
             return PasswordAuthentication(sender, password)
         }
-    },
+    }
+
     val properties: Properties = Properties().also {
-        it["mail.transport.protocol"] = protocol
-        it["mail.smtp.host"] = smtpHost
+        it["mail.transport.protocol"] = "SMTP"
+        it["mail.smtp.host"] = host
         it["mail.from"] = sender
         it["mail.smtp.socketFactory.port"] = port
         it["mail.smtp.auth"] = "true"
         it["mail.smtp.ssl.enable"] = true
         it["mail.smtp.ssl.socketFactory"] = MailSSLSocketFactory().also { sf -> sf.isTrustAllHosts = true }
     }
-)
+}

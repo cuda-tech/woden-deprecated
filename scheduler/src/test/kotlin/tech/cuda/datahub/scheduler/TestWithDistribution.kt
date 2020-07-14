@@ -16,12 +16,11 @@ package tech.cuda.datahub.scheduler
 import ch.vorburger.mariadb4j.DB
 import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import io.kotest.core.spec.style.AnnotationSpec
-import io.mockk.every
-import io.mockk.mockkStatic
-import io.mockk.unmockkStatic
+import io.mockk.*
+import tech.cuda.datahub.config.Datahub
 import tech.cuda.datahub.service.Database
-import tech.cuda.datahub.config.DatabaseConfig
 import java.time.*
+import java.util.*
 
 
 /**
@@ -34,10 +33,19 @@ open class TestWithDistribution(private vararg val tables: String = arrayOf()) :
     fun beforeAll() {
         val db = DB.newEmbeddedDB(DBConfigurationBuilder.newBuilder().also {
             it.port = 0
-            it.baseDir = System.getProperty("java.io.tmpdir") +  this.javaClass.simpleName
+            it.baseDir = System.getProperty("java.io.tmpdir") + this.javaClass.simpleName
         }.build()).also { it.start() }
-        Database.connect(DatabaseConfig(port = db.configuration.port))
-//        Database.connect(DatabaseConfig(port = 3306))
+        mockkObject(Datahub.database)
+        every { Datahub.database.properties } returns Properties().also { props ->
+            props["url"] = "jdbc:mysql://localhost:${db.configuration.port}/?characterEncoding=UTF-8"
+            props["username"] = "root"
+        }
+        Database.connect(Datahub.database)
+    }
+
+    @AfterAll
+    fun afterAll() {
+        unmockkObject(Datahub.database)
     }
 
     @BeforeEach
