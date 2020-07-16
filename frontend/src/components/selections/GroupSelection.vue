@@ -12,16 +12,19 @@
 </template>
 
 <script>
-    import GroupAPI from '../../api/GroupAPI';
+    import GroupService from "@/service/GroupService";
 
     /**
      * 项目组选择菜单
+     * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
+     * @since 1.0.0
      */
     export default {
         name: 'GroupSelection',
         props: {
             /**
-             * 绑定的项目组 ID, 可使用 v-model 双向绑定
+             * @model
+             * 双向绑定的项目组 ID
              */
             value: {
                 type: Number,
@@ -37,7 +40,7 @@
             }
         },
         beforeMount() {
-            GroupAPI.listing(1, 999999, null, (count, groups) => {
+            GroupService.listing({pageId: 1, pageSize: 999999}, (count, groups) => {
                 this.groups = groups;
             });
         },

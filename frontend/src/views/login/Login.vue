@@ -21,7 +21,7 @@
 </template>
 
 <script>
-    import UserAPI from "../../api/UserAPI";
+    import UserService from "@/service/UserService";
 
     export default {
         name: "Login",
@@ -35,7 +35,7 @@
         },
         methods: {
             login() {
-                UserAPI.login(this.user.name, this.user.password, token => {
+                UserService.login({username: this.user.name, password: this.user.password}, token => {
                     window.localStorage["token"] = token;
                     this.$router.push({name: 'Home'})
                 });
