@@ -19,12 +19,6 @@ import tech.cuda.datahub.service.dto.TaskDTO
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class HiveOperator(task: TaskDTO) : BashBaseOperator(task, "hive") {
+class HiveOperator(task: TaskDTO) : HadoopBaseOperator(task, "hive") {
 
-    override fun kill() {
-        // 首先需要 yarn kill 作业
-
-        // 然后才能 kill 掉进程
-        super.kill()
-    }
 }

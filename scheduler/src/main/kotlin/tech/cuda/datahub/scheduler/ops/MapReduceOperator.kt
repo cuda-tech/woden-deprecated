@@ -11,30 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.scheduler.tracker
+package tech.cuda.datahub.scheduler.ops
+
+import tech.cuda.datahub.service.dto.TaskDTO
 
 /**
- * 存储生命周期 tracker
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-object LifecycleTracker : Tracker() {
-
-    private fun cleanPartition() {
-
-    }
-
-    override fun onStarted() {}
-
-    override fun onDestroyed() {}
-
-    override fun onDateChange() {
-        cleanPartition()
-    }
-
-    override fun onHourChange() {}
-
-    override fun onHeartBeat() {}
-
+class MapReduceOperator(task: TaskDTO) : HadoopBaseOperator(task, "hadoop") {
 
 }
