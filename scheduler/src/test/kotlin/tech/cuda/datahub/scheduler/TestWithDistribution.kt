@@ -18,7 +18,10 @@ import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import io.kotest.core.spec.style.AnnotationSpec
 import io.mockk.*
 import tech.cuda.datahub.config.Datahub
+import tech.cuda.datahub.scheduler.util.MachineUtil
 import tech.cuda.datahub.service.Database
+import tech.cuda.datahub.service.MachineService
+import tech.cuda.datahub.service.exception.NotFoundException
 import java.time.*
 import java.util.*
 
@@ -77,6 +80,22 @@ open class TestWithDistribution(private vararg val tables: String = arrayOf()) :
         block()
         unmockkStatic(LocalDateTime::class)
         unmockkStatic(LocalDate::class)
+    }
+
+    /**
+     * mock 机器，假定自己是编号为[id]的服务器
+     */
+    protected fun supposeImMachine(id: Int, block: () -> Unit) {
+        mockkObject(MachineUtil)
+        val machine = MachineService.findById(id) ?: throw NotFoundException()
+        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo( // machine ID = 1
+            ip = machine.ip,
+            mac = machine.mac,
+            hostname = machine.hostname,
+            isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
+        )
+        block()
+        unmockkObject(MachineUtil)
     }
 }
 
