@@ -19,7 +19,12 @@ import tech.cuda.datahub.service.dto.TaskDTO
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class PythonOperator(task: TaskDTO, type: String = "python") : BashBaseOperator(task, type) {
+class PythonOperator(
+    task: TaskDTO,
+    type: String = "python",
+    argument: List<String> = listOf(),
+    kvArguments: Map<String, String> = mapOf()
+) : BashBaseOperator(task, type, argument, kvArguments) {
     private val initScript = """
         from functools import partial
         print = partial(print, flush = True) # 为了将 print 实时地输出到 std

@@ -104,4 +104,46 @@ class PythonOperatorTest : TestWithDistribution("tasks", "file_mirrors"), TempFi
         tempFile.exists() shouldBe false
         println(python.output)
     }
+
+    @Test
+    fun userDefineArgument() {
+        val python = PythonOperator(
+            task = TaskService.findById(27)!!,// mirror_id = 234
+            type = "python3",
+            argument = listOf("hello", "world!")
+        )
+        python.start()
+        val tempFile = Thread.sleep(100).run { getTempFile("python3_") }
+        tempFile.exists() shouldBe true
+        python.isFinish shouldBe false
+        python.isSuccess shouldBe false
+        python.output shouldBe ""
+
+        python.join()
+        python.isFinish shouldBe true
+        python.isSuccess shouldBe true
+        python.output shouldBe "hello\nworld!\n"
+        tempFile.exists() shouldBe false
+    }
+
+    @Test
+    fun userDefineKvArgument() {
+        val python = PythonOperator(
+            task = TaskService.findById(34)!!,// mirror_id = 57
+            type = "python3",
+            kvArguments = mapOf("-f" to "1", "--second" to "2")
+        )
+        python.start()
+        val tempFile = Thread.sleep(100).run { getTempFile("python3_") }
+        tempFile.exists() shouldBe true
+        python.isFinish shouldBe false
+        python.isSuccess shouldBe false
+        python.output shouldBe ""
+
+        python.join()
+        python.isFinish shouldBe true
+        python.isSuccess shouldBe true
+        python.output shouldBe "first = 1\nsecond = 2\n"
+        tempFile.exists() shouldBe false
+    }
 }

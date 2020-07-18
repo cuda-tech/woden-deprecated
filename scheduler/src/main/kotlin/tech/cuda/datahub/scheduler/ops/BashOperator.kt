@@ -19,4 +19,9 @@ import tech.cuda.datahub.service.dto.TaskDTO
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class BashOperator(task: TaskDTO, type: String = "bash") : BashBaseOperator(task, type)
+class BashOperator(
+    task: TaskDTO,
+    type: String = "bash",
+    argument: List<String> = listOf(),
+    kvArguments: Map<String, String> = mapOf()
+) : BashBaseOperator(task, type, argument, kvArguments)

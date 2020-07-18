@@ -26,7 +26,11 @@ import tech.cuda.datahub.service.exception.NotFoundException
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-abstract class Operator(task: TaskDTO? = null) {
+abstract class Operator(
+    task: TaskDTO? = null,
+    protected val argument: List<String> = listOf(),
+    protected val kvArguments: Map<String, String> = mapOf()
+) {
 
     protected val logger: Logger = Logger.getLogger(this.javaClass)
     protected val mirror: FileMirrorDTO? = if (task != null) {

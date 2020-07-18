@@ -82,4 +82,44 @@ class BashOperatorTest : TestWithDistribution("tasks", "file_mirrors"), TempFile
         tempFile.exists() shouldBe false
     }
 
+    @Test
+    fun userDefineArgument() {
+        val bash = BashOperator(
+            task = TaskService.findById(22)!!, // mirror_id = 69
+            argument = listOf("first", "second")
+        )
+        bash.start()
+        val tempFile = Thread.sleep(100).run { getTempFile("bash_") }
+        tempFile.exists() shouldBe true
+        bash.isFinish shouldBe false
+        bash.isSuccess shouldBe false
+        bash.output shouldBe ""
+
+        bash.join()
+        bash.isFinish shouldBe true
+        bash.isSuccess shouldBe true
+        bash.output shouldBe "first\nsecond\n"
+        tempFile.exists() shouldBe false
+    }
+
+    @Test
+    fun userDefineKvArgument() {
+        val bash = BashOperator(
+            task = TaskService.findById(25)!!, // mirror_id = 274
+            kvArguments = mapOf("-f" to "1", "--second" to "2")
+        )
+        bash.start()
+        val tempFile = Thread.sleep(100).run { getTempFile("bash_") }
+        tempFile.exists() shouldBe true
+        bash.isFinish shouldBe false
+        bash.isSuccess shouldBe false
+        bash.output shouldBe ""
+
+        bash.join()
+        bash.isFinish shouldBe true
+        bash.isSuccess shouldBe true
+        bash.output shouldBe "first = 1\nsecond = 2\n"
+        tempFile.exists() shouldBe false
+    }
+
 }

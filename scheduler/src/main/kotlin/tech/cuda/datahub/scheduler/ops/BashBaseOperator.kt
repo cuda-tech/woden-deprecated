@@ -33,7 +33,12 @@ import java.io.FileWriter
  * @since 1.0.0
  */
 @Suppress("BlockingMethodInNonBlockingContext")
-abstract class BashBaseOperator(taskDTO: TaskDTO, private val type: String) : Operator(taskDTO) {
+abstract class BashBaseOperator(
+    taskDTO: TaskDTO,
+    private val type: String,
+    argument: List<String> = listOf(),
+    kvArguments: Map<String, String> = mapOf()
+) : Operator(taskDTO, argument, kvArguments) {
     private val exitValue = 0
     private val std = ByteArrayOutputStream()
     private val resultHandler = DefaultExecuteResultHandler()
@@ -78,6 +83,11 @@ abstract class BashBaseOperator(taskDTO: TaskDTO, private val type: String) : Op
                     }
                 } else {
                     CommandLine(type).also { it.addArgument(tempFile.absolutePath) }
+                }
+                argument.forEach { commandLine.addArgument(it) }
+                kvArguments.forEach { (name, value) ->
+                    commandLine.addArgument(name)
+                    commandLine.addArgument(value)
                 }
 
                 // 然后执行它并等待执行完毕
