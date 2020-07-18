@@ -36,9 +36,9 @@ class JobServiceTest : TestWithMaria({
         val job = JobService.findById(4)
         job shouldNotBe null
         job!!
-        job.taskId shouldBe 229
-        job.machineId shouldBe 5
-        job.status shouldBe JobStatus.SUCCESS
+        job.taskId shouldBe 35
+        job.machineId shouldBe 1
+        job.status shouldBe JobStatus.READY
         job.hour shouldBe 16
         job.minute shouldBe 30
         job.createTime shouldBe "2025-01-10 16:56:13".toLocalDateTime()
@@ -76,7 +76,7 @@ class JobServiceTest : TestWithMaria({
 
     "按状态分页查询" {
         val status = JobStatus.SUCCESS
-        val total = 58
+        val total = 56
         val pageSize = 5
         val queryTimes = total / pageSize + 1
         val lastPageCount = total % pageSize

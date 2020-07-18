@@ -345,8 +345,8 @@ class FileServiceTest : TestWithMaria({
 
         // 跨项目组
         shouldThrow<PermissionException> {
-            FileService.update(3, parentId = 15)
-        }.message shouldBe "父节点 15 不归属于 项目组 1"
+            FileService.update(3, parentId = 20)
+        }.message shouldBe "父节点 20 不归属于 项目组 1"
     }
 
     "逻辑删除文件节点" {
