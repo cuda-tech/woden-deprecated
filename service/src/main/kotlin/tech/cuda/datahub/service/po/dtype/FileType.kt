@@ -21,30 +21,14 @@ import java.time.LocalDateTime
  * @since 1.0.0
  */
 enum class FileType {
-    DIR, SQL, SPARK, MR;
+    DIR, SQL, SPARK, MR, PYTHON, BASH;
 
     fun initVal(author: String, createTime: LocalDateTime) = when (this) {
         DIR -> null
-        MR -> """
-            #---------------------------------------
-            # @author    $author
-            # @date      $createTime
-            # @describe
-            #---------------------------------------
-        """.trimIndent()
-        SQL -> """
-            -----------------------------------------
-            -- @author   $author
-            -- @date     $createTime
-            -- @describe
-            -----------------------------------------
-        """.trimIndent()
-        SPARK -> """
-            #---------------------------------------
-            # @author    $author
-            # @date      $createTime
-            # @describe
-            #--------------------------------------- 
+        else -> """
+            ## @author               $author
+            ## @date                 $createTime
+            ## @describe
         """.trimIndent()
     }
 }

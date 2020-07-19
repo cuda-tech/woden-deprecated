@@ -53,6 +53,8 @@ object FileService : Service(FileDAO) {
                     FileType.SQL -> 1
                     FileType.MR -> 2
                     FileType.SPARK -> 3
+                    FileType.BASH -> 4
+                    FileType.PYTHON -> 5
                 }
             },
             // 文件名作为第二优先级
