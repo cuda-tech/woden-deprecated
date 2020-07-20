@@ -15,6 +15,7 @@ package tech.cuda.datahub.service.dto
 
 import tech.cuda.datahub.annotation.pojo.DTO
 import tech.cuda.datahub.service.po.MachinePO
+import tech.cuda.datahub.service.po.dtype.MachineRole
 import java.time.LocalDateTime
 
 /**
@@ -30,6 +31,8 @@ data class MachineDTO(
     val cpuLoad: Int,
     val memLoad: Int,
     val diskUsage: Int,
+    val role: MachineRole,
+    val isActive: Boolean,
     val createTime: LocalDateTime,
     val updateTime: LocalDateTime
 )

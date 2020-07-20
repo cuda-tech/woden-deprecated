@@ -14,6 +14,7 @@
 package tech.cuda.datahub.service
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.comparables.shouldBeGreaterThanOrEqualTo
 import io.kotest.matchers.comparables.shouldBeLessThanOrEqualTo
 import io.kotest.matchers.shouldBe
@@ -22,6 +23,7 @@ import tech.cuda.datahub.TestWithMaria
 import tech.cuda.datahub.service.dao.MachineDAO
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
+import tech.cuda.datahub.service.po.dtype.MachineRole
 import tech.cuda.datahub.toLocalDateTime
 import java.time.LocalDateTime
 
@@ -40,6 +42,20 @@ class MachineServiceTest : TestWithMaria({
             machines.size shouldBe if (page == queryTimes) lastPageMachineCount else pageSize
             count shouldBe validMachineCount
         }
+    }
+
+    "查询存活的 master" {
+        val (machines, count) = MachineService.listingActiveMaster()
+        machines.size shouldBe 3
+        count shouldBe 3
+        machines.map { it.hostname } shouldContainExactlyInAnyOrder listOf("tejxajfq", "nknvleif", "myjweyss")
+        machines.map { it.id } shouldContainExactlyInAnyOrder listOf(1, 3, 5)
+    }
+
+    "查询存活的 slave" {
+        val (machines, count) = MachineService.listingActiveSlave()
+        machines.size shouldBe 156
+        count shouldBe 156
     }
 
     "模糊查询" {
@@ -122,6 +138,8 @@ class MachineServiceTest : TestWithMaria({
         machine.mac shouldBe "7E-C5-BA-DE-97-6F"
         machine.cpuLoad shouldBe 16
         machine.memLoad shouldBe 11
+        machine.isActive shouldBe false
+        machine.role shouldBe MachineRole.MASTER
         machine.diskUsage shouldBe 46
         machine.createTime shouldBe "2012-03-28 03:42:07".toLocalDateTime()
         machine.updateTime shouldBe "2012-09-03 04:11:46".toLocalDateTime()
@@ -140,6 +158,8 @@ class MachineServiceTest : TestWithMaria({
         machine.cpuLoad shouldBe 98
         machine.memLoad shouldBe 48
         machine.diskUsage shouldBe 31
+        machine.isActive shouldBe true
+        machine.role shouldBe MachineRole.MASTER
         machine.createTime shouldBe "2035-11-05 14:17:43".toLocalDateTime()
         machine.updateTime shouldBe "2036-03-31 18:40:59".toLocalDateTime()
         MachineService.findByIP("131.236.90.140") shouldBe null
@@ -157,6 +177,8 @@ class MachineServiceTest : TestWithMaria({
         machine.cpuLoad shouldBe 98
         machine.memLoad shouldBe 48
         machine.diskUsage shouldBe 31
+        machine.isActive shouldBe true
+        machine.role shouldBe MachineRole.MASTER
         machine.createTime shouldBe "2035-11-05 14:17:43".toLocalDateTime()
         machine.updateTime shouldBe "2036-03-31 18:40:59".toLocalDateTime()
 
@@ -175,6 +197,8 @@ class MachineServiceTest : TestWithMaria({
         machine.cpuLoad shouldBe 98
         machine.memLoad shouldBe 48
         machine.diskUsage shouldBe 31
+        machine.isActive shouldBe true
+        machine.role shouldBe MachineRole.MASTER
         machine.createTime shouldBe "2035-11-05 14:17:43".toLocalDateTime()
         machine.updateTime shouldBe "2036-03-31 18:40:59".toLocalDateTime()
 
@@ -190,6 +214,8 @@ class MachineServiceTest : TestWithMaria({
         machine.cpuLoad shouldBe 0
         machine.memLoad shouldBe 0
         machine.diskUsage shouldBe 0
+        machine.isActive shouldBe true
+        machine.role shouldBe MachineRole.SLAVE
         machine.createTime shouldBeLessThanOrEqualTo LocalDateTime.now()
         machine.updateTime shouldBeLessThanOrEqualTo LocalDateTime.now()
 
@@ -224,7 +250,14 @@ class MachineServiceTest : TestWithMaria({
         machine.cpuLoad shouldBe 1
         machine.memLoad shouldBe 2
         machine.diskUsage shouldBe 3
+        machine.isActive shouldBe true
+        machine.role shouldBe MachineRole.MASTER
         machine.updateTime shouldBeGreaterThanOrEqualTo updateTime
+
+        MachineService.update(id = 1, isActive = false, role = MachineRole.SLAVE)
+        machine = MachineService.findById(1)!!
+        machine.isActive shouldBe false
+        machine.role shouldBe MachineRole.SLAVE
 
         // 已删除
         shouldThrow<NotFoundException> {

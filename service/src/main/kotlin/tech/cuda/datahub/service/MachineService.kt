@@ -26,6 +26,7 @@ import tech.cuda.datahub.service.dto.toMachineDTO
 import tech.cuda.datahub.service.exception.DuplicateException
 import tech.cuda.datahub.service.exception.NotFoundException
 import tech.cuda.datahub.service.po.MachinePO
+import tech.cuda.datahub.service.po.dtype.MachineRole
 import java.time.LocalDateTime
 
 /**
@@ -37,12 +38,23 @@ object MachineService : Service(MachineDAO) {
     /**
      * 分页查询服务器信息
      * 如果提供了[pattern]，则对 hostname 进行模糊查询
+     * 如果提供了[role], 则返回对应角色的机器
+     * 如果提供了[isActive]，则返回对应存活状态的机器
      */
-    fun listing(page: Int, pageSize: Int, pattern: String? = null): Pair<List<MachineDTO>, Int> {
+    fun listing(
+        page: Int? = null,
+        pageSize: Int? = null,
+        pattern: String? = null,
+        role: MachineRole? = null,
+        isActive: Boolean? = null
+    ): Pair<List<MachineDTO>, Int> {
+        val conditions = mutableListOf(MachineDAO.isRemove eq false)
+        role?.let { conditions.add(MachineDAO.role eq role) }
+        isActive?.let { conditions.add(MachineDAO.isActive eq isActive) }
         val (machines, count) = batch<MachinePO>(
             pageId = page,
             pageSize = pageSize,
-            filter = MachineDAO.isRemove eq false,
+            filter = conditions.reduce { a, b -> a and b },
             like = MachineDAO.hostname.match(pattern),
             orderBy = MachineDAO.id.asc()
         )
@@ -74,6 +86,17 @@ object MachineService : Service(MachineDAO) {
     fun findByMac(mac: String) = find<MachinePO>(MachineDAO.isRemove eq false and (MachineDAO.mac eq mac))?.toMachineDTO()
 
     /**
+     * 查找当前所有生效的 master
+     */
+    fun listingActiveMaster() = listing(role = MachineRole.MASTER, isActive = true)
+
+    /**
+     * 查询当前多有生效的 slave
+     */
+    fun listingActiveSlave() = listing(role = MachineRole.SLAVE, isActive = true)
+
+
+    /**
      * 创建服务器
      * 如果提供的[ip]或[hostname]或[mac]已存在，则抛出 DuplicateException
      * 服务器的 cpu/内存/磁盘 负载由 Tracker 自行获取，因此不需要提供
@@ -84,6 +107,8 @@ object MachineService : Service(MachineDAO) {
         findByMac(mac)?.let { throw DuplicateException(I18N.mac, mac, I18N.existsAlready) }
         val machine = MachinePO {
             this.ip = ip
+            this.isActive = true
+            this.role = MachineRole.SLAVE
             this.isRemove = false
             this.createTime = LocalDateTime.now()
             this.updateTime = LocalDateTime.now()
@@ -109,7 +134,9 @@ object MachineService : Service(MachineDAO) {
         hostname: String? = null,
         cpuLoad: Int? = null,
         memLoad: Int? = null,
-        diskUsage: Int? = null
+        diskUsage: Int? = null,
+        isActive: Boolean? = null,
+        role: MachineRole? = null
     ): MachineDTO = Database.global.useTransaction {
         val machine = find<MachinePO>(MachineDAO.id eq id and (MachineDAO.isRemove eq false))
             ?: throw NotFoundException(I18N.machine, id, I18N.notExistsOrHasBeenRemove)
@@ -124,7 +151,9 @@ object MachineService : Service(MachineDAO) {
         cpuLoad?.let { machine.cpuLoad = cpuLoad }
         memLoad?.let { machine.memLoad = memLoad }
         diskUsage?.let { machine.diskUsage = diskUsage }
-        anyNotNull(ip, hostname, cpuLoad, memLoad, diskUsage)?.let {
+        isActive?.let { machine.isActive = isActive }
+        role?.let { machine.role = role }
+        anyNotNull(ip, hostname, cpuLoad, memLoad, diskUsage, isActive, role)?.let {
             machine.updateTime = LocalDateTime.now()
             machine.flushChanges()
         }

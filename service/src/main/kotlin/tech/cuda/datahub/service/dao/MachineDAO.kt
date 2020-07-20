@@ -16,6 +16,7 @@ package tech.cuda.datahub.service.dao
 import tech.cuda.datahub.service.po.MachinePO
 import me.liuwj.ktorm.schema.*
 import tech.cuda.datahub.annotation.mysql.*
+import tech.cuda.datahub.service.po.dtype.MachineRole
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -54,6 +55,14 @@ internal object MachineDAO : Table<MachinePO>("machines") {
     @TINYINT(4)
     @COMMENT("磁盘负载")
     val diskUsage = int("disk_usage").bindTo { it.diskUsage }
+
+    @VARCHAR(8)
+    @COMMENT("服务器角色: MASTER/SLAVE")
+    val role = enum("role", typeRef<MachineRole>()).bindTo { it.role }
+
+    @BOOL
+    @COMMENT("服务器是否存活")
+    val isActive = boolean("is_active").bindTo { it.isActive }
 
     @BOOL
     @COMMENT("逻辑删除")
