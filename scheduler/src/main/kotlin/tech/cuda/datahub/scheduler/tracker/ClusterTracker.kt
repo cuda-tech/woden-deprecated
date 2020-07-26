@@ -67,7 +67,7 @@ class ClusterTracker(private val machine: MachineDTO, private val afterStarted: 
 
     private fun checkSlaveAlive() {
         val now = LocalDateTime.now()
-        val (slaves, count) = MachineService.listingActiveSlave()
+        val (slaves, _) = MachineService.listingActiveSlave()
         slaves.filter { it.updateTime.plusSeconds(maxHeartbeatTimeout).isBefore(now) }.forEach {
             MachineService.update(it.id, isActive = false)
         }
@@ -75,7 +75,7 @@ class ClusterTracker(private val machine: MachineDTO, private val afterStarted: 
 
     private fun checkMasterAlive() {
         val now = LocalDateTime.now()
-        val (masters, count) = MachineService.listingActiveMaster()
+        val (masters, _) = MachineService.listingActiveMaster()
         masters.filter { it.updateTime.plusSeconds(maxHeartbeatTimeout).isBefore(now) }.forEach {
             MachineService.update(it.id, isActive = false)
         }

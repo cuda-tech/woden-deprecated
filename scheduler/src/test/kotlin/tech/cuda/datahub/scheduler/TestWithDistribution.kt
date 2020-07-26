@@ -17,6 +17,7 @@ import ch.vorburger.mariadb4j.DB
 import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import io.kotest.core.spec.style.AnnotationSpec
 import io.mockk.*
+import org.junit.Ignore
 import tech.cuda.datahub.config.Datahub
 import tech.cuda.datahub.scheduler.util.MachineUtil
 import tech.cuda.datahub.service.Database
@@ -30,7 +31,7 @@ import java.util.*
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-open class TestWithDistribution(private vararg val tables: String = arrayOf()) : AnnotationSpec() {
+abstract class TestWithDistribution(private vararg val tables: String = arrayOf()) : AnnotationSpec() {
 
     @BeforeAll
     fun beforeAll() {

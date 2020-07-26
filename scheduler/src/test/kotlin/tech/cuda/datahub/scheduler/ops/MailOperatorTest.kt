@@ -22,6 +22,7 @@ import io.kotest.core.test.TestResult
 import io.kotest.fp.Tuple2
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
+import tech.cuda.datahub.scheduler.TestWithDistribution
 import tech.cuda.datahub.service.exception.OperationNotAllowException
 
 
@@ -30,9 +31,23 @@ import tech.cuda.datahub.service.exception.OperationNotAllowException
  * @since 1.0.0
  */
 @DoNotParallelize
-class MailOperatorTest(private val greenMail: GreenMail = GreenMail(ServerSetup.SMTPS)) : StringSpec({
+class MailOperatorTest : TestWithDistribution() {
 
-    "send" {
+    private val greenMail: GreenMail = GreenMail(ServerSetup.SMTPS)
+
+    override fun beforeTest(testCase: TestCase) {
+        super.beforeTest(testCase)
+        greenMail.start()
+        greenMail.setUser("root@host.com", "root@host.com", "root")
+    }
+
+    override fun afterTest(f: suspend (Tuple2<TestCase, TestResult>) -> Unit) {
+        super.afterTest(f)
+        greenMail.stop()
+    }
+
+    @Test
+    fun testSend() {
         val receivers = listOf("user1@test1", "user2@test2", "user3@test3")
         val op = MailOperator(to = receivers, title = "test email", content = "this is a test email")
         op.start()
@@ -51,26 +66,10 @@ class MailOperatorTest(private val greenMail: GreenMail = GreenMail(ServerSetup.
             it.from.size shouldBe 1
             it.from.first().toString() shouldBe "root@host.com"
         }
-    }
-
-    "kill" {
-        val receivers = listOf("user1@test1", "user2@test2", "user3@test3")
-        val op = MailOperator(to = receivers, title = "test email", content = "this is a test email")
+        
         op.start()
         shouldThrow<OperationNotAllowException> {
             op.kill()
         }
-    }
-}) {
-
-    override fun beforeTest(testCase: TestCase) {
-        super.beforeTest(testCase)
-        greenMail.start()
-        greenMail.setUser("root@host.com", "root@host.com", "root")
-    }
-
-    override fun afterTest(f: suspend (Tuple2<TestCase, TestResult>) -> Unit) {
-        super.afterTest(f)
-        greenMail.stop()
     }
 }

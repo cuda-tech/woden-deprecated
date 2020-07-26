@@ -59,7 +59,6 @@ class InstanceTrackerTest : TestWithDistribution("machines", "jobs", "tasks", "f
             Thread.sleep(1000)
             instanceTracker.cancelAndAwait()
             val instance = InstanceService.findById(1)!!
-            println(instance.log)
             instance.status shouldBe InstanceStatus.SUCCESS
             instance.log shouldBe "hello python instance\n"
         })

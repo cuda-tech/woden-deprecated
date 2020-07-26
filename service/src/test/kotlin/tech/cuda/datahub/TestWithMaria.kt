@@ -30,7 +30,7 @@ import java.util.*
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-open class TestWithMaria(body: StringSpec.() -> Unit = {}, private vararg val tables: Table<*> = arrayOf()) : StringSpec(body) {
+abstract class TestWithMaria(body: StringSpec.() -> Unit = {}, private vararg val tables: Table<*> = arrayOf()) : StringSpec(body) {
 
 
     override fun beforeSpec(spec: Spec) {
