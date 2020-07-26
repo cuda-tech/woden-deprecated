@@ -1,4 +1,3 @@
-
 allprojects {
     group = 'tech.cuda'
     version = '1.0.0-SNAPSHOT'
@@ -7,6 +6,7 @@ allprojects {
             jcenter()
             maven { url 'https://maven.aliyun.com/repository/google/' }
             maven { url 'https://maven.aliyun.com/repository/jcenter/' }
+            maven { url 'http://conjars.org/repo' }
         }
     }
 }
