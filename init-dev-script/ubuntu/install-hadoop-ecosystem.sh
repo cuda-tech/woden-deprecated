@@ -25,6 +25,10 @@ if [[ ! -d "$DEV_PATH/hive" ]];then
     fi
     ln -s apache-hive-3.1.2-bin hive
 fi
+if [[ -f "$DEV_PATH/hive/lib/guava-19.0.jar" ]];then
+    rm ${DEV_PATH}/hive/lib/guava-19.0.jar
+    cp ${DEV_PATH}/hadoop/share/hadoop/common/lib/guava-27.0-jre.jar ${DEV_PATH}/hive/lib/
+fi
 
 
 
