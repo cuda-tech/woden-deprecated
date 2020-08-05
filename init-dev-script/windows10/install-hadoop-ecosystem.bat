@@ -1,0 +1,1 @@
+bash ../ubuntu/install-hadoop-ecosystem.sh /mnt/c/dev
