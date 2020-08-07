@@ -37,6 +37,12 @@
         <password>root</password>
         <port>465</port>
     </email>
+
+    <livy>
+        <host>localhost</host>
+        <port>8998</port>
+    </livy>
+
     <scheduler>
         <role>master</role>
     </scheduler>

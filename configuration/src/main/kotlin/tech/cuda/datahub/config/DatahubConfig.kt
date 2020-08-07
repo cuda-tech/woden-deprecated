@@ -20,6 +20,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.common.io.Resources
 import tech.cuda.datahub.config.database.DatabaseConfig
 import tech.cuda.datahub.config.email.EmailConfig
+import tech.cuda.datahub.config.livy.LivyConfig
 import tech.cuda.datahub.config.scheduler.SchedulerConfig
 
 /**
@@ -30,6 +31,7 @@ import tech.cuda.datahub.config.scheduler.SchedulerConfig
 data class DatahubConfig(
     val database: DatabaseConfig,
     val email: EmailConfig,
+    val livy: LivyConfig,
     val scheduler: SchedulerConfig
 )
 

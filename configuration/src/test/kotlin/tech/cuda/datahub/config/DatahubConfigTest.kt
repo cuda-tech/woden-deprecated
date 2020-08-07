@@ -55,6 +55,11 @@ class DatahubConfigTest : StringSpec({
         Datahub.email.port shouldBe 465
     }
 
+    "livy config"{
+        Datahub.livy.host shouldBe "localhost"
+        Datahub.livy.port shouldBe 8998
+    }
+
     "scheduler config" {
         Datahub.scheduler.role shouldBe "master"
     }
