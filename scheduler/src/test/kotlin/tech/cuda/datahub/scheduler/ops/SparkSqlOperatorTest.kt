@@ -13,4 +13,15 @@
  */
 package tech.cuda.datahub.scheduler.ops
 
-class HiveOperatorTest
+import tech.cuda.datahub.scheduler.TestWithDistribution
+import tech.cuda.datahub.service.TaskService
+
+class SparkSqlOperatorTest : TestWithDistribution("tasks", "file_mirrors") {
+
+    @Test
+    fun submitHiveSql() {
+        val hive = SparkSqlOperator(TaskService.findById(4)!!)
+        hive.submit()
+    }
+
+}
