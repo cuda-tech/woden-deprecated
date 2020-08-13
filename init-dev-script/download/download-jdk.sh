@@ -13,6 +13,6 @@ if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
     echo "下载 Windows JDK"
     if [[ ! -f "$DOWNLOAD_PATH/jdk-8u202-windows-x64.exe" ]];then
         axel -n8 https://mirrors.huaweicloud.com/java/jdk/8u202-b08/jdk-8u202-windows-x64.exe \
-            -o ${DOWNLOAD_PATH}/jdk-8u202-windows-x64.exe
+            -ouput=${DOWNLOAD_PATH}/jdk-8u202-windows-x64.exe
     fi
 fi
