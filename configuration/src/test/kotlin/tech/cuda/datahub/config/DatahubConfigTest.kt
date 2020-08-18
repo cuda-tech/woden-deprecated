@@ -58,6 +58,7 @@ class DatahubConfigTest : StringSpec({
     "livy config"{
         Datahub.livy.host shouldBe "localhost"
         Datahub.livy.port shouldBe 8998
+        Datahub.livy.baseUrl shouldBe "http://localhost:8998"
     }
 
     "scheduler config" {

@@ -23,4 +23,6 @@ import com.fasterxml.jackson.annotation.JsonRootName
 data class LivyConfig(
     val host: String,
     val port: Int
-)
+) {
+    val baseUrl = "http://$host:$port"
+}
