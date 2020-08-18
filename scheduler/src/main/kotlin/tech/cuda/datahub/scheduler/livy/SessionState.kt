@@ -28,5 +28,6 @@ enum class SessionState(@get:JsonValue val state: String) {
     ERROR("error"),
     DEAD("dead"),
     KILLED("killed"),
-    SUCCESS("success")
+    SUCCESS("success"),
+    UNKNOWN("unknown")
 }
