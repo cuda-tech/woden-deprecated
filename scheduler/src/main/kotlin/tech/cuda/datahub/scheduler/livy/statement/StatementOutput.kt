@@ -11,19 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.scheduler.livy
+package tech.cuda.datahub.scheduler.livy.statement
 
-import tech.cuda.datahub.scheduler.livy.session.Session
-import tech.cuda.datahub.scheduler.livy.session.SessionState
+import org.apache.log4j.Logger
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-sealed class LivyResponse
+@Suppress("UNCHECKED_CAST")
+abstract class StatementOutput(json: Map<String, Any>) {
+    val status = json["status"] as String?
+    val executionCount = json["execution_count"] as Int?
+    val errorName = json["ename"] as String?
+    val errorValue = json["evalue"] as String?
+    val traceback = json["traceback"] as List<*>?
+    protected val logger: Logger = Logger.getLogger(this.javaClass)
 
-data class ListingSessionResponse(val from: Int, val total: Int, val sessions: List<Session>) : LivyResponse()
-data class SessionStateResponse(val id: Int, val state: SessionState) : LivyResponse()
-data class SessionLogResponse(val id: Int, val from: Int, val size: Int, val log: List<String>) : LivyResponse()
-data class MessageResponse(val msg: String) : LivyResponse()
-
+    protected fun Any.asMap(): Map<String, Any> = this as Map<String, Any>
+    protected fun Any.asList(): List<Any> = this as List<Any>
+}

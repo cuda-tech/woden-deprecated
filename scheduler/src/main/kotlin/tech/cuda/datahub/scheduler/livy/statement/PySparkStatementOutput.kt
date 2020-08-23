@@ -11,19 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.scheduler.livy
-
-import tech.cuda.datahub.scheduler.livy.session.Session
-import tech.cuda.datahub.scheduler.livy.session.SessionState
+package tech.cuda.datahub.scheduler.livy.statement
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-sealed class LivyResponse
+class PySparkStatementOutput(json: Map<String, Any>) : StatementOutput(json) {
 
-data class ListingSessionResponse(val from: Int, val total: Int, val sessions: List<Session>) : LivyResponse()
-data class SessionStateResponse(val id: Int, val state: SessionState) : LivyResponse()
-data class SessionLogResponse(val id: Int, val from: Int, val size: Int, val log: List<String>) : LivyResponse()
-data class MessageResponse(val msg: String) : LivyResponse()
-
+}
