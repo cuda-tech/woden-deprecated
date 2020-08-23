@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.scheduler.livy
+package tech.cuda.datahub.scheduler.livy.statement
 
 import com.fasterxml.jackson.annotation.JsonValue
 
@@ -19,15 +19,11 @@ import com.fasterxml.jackson.annotation.JsonValue
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-enum class SessionState(@get:JsonValue val state: String) {
-    NOT_STARTED("not_started"),
-    STARTING("starting"),
-    IDLE("idle"),
-    BUSY("busy"),
-    SHUTTING_DOWN("shutting_down"),
+enum class StatementState(@get:JsonValue val state: String) {
+    WAITING("waiting"),
+    RUNNING("running"),
+    AVAILABLE("available"),
     ERROR("error"),
-    DEAD("dead"),
-    KILLED("killed"),
-    SUCCESS("success"),
-    UNKNOWN("unknown")
+    CANCELLING("cancelling"),
+    CANCELLED("cancelled")
 }
