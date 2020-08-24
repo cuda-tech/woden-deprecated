@@ -18,4 +18,17 @@ package tech.cuda.datahub.scheduler.livy.statement
  * @since 1.0.0
  */
 class SparkStatementOutput(json: Map<String, Any>) : StatementOutput(json) {
+    val stdout = json.getOrDefault("data", mapOf("text/plain" to "")).asMap()
+        .getOrDefault("text/plain", "").toString()
+
+    override fun toString(): String {
+        return mapOf(
+            "stdout" to stdout,
+            "status" to status,
+            "execution_count" to executionCount,
+            "error_name" to errorName,
+            "error_value" to "\n$errorValue\n",
+            "traceback" to traceback?.joinToString("\n", "\n", "\n")
+        ).toString()
+    }
 }

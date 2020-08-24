@@ -48,7 +48,7 @@ data class Session(
      */
     val state: SessionState
         get() {
-            val (response, error) = "${Datahub.livy.baseUrl}/sessions/$id/state"
+            val (response, _) = "${Datahub.livy.baseUrl}/sessions/$id/state"
                 .httpGet().responseObject<SessionStateResponse>().third
             return response?.state ?: SessionState.UNKNOWN
         }
@@ -58,7 +58,7 @@ data class Session(
      */
     val log: List<String>
         get() {
-            val (response, error) = "${Datahub.livy.baseUrl}/sessions/$id/log"
+            val (response, _) = "${Datahub.livy.baseUrl}/sessions/$id/log"
                 .httpGet(listOf("from" to 0, "size" to Int.MAX_VALUE))
                 .responseObject<SessionLogResponse>().third
             return response?.log ?: listOf()
@@ -100,7 +100,7 @@ data class Session(
      * 如果出现异常，则返回空数组
      */
     fun listingStatements(): List<Statement> {
-        val (response, error) = "${Datahub.livy.baseUrl}/sessions/$id/statements"
+        val (response, _) = "${Datahub.livy.baseUrl}/sessions/$id/statements"
             .httpGet().responseObject<List<Statement>>().third
         return response ?: listOf()
     }
@@ -110,7 +110,7 @@ data class Session(
      * 如果出现异常，则返回 null
      */
     fun getStatement(statementId: Int): Statement? {
-        val (response, error) = "${Datahub.livy.baseUrl}/sessions/$id/statements/$statementId"
+        val (response, _) = "${Datahub.livy.baseUrl}/sessions/$id/statements/$statementId"
             .httpGet().responseObject<Statement>().third
         return response
     }
@@ -119,7 +119,7 @@ data class Session(
      * 创建一个执行[code]的 Statement
      */
     fun createStatement(code: String): Statement? {
-        val (statement, error) = Fuel.post("${Datahub.livy.baseUrl}/sessions/$id/statements")
+        val (statement, _) = Fuel.post("${Datahub.livy.baseUrl}/sessions/$id/statements")
             .header("Content-Type", "application/json")
             .objectBody(mapOf("code" to code))
             .responseObject<Statement>().third

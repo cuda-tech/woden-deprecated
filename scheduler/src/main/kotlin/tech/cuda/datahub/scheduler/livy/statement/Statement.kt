@@ -19,6 +19,7 @@ import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.jackson.responseObject
 import org.apache.log4j.Logger
 import tech.cuda.datahub.config.Datahub
+import tech.cuda.datahub.scheduler.exception.LivyException
 import tech.cuda.datahub.scheduler.livy.MessageResponse
 import tech.cuda.datahub.scheduler.livy.session.SessionKind
 import java.time.Instant
@@ -61,7 +62,7 @@ class Statement(
     /**
      * 更新 statement 数据
      */
-    fun refresh() {
+    private fun refresh() {
         val (response, error) = "${Datahub.livy.baseUrl}/sessions/$sessionId/statements/$id"
             .httpGet().responseObject<Statement>().third
         if (response != null) {
@@ -78,8 +79,13 @@ class Statement(
     /**
      * 取消正在执行的 Statement
      */
-    fun cancel() = Fuel.post("${Datahub.livy.baseUrl}/sessions/$sessionId/statements/$id/cancel")
-        .responseObject<MessageResponse>().third.component2() == null
+    fun cancel() = if (sessionKind == SessionKind.SPARK) {
+        throw LivyException("因为 Livy 的 Bug，无法取消 Spark Statement，详见 https://issues.apache.org/jira/browse/LIVY-786")
+    } else {
+        Fuel.post("${Datahub.livy.baseUrl}/sessions/$sessionId/statements/$id/cancel")
+            .responseObject<MessageResponse>().third.component2() == null
+    }
+
 
     /**
      * 等待 Statement 执行完毕，并返回状态
