@@ -18,5 +18,7 @@ package tech.cuda.datahub.scheduler.livy.statement
  * @since 1.0.0
  */
 class PySparkStatementOutput(json: Map<String, Any>) : StatementOutput(json) {
+    val stdout = json.getOrDefault("data", mapOf("text/plain" to "")).asMap()
+        .getOrDefault("text/plain", "").toString()
 
 }
