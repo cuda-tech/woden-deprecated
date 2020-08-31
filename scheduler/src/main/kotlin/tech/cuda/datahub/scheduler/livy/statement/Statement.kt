@@ -79,8 +79,8 @@ class Statement(
     /**
      * 取消正在执行的 Statement
      */
-    fun cancel() = if (sessionKind == SessionKind.SPARK) {
-        throw LivyException("因为 Livy 的 Bug，无法取消 Spark Statement，详见 https://issues.apache.org/jira/browse/LIVY-786")
+    fun cancel() = if (sessionKind != SessionKind.SQL) {
+        throw LivyException("因为 Livy 的 Bug，无法取消 Spark 相关的 Statement，详见 https://issues.apache.org/jira/browse/LIVY-786")
     } else {
         Fuel.post("${Datahub.livy.baseUrl}/sessions/$sessionId/statements/$id/cancel")
             .responseObject<MessageResponse>().third.component2() == null
