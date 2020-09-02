@@ -53,10 +53,8 @@ class Statement(
 
     val output: StatementOutput
         get() = when (sessionKind) {
-            SessionKind.SQL -> SqlStatementOutput(_output ?: mapOf())
-            SessionKind.SPARK -> SparkStatementOutput(_output ?: mapOf())
-            SessionKind.SPARK_R -> SparkRStatementOutput(_output ?: mapOf())
-            SessionKind.PY_SPARK -> PySparkStatementOutput(_output ?: mapOf())
+            SessionKind.SQL -> StatementOutput("application/json", _output ?: mapOf())
+            else -> StatementOutput("text/plain", _output ?: mapOf())
         }
 
     /**
@@ -78,8 +76,9 @@ class Statement(
 
     /**
      * 取消正在执行的 Statement
+     * 由于 Livy 的 bug 还没有修复，暂时禁止取消任务
      */
-    fun cancel() = if (sessionKind != SessionKind.SQL) {
+    fun cancel() = if (true) {
         throw LivyException("因为 Livy 的 Bug，无法取消 Spark 相关的 Statement，详见 https://issues.apache.org/jira/browse/LIVY-786")
     } else {
         Fuel.post("${Datahub.livy.baseUrl}/sessions/$sessionId/statements/$id/cancel")

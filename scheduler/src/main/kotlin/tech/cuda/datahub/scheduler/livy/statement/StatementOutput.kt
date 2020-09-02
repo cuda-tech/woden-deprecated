@@ -13,21 +13,31 @@
  */
 package tech.cuda.datahub.scheduler.livy.statement
 
-import org.apache.log4j.Logger
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
 @Suppress("UNCHECKED_CAST")
-abstract class StatementOutput(json: Map<String, Any>) {
+class StatementOutput(datatype: String, json: Map<String, Any>) {
     val status = json["status"] as String?
     val executionCount = json["execution_count"] as Int?
     val errorName = json["ename"] as String?
     val errorValue = json["evalue"] as String?
     val traceback = json["traceback"] as List<*>?
-    protected val logger: Logger = Logger.getLogger(this.javaClass)
 
-    protected fun Any.asMap(): Map<String, Any> = this as Map<String, Any>
-    protected fun Any.asList(): List<Any> = this as List<Any>
+    val stdout: String = if (datatype == "text/plain") {
+        json.getOrDefault("data", mapOf(datatype to "")).asMap()
+            .getOrDefault(datatype, "").toString()
+    } else { // json
+        ObjectMapper().registerKotlinModule().writeValueAsString(
+            json.getOrDefault("data", mapOf(datatype to mapOf<String, Any>())).asMap()
+                .getOrDefault(datatype, mapOf<String, Any>())
+        )
+    }
+
+    private fun Any.asMap(): Map<String, Any> = this as Map<String, Any>
+    private fun Any.asList(): List<Any> = this as List<Any>
 }

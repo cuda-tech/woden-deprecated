@@ -37,7 +37,7 @@ data class Session(
     val owner: String?,
     val proxyUser: String?,
     val kind: SessionKind,
-    val appInfo: Map<String, Any>,
+    val appInfo: Map<String, Any?>,
     @JsonProperty("state") private val _state: SessionState,
     @JsonProperty("log") private val _log: List<String>
 ) {
