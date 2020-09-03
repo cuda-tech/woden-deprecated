@@ -16,6 +16,7 @@ package tech.cuda.datahub.scheduler.livy.mocker
 import com.github.kittinunf.fuel.core.*
 import tech.cuda.datahub.scheduler.livy.mocker.routers.*
 import tech.cuda.datahub.scheduler.livy.session.Session
+import tech.cuda.datahub.scheduler.livy.statement.Statement
 import java.time.LocalDateTime
 
 /**
@@ -25,7 +26,8 @@ import java.time.LocalDateTime
  */
 object LivyServer {
     var nextId = -1
-    var sessionStore = mutableMapOf<Int, Pair<Session, LocalDateTime>>()
+    var sessionStore: MutableMap<Int, Pair<Session, LocalDateTime>> = mutableMapOf()
+    var statementStore: MutableMap<Int, MutableMap<Int, Pair<Statement, LocalDateTime>>> = mutableMapOf()
     private val defaultClient = FuelManager.instance.client
     private val routers: Router = CancelStatementRouter().also {
         it.setNext(CreateSessionRouter())
@@ -34,7 +36,6 @@ object LivyServer {
             .setNext(GetSessionRouter())
             .setNext(GetStatementRouter())
             .setNext(ListingSessionRouter())
-            .setNext(ListingStatementRouter())
             .setNext(SessionLogRouter())
             .setNext(SessionStateRouter())
     }
@@ -45,12 +46,14 @@ object LivyServer {
         }
         FuelManager.instance.client = client
         sessionStore = mutableMapOf()
+        statementStore = mutableMapOf()
         nextId = -1
     }
 
     fun stop() {
         FuelManager.instance.client = defaultClient
         sessionStore = mutableMapOf()
+        statementStore = mutableMapOf()
         nextId = -1
     }
 }
