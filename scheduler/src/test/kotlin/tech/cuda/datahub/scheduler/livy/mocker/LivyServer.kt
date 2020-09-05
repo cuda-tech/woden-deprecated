@@ -14,9 +14,11 @@
 package tech.cuda.datahub.scheduler.livy.mocker
 
 import com.github.kittinunf.fuel.core.*
+import io.kotest.matchers.shouldBe
 import tech.cuda.datahub.scheduler.livy.mocker.routers.*
 import tech.cuda.datahub.scheduler.livy.session.Session
 import tech.cuda.datahub.scheduler.livy.statement.Statement
+import tech.cuda.datahub.scheduler.util.MachineUtil
 import java.time.LocalDateTime
 
 /**
@@ -25,6 +27,16 @@ import java.time.LocalDateTime
  * @since 1.0.0
  */
 object LivyServer {
+    private val runtime = Runtime.getRuntime()
+    private val mockLivyServer = (System.getenv()["MOCK_LIVY"]
+        ?: System.getProperty("MOCK_LIVY")
+        ?: "true").toBoolean()
+    private val livyServerExists = if (MachineUtil.systemInfo.isWindows) {
+        runtime.exec("wsl bash -c \"source /etc/profile && livy-server status\"").waitFor() == 0
+    } else {
+        runtime.exec("bash -c \"source /etc/profile && livy-server status\"").waitFor() == 0
+    }
+
     var nextId = -1
     var sessionStore: MutableMap<Int, Pair<Session, LocalDateTime>> = mutableMapOf()
     var statementStore: MutableMap<Int, MutableMap<Int, Pair<Statement, LocalDateTime>>> = mutableMapOf()
@@ -40,7 +52,21 @@ object LivyServer {
             .setNext(SessionStateRouter())
     }
 
-    fun start() {
+    fun start() = if (livyServerExists && !mockLivyServer) {
+        startRealServer()
+    } else {
+        startMockServer()
+    }
+
+    private fun startRealServer() {
+        if (MachineUtil.systemInfo.isWindows) {
+            runtime.exec("wsl bash -c \"source /etc/profile && livy-server start\"")
+        } else {
+            runtime.exec("bash -c \"source /etc/profile && livy-server start\"")
+        }.waitFor() shouldBe 0
+    }
+
+    private fun startMockServer() {
         val client = object : Client {
             override fun executeRequest(request: Request): Response = routers.executeRequest(request)
         }
@@ -51,6 +77,22 @@ object LivyServer {
     }
 
     fun stop() {
+        if (livyServerExists && !mockLivyServer) {
+            stopRealServer()
+        } else {
+            stopMockServer()
+        }
+    }
+
+    private fun stopRealServer() {
+        if (MachineUtil.systemInfo.isWindows) {
+            runtime.exec("wsl bash -c \"source /etc/profile && livy-server stop\"")
+        } else {
+            runtime.exec("bash -c \"source /etc/profile && livy-server stop\"")
+        }.waitFor() shouldBe 0
+    }
+
+    private fun stopMockServer() {
         FuelManager.instance.client = defaultClient
         sessionStore = mutableMapOf()
         statementStore = mutableMapOf()
