@@ -5,8 +5,8 @@ apply plugin: 'kotlin-kapt'
 
 dependencies {
     compile files(Jvm.current().getToolsJar())
-    compile 'com.google.auto.service:auto-service:1.0-rc4'
-    kapt 'com.google.auto.service:auto-service:1.0-rc4'
+    compile "com.google.auto.service:auto-service:$auto_service_version"
+    kapt "com.google.auto.service:auto-service:$auto_service_version"
 }
 
 test {

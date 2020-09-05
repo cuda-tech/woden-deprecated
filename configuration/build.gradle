@@ -1,10 +1,10 @@
 apply plugin: 'kotlin'
 
 dependencies {
-    implementation 'javax.mail:mail:1.4.7'
-    implementation 'com.alibaba:druid:1.1.20'
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.0'
+    implementation "javax.mail:mail:$java_mail_version"
+    implementation "com.alibaba:druid:$druid_version"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson_version"
 }
 
 test {
