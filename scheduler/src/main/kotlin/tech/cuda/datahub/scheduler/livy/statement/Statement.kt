@@ -22,6 +22,7 @@ import tech.cuda.datahub.config.Datahub
 import tech.cuda.datahub.scheduler.exception.LivyException
 import tech.cuda.datahub.scheduler.livy.MessageResponse
 import tech.cuda.datahub.scheduler.livy.session.SessionKind
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -34,8 +35,8 @@ import kotlin.properties.Delegates
 class Statement(
     val id: Int,
     val code: String,
-    var state: StatementState,
-    var progress: Double,
+    @JsonProperty("state") private var _state: StatementState,
+    @JsonProperty("progress") private var _progress: Double,
     @JsonProperty("started") private var _startTime: Long,
     @JsonProperty("completed") private var _finishTime: Long,
     @JsonProperty("output") private var _output: Map<String, Any>?
@@ -52,25 +53,46 @@ class Statement(
         get() = LocalDateTime.ofInstant(Instant.ofEpochMilli(_finishTime), ZoneId.systemDefault())
 
     val output: StatementOutput
-        get() = when (sessionKind) {
-            SessionKind.SQL -> StatementOutput("application/json", _output ?: mapOf())
-            else -> StatementOutput("text/plain", _output ?: mapOf())
+        get() {
+            this.refresh()
+            return when (sessionKind) {
+                SessionKind.SQL -> StatementOutput("application/json", _output ?: mapOf())
+                else -> StatementOutput("text/plain", _output ?: mapOf())
+            }
         }
+
+    val state: StatementState
+        get() {
+            this.refresh()
+            return _state
+        }
+
+    val progress: Double
+        get() {
+            this.refresh()
+            return _progress
+        }
+
+    private var lastRefreshTime = LocalDateTime.now()
 
     /**
      * 更新 statement 数据
      */
     private fun refresh() {
-        val (response, error) = "${Datahub.livy.baseUrl}/sessions/$sessionId/statements/$id"
-            .httpGet().responseObject<Statement>().third
-        if (response != null) {
-            this.state = response.state
-            this._output = response._output
-            this.progress = response.progress
-            this._startTime = response._startTime
-            this._finishTime = response._finishTime
-        } else {
-            logger.error("refresh statement $id in session $sessionId failed, ${error?.exception}")
+        val shouldRefresh = Duration.between(lastRefreshTime, LocalDateTime.now()).seconds > 1
+        if (shouldRefresh) {
+            val (response, error) = "${Datahub.livy.baseUrl}/sessions/$sessionId/statements/$id"
+                .httpGet().responseObject<Statement>().third
+            if (response != null) {
+                this._state = response.state
+                this._output = response._output
+                this._progress = response.progress
+                this._startTime = response._startTime
+                this._finishTime = response._finishTime
+            } else {
+                logger.error("refresh statement $id in session $sessionId failed, ${error?.exception}")
+            }
+            lastRefreshTime = LocalDateTime.now()
         }
     }
 

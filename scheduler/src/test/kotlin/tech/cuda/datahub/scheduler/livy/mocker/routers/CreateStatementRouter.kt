@@ -50,8 +50,8 @@ class CreateStatementRouter : Router() {
         val statement = Statement(
             id = nextId,
             code = code,
-            state = StatementState.WAITING,
-            progress = 0.0,
+            _state = StatementState.WAITING,
+            _progress = 0.0,
             _startTime = 0,
             _finishTime = 0,
             _output = null
