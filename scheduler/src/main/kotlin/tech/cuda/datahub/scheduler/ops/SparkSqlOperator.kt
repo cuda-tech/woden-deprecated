@@ -13,40 +13,63 @@
  */
 package tech.cuda.datahub.scheduler.ops
 
-import org.apache.livy.LivyClientBuilder
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import tech.cuda.datahub.scheduler.exception.LivyException
+import tech.cuda.datahub.scheduler.livy.LivyClient
+import tech.cuda.datahub.scheduler.livy.session.SessionKind
+import tech.cuda.datahub.scheduler.livy.statement.Statement
+import tech.cuda.datahub.scheduler.livy.statement.StatementState
 import tech.cuda.datahub.service.dto.TaskDTO
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
-import java.net.URI
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class SparkSqlOperator(task: TaskDTO) : HadoopBaseOperator(task, "hive") {
-    fun submit() {
-        val tempFile = File.createTempFile("hql_", ".temp").also {
-            val writer = BufferedWriter(FileWriter(it))
-            writer.write(commands)
-            writer.flush()
-            writer.close()
-        }
+class SparkSqlOperator(task: TaskDTO) : Operator(task) {
+    private lateinit var statement: Statement
 
-        val livyUrl = URI("localhost")
-        val livyClient = LivyClientBuilder()
-            .setURI(livyUrl)
-            .build()
-        val job = livyClient.submit {
-
+    override val isFinish: Boolean
+        get() = if (this::statement.isInitialized) {
+            statement.state == StatementState.AVAILABLE || statement.state == StatementState.CANCELLED
+        } else {
+            false
         }
 
 
+    override val isSuccess: Boolean
+        get() = if (this::statement.isInitialized) {
+            statement.state == StatementState.AVAILABLE
+                && statement.output.errorName == null
+        } else {
+            false
+        }
 
-//        val ret = CliDriver().run(arrayOf(
-//            "-f", "./src/test/java/test.hive",
-//            "-hiveconf", "hive.exec.scratchdir=file:///C:/tmp"
-//        ))
+    override val output: String
+        get() = if (this::statement.isInitialized) {
+            statement.output.errorValue ?: statement.output.stdout
+        } else {
+            ""
+        }
+
+
+    override fun start() {
+        this.job = GlobalScope.async {
+            try {
+                val session = LivyClient.createSession(SessionKind.SQL)
+                session.waitIDLE()
+                statement = session.createStatement(mirror?.content ?: "") ?: throw LivyException()
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                logger.error(e)
+            }
+        }
+    }
+
+    override fun kill() {
+        if (this::statement.isInitialized) {
+            statement.cancel()
+        }
     }
 
 }
