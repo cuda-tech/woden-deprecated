@@ -13,4 +13,24 @@
  */
 package tech.cuda.datahub.scheduler
 
-// todo
+import tech.cuda.datahub.config.Datahub
+import tech.cuda.datahub.scheduler.tracker.ClusterTracker
+import tech.cuda.datahub.scheduler.tracker.InstanceTracker
+import tech.cuda.datahub.scheduler.tracker.JobTracker
+import tech.cuda.datahub.scheduler.tracker.MachineTracker
+import tech.cuda.datahub.service.Database
+
+/**
+ * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
+ * @since 1.0.0
+ */
+fun main() {
+    Database.connect(Datahub.database)
+    val machineTracker = MachineTracker(afterStarted = {
+        ClusterTracker(it).start()
+        JobTracker().start()
+        InstanceTracker(it).start()
+    })
+    machineTracker.start()
+    machineTracker.await()
+}
