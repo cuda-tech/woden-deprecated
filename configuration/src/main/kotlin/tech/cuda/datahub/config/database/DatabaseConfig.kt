@@ -29,7 +29,7 @@ class DatabaseConfig(
     val properties: Properties
         get() = Properties().also { props ->
             props["name"] = druid.name
-            props["url"] = "jdbc:mysql://${mysql.host}:${mysql.port}/?characterEncoding=${mysql.encoding}"
+            props["url"] = "jdbc:mysql://${mysql.host}:${mysql.port}/${mysql.dbName}?characterEncoding=${mysql.encoding}"
             props["username"] = mysql.username
             mysql.password?.let { props["password"] = mysql.password }
             druid.initialSize?.let { props["initialSize"] = druid.initialSize.toString() }
@@ -57,5 +57,12 @@ class DatabaseConfig(
             // 所以你得把 value 都转成 String，否则就会抛出 ClassCastException
             // 脱裤子放屁，迷惑。
             props.keys.forEach { key -> props.setProperty(key.toString(), props[key].toString()) }
+        }
+
+    val dbNotExistsproperties: Properties
+        get() = Properties().also { props ->
+            props["url"] = "jdbc:mysql://${mysql.host}:${mysql.port}/?characterEncoding=${mysql.encoding}"
+            props["username"] = mysql.username
+            mysql.password?.let { props["password"] = mysql.password }
         }
 }

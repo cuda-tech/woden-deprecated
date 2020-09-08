@@ -161,7 +161,7 @@ class DDLProcessor : AbstractProcessor() {
                                 if (autoIncrement) "auto_increment" else null,
                                 "comment", comment
                             ).joinToString(" ")
-                        }.joinToString(",\n", "\"\"\"create table $tableName(\n", "\n)default charset=utf8mb4\"\"\"")
+                        }.joinToString(",\n", "\"\"\"create table if not exists $tableName(\n", "\n)default charset=utf8mb4\"\"\"")
 
                     // 生成扩展属性
                     File(processingEnv.options[KAPT_KOTLIN_GENERATED_OPTION_NAME], "${clzz.name}DDL.kt").apply {

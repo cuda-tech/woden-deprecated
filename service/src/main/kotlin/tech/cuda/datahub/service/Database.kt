@@ -16,6 +16,7 @@ package tech.cuda.datahub.service
 import com.alibaba.druid.pool.DruidDataSourceFactory
 import com.google.common.base.Charsets
 import com.google.common.io.Resources
+import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.global.connectGlobally
 import me.liuwj.ktorm.schema.Table
@@ -46,11 +47,21 @@ object Database {
 
     fun connect(dbConfig: DatabaseConfig) {
         this.dbConfig = dbConfig
-        this.db = Database.connectGlobally(DruidDataSourceFactory.createDataSource(dbConfig.properties))
-        this.db.useConnection { conn ->
-            conn.prepareStatement("create database if not exists ${dbConfig.mysql.dbName} default character set = 'utf8'").use { it.execute() }
-            conn.catalog = dbConfig.mysql.dbName
+        try {
+            this.db = Database.connectGlobally(DruidDataSourceFactory.createDataSource(dbConfig.properties))
+        } catch (e: MySQLSyntaxErrorException) {
+            if (e.message == "Unknown database '${dbConfig.mysql.dbName}'") {
+                Database.connectGlobally(DruidDataSourceFactory.createDataSource(dbConfig.dbNotExistsproperties))
+                    .useConnection { conn ->
+                        conn.prepareStatement("create database if not exists ${dbConfig.mysql.dbName} default character set = 'utf8'")
+                            .use { it.execute() }
+                    }
+                this.db = Database.connectGlobally(DruidDataSourceFactory.createDataSource(dbConfig.properties))
+            } else {
+                throw e
+            }
         }
+        build()
     }
 
     private fun checkConnected(block: () -> Unit) {
@@ -64,7 +75,7 @@ object Database {
     /**
      * 创建 dao 下定义的所有表
      */
-    fun build() = checkConnected {
+    private fun build() = checkConnected {
         db.useConnection { conn ->
             logger.info("create database ${dbConfig.mysql.dbName}")
             conn.prepareStatement("create database if not exists ${dbConfig.mysql.dbName} default character set = 'utf8'").use { it.execute() }
@@ -84,7 +95,7 @@ object Database {
     /**
      * 从删库到跑路
      */
-    fun clean() = checkConnected {
+    private fun clean() = checkConnected {
         db.useConnection { conn ->
             models.forEach { table ->
                 logger.info("drop table for class ${table.javaClass.name}")
