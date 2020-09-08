@@ -46,11 +46,9 @@ class InstanceTracker(
                 val mirror = FileMirrorService.findById(task.mirrorId) ?: continue
                 val file = FileService.findById(mirror.fileId) ?: continue
                 val op = when (file.type) {
-                    FileType.SQL -> HiveOperator(task)
+                    FileType.SQL -> SparkSqlOperator(task)
                     FileType.PYTHON -> if (devMode) PythonOperator(task, type = "python3") else PythonOperator(task)
                     FileType.BASH -> BashOperator(task)
-                    FileType.SPARK -> SparkOperator(task)
-                    FileType.MR -> MapReduceOperator(task)
                     else -> throw OperationNotAllowException()
                 }
                 op.start()

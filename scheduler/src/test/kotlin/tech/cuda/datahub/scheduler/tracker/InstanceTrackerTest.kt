@@ -15,6 +15,7 @@ package tech.cuda.datahub.scheduler.tracker
 
 import io.kotest.matchers.shouldBe
 import tech.cuda.datahub.scheduler.TestWithDistribution
+import tech.cuda.datahub.scheduler.livy.mocker.LivyServer
 import tech.cuda.datahub.service.InstanceService
 import tech.cuda.datahub.service.po.dtype.InstanceStatus
 
@@ -64,6 +65,31 @@ class InstanceTrackerTest : TestWithDistribution("machines", "jobs", "tasks", "f
         })
         machineTracker.start()
         machineTracker.cancelAndAwait()
+    }
+
+    @Test
+    fun testCreateInstanceForReadySparkSqlJob() = supposeImMachine(10) {
+        // (Job Id = 16, task ID = 49, mirror ID = 290, File ID = 7)
+        LivyServer.start()
+        val machineTracker = MachineTracker(afterStarted = {
+            val instanceTracker = InstanceTracker(it, afterStarted = {
+                val (instances, count) = InstanceService.listing(pageId = 1, pageSize = 1000, jobId = 16, status = InstanceStatus.RUNNING)
+                count shouldBe 1
+                val instance = instances.first()
+                instance.id shouldBe 1
+            })
+            instanceTracker.start()
+            Thread.sleep(5000)
+            instanceTracker.cancelAndAwait()
+            val instance = InstanceService.findById(1)!!
+            instance.status shouldBe InstanceStatus.SUCCESS
+            instance.log shouldBe """
+                {"schema":{"type":"struct","fields":[{"name":"hello world","type":"string","nullable":false,"metadata":{}}]},"data":[["hello world"]]}
+            """.trimIndent()
+        })
+        machineTracker.start()
+        machineTracker.cancelAndAwait()
+        LivyServer.start()
     }
 
 }
