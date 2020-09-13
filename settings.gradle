@@ -6,4 +6,4 @@ include(':webserver')
 include(':i18n')
 include(':configuration')
 include(':frontend')
-
+include(':adhoc')
