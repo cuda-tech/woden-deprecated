@@ -5,6 +5,7 @@ dependencies {
     implementation "org.apache.spark:spark-core_$scala_version:$spark_version"
     implementation "org.apache.spark:spark-hive_$scala_version:$spark_version"
     implementation "org.apache.spark:spark-streaming_$scala_version:$spark_version"
+    implementation "org.apache.spark:spark-launcher_$scala_version:$spark_version"
 }
 
 test {
