@@ -15,6 +15,7 @@ package tech.cuda.datahub.config
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -63,6 +64,7 @@ class DatahubConfigTest : StringSpec({
 
     "scheduler config" {
         Datahub.scheduler.role shouldBe "master"
+        Datahub.scheduler.sparkHome shouldNotBe null
     }
 
 

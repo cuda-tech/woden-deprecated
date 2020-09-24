@@ -45,5 +45,6 @@
 
     <scheduler>
         <role>master</role>
+        <spark.home/>
     </scheduler>
 </datahub>

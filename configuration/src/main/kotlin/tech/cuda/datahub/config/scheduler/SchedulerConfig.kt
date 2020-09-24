@@ -13,6 +13,7 @@
  */
 package tech.cuda.datahub.config.scheduler
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonRootName
 
 /**
@@ -21,5 +22,10 @@ import com.fasterxml.jackson.annotation.JsonRootName
  */
 @JsonRootName("scheduler")
 data class SchedulerConfig(
-    val role: String
-)
+    val role: String,
+
+    @JsonProperty("spark.home")
+    private val _sparkHome: String?
+) {
+    val sparkHome: String = _sparkHome ?: System.getenv("SPARK_HOME") ?: System.getProperty("SPARK_HOME")
+}
