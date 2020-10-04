@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-abstract class SparkSubmitJob : Job {
+abstract class AbstractSparkJob : Job {
 
     abstract val mainClass: String
     open val jar: String = "${Datahub.scheduler.sparkHome}${File.separator}jars${File.separator}spark-sql*.jar"
@@ -49,7 +49,7 @@ abstract class SparkSubmitJob : Job {
                 SparkAppHandle.State.RUNNING -> JobStatus.RUNNING
                 SparkAppHandle.State.FINISHED -> {
                     // FINISHED 仅代表 Spark Context 正确地启动 & 停止，并不代表作业成功
-                    // 因此需要判断以下自线程的返回值，由于子线程是 private 的，因此需要反射设置 accessible 后读取
+                    // 因此需要判断一下子线程的返回值，由于子线程是 private 的，因此需要反射设置 accessible 后读取
                     val proc = handler::class.java.getDeclaredField("childProc")
                         .also { it.isAccessible = true }
                         .get(handler) as Process

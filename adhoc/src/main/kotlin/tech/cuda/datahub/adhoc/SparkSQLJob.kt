@@ -22,7 +22,7 @@ import java.io.File
 class SparkSQLJob(
     code: String,
     override val sparkConf: Map<String, String> = mapOf()
-) : SparkSubmitJob() {
+) : AbstractSparkJob() {
 
     private val tempFile = File.createTempFile("__adhoc__", ".sql").also {
         it.writeText(code, Charsets.UTF_8)

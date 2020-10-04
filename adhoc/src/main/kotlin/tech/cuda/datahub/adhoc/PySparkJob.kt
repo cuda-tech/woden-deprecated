@@ -22,7 +22,7 @@ import java.io.File
 class PySparkJob(
     code: String,
     override val sparkConf: Map<String, String> = mapOf()
-) : SparkSubmitJob() {
+) : AbstractSparkJob() {
 
     override val mainClass = "org.apache.spark.deploy.SparkSubmit"
 

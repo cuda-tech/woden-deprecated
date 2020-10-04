@@ -22,7 +22,7 @@ import java.io.File
 class SparkShellJob(
     code: String,
     override val sparkConf: Map<String, String> = mapOf()
-) : SparkSubmitJob() {
+) : AbstractSparkJob() {
     override val mainClass = "org.apache.spark.repl.Main"
 
     private val tempFile = File.createTempFile("__adhoc__", ".scala").also {
