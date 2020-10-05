@@ -11,17 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.scheduler.ops
+package tech.cuda.datahub.adhoc
 
-import tech.cuda.datahub.service.dto.TaskDTO
+import tech.cuda.datahub.config.Datahub
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class BashOperator(
-    task: TaskDTO,
-    type: String = "bash",
-    argument: List<String> = listOf(),
+class BashJob(
+    code: String,
+    arguments: List<String> = listOf(),
     kvArguments: Map<String, String> = mapOf()
-) : BashBaseOperator(task, type, argument, kvArguments)
+) : AbstractBashJob(Datahub.scheduler.bashPath, code, arguments, kvArguments)
