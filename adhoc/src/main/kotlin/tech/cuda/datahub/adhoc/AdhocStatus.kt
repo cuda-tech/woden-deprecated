@@ -11,18 +11,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.config.livy
-
-import com.fasterxml.jackson.annotation.JsonRootName
+package tech.cuda.datahub.adhoc
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@JsonRootName("livy")
-data class LivyConfig(
-    val host: String,
-    val port: Int
-) {
-    val baseUrl = "http://$host:$port"
+enum class AdhocStatus {
+    UNKNOWN {
+        override val isFinish = false
+    },
+    NOT_START {
+        override val isFinish = false
+    },
+    RUNNING {
+        override val isFinish = false
+    },
+    SUCCESS {
+        override val isFinish = true
+    },
+    FAILED {
+        override val isFinish = true
+    },
+    KILLED {
+        override val isFinish = true
+    };
+
+    abstract val isFinish: Boolean
 }

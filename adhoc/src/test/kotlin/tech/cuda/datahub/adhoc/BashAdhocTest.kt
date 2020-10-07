@@ -17,44 +17,27 @@ import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
-import io.mockk.*
-import java.io.File
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class BashJobTest : AnnotationSpec() {
-
-    private fun autoConvertPathFromWindows2WSL(block: () -> Unit) {
-        val isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
-        if (isWindows) {
-            val tempFile = File.createTempFile("__adhoc__", ".temp")
-            val spy = spyk(tempFile)
-            every { spy.absolutePath } returns tempFile.absolutePath.replace("\\", "/").replace("C:/", "/mnt/c/")
-            mockkStatic(File::class)
-            every { File.createTempFile("__adhoc__", ".temp") } returns spy
-            block()
-            unmockkStatic(File::class)
-        } else {
-            block()
-        }
-    }
+class BashAdhocTest : AnnotationSpec() {
 
     @Test
-    fun testSuccess() = autoConvertPathFromWindows2WSL {
-        val job = BashJob(code = """
+    fun testSuccess() = EnvSetter.autoConvertPathFromWindows2WSL {
+        val job = BashAdhoc(code = """
             echo "hello"
             sleep 3
             echo "world"
         """.trimIndent())
-        job.status shouldBe JobStatus.NOT_START
+        job.status shouldBe AdhocStatus.NOT_START
         job.start()
         do {
             Thread.sleep(100)
-        } while (job.status == JobStatus.NOT_START)
+        } while (job.status == AdhocStatus.NOT_START)
         var hasBufferOutput = false
-        while (job.status == JobStatus.RUNNING) {
+        while (job.status == AdhocStatus.RUNNING) {
             if (job.output != "") {
                 job.output shouldBe "hello\n"
                 hasBufferOutput = true
@@ -64,58 +47,58 @@ class BashJobTest : AnnotationSpec() {
         }
         hasBufferOutput shouldBe true
         job.join()
-        job.status shouldBe JobStatus.SUCCESS
+        job.status shouldBe AdhocStatus.SUCCESS
         job.output shouldBe "hello\nworld\n"
     }
 
     @Test
-    fun testWrongStatement() = autoConvertPathFromWindows2WSL {
-        val job = BashJob("command_not_exists")
-        job.status shouldBe JobStatus.NOT_START
+    fun testWrongStatement() = EnvSetter.autoConvertPathFromWindows2WSL {
+        val job = BashAdhoc("command_not_exists")
+        job.status shouldBe AdhocStatus.NOT_START
         job.startAndJoin()
-        job.status shouldBe JobStatus.FAILED
+        job.status shouldBe AdhocStatus.FAILED
         job.output shouldContain "line 1: command_not_exists: command not found"
     }
 
     @Test
-    fun testKill() = autoConvertPathFromWindows2WSL {
-        val job = BashJob("""
+    fun testKill() = EnvSetter.autoConvertPathFromWindows2WSL {
+        val job = BashAdhoc("""
             echo hello
             sleep 10
             echo world
         """.trimIndent())
-        job.status shouldBe JobStatus.NOT_START
+        job.status shouldBe AdhocStatus.NOT_START
         job.start()
         do {
             Thread.sleep(1000)
-        } while (job.status == JobStatus.NOT_START)
+        } while (job.status == AdhocStatus.NOT_START)
         job.kill()
         println("killed")
         job.join()
-        job.status shouldBe JobStatus.KILLED
+        job.status shouldBe AdhocStatus.KILLED
         println(job.output)
         job.output shouldContain "hello\n"
         job.output shouldNotContain "world"
     }
 
     @Test
-    fun userDefineArgument() = autoConvertPathFromWindows2WSL {
-        val job = BashJob(
+    fun userDefineArgument() = EnvSetter.autoConvertPathFromWindows2WSL {
+        val job = BashAdhoc(
             code = """
                 echo ${'$'}1
                 echo ${'$'}2
             """.trimIndent(),
             arguments = listOf("first", "second")
         )
-        job.status shouldBe JobStatus.NOT_START
+        job.status shouldBe AdhocStatus.NOT_START
         job.startAndJoin()
-        job.status shouldBe JobStatus.SUCCESS
+        job.status shouldBe AdhocStatus.SUCCESS
         job.output shouldBe "first\nsecond\n"
     }
 
     @Test
-    fun userDefineKvArgument() = autoConvertPathFromWindows2WSL {
-        val job = BashJob(
+    fun userDefineKvArgument() = EnvSetter.autoConvertPathFromWindows2WSL {
+        val job = BashAdhoc(
             code = """
                 while [[ ${'$'}# -gt 0 ]]
                 do
@@ -139,9 +122,9 @@ class BashJobTest : AnnotationSpec() {
             """.trimIndent(),
             kvArguments = mapOf("-f" to "1", "--second" to "2")
         )
-        job.status shouldBe JobStatus.NOT_START
+        job.status shouldBe AdhocStatus.NOT_START
         job.startAndJoin()
-        job.status shouldBe JobStatus.SUCCESS
+        job.status shouldBe AdhocStatus.SUCCESS
         job.output shouldBe "first = 1\nsecond = 2\n"
     }
 

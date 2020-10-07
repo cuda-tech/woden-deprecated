@@ -11,18 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.scheduler.ops
+package tech.cuda.datahub.adhoc
+
+import tech.cuda.datahub.config.Datahub
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-enum class OperatorType {
-    Unsupported,
-    DataX,
-    Bash,
-    Hive,
-    Mail,
-    Python,
-    Virtual
-}
+class BashAdhoc(
+    code: String,
+    arguments: List<String> = listOf(),
+    kvArguments: Map<String, String> = mapOf()
+) : AbstractBashAdhoc(Datahub.scheduler.bashPath, code, arguments, kvArguments)

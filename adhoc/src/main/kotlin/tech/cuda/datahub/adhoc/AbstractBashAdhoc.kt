@@ -24,12 +24,12 @@ import java.io.FileWriter
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-abstract class AbstractBashJob(
+abstract class AbstractBashAdhoc(
     private val executorPath: String,
     private val code: String,
     private val arguments: List<String> = listOf(),
     private val kvArguments: Map<String, String> = mapOf()
-) : Job {
+) : Adhoc {
     private val expectedExitValue = 0
     private val resultHandler = DefaultExecuteResultHandler()
     private val logStream = ByteArrayOutputStream()
@@ -49,14 +49,14 @@ abstract class AbstractBashJob(
             logStream.toString()
         }
 
-    override val status: JobStatus
+    override val status: AdhocStatus
         get() {
             return when {
-                !started -> JobStatus.NOT_START
-                !this.resultHandler.hasResult() -> JobStatus.RUNNING
-                this.resultHandler.exitValue == expectedExitValue -> JobStatus.SUCCESS
-                this.resultHandler.exitValue != expectedExitValue -> if (killed) JobStatus.KILLED else JobStatus.FAILED
-                else -> JobStatus.UNKNOWN
+                !started -> AdhocStatus.NOT_START
+                !this.resultHandler.hasResult() -> AdhocStatus.RUNNING
+                this.resultHandler.exitValue == expectedExitValue -> AdhocStatus.SUCCESS
+                this.resultHandler.exitValue != expectedExitValue -> if (killed) AdhocStatus.KILLED else AdhocStatus.FAILED
+                else -> AdhocStatus.UNKNOWN
             }
         }
 
