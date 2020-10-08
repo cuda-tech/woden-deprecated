@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-abstract class AbstractSparkJob : Job {
+abstract class AbstractSparkAdhoc : Adhoc {
 
     abstract val mainClass: String
     open val jar: String = "${Datahub.scheduler.sparkHome}${File.separator}jars${File.separator}spark-sql*.jar"
@@ -39,14 +39,15 @@ abstract class AbstractSparkJob : Job {
             return Resources.readLines(logFile.toURI().toURL(), Charsets.UTF_8).joinToString("\n")
         }
 
-    override val status: JobStatus
+    override val status: AdhocStatus
         get() = if (!this::handler.isInitialized) {
-            JobStatus.NOT_START
+            AdhocStatus.NOT_START
         } else {
-            when (handler.state) {
-                SparkAppHandle.State.CONNECTED -> JobStatus.RUNNING
-                SparkAppHandle.State.SUBMITTED -> JobStatus.RUNNING
-                SparkAppHandle.State.RUNNING -> JobStatus.RUNNING
+            when (handler.state!!) {
+                SparkAppHandle.State.UNKNOWN -> AdhocStatus.NOT_START
+                SparkAppHandle.State.CONNECTED -> AdhocStatus.NOT_START
+                SparkAppHandle.State.SUBMITTED -> AdhocStatus.NOT_START
+                SparkAppHandle.State.RUNNING -> AdhocStatus.RUNNING
                 SparkAppHandle.State.FINISHED -> {
                     // FINISHED 仅代表 Spark Context 正确地启动 & 停止，并不代表作业成功
                     // 因此需要判断一下子线程的返回值，由于子线程是 private 的，因此需要反射设置 accessible 后读取
@@ -55,15 +56,14 @@ abstract class AbstractSparkJob : Job {
                         .get(handler) as Process
                     val exit = proc.waitFor(60, TimeUnit.SECONDS)
                     when {
-                        !exit -> JobStatus.UNKNOWN
-                        proc.exitValue() == 0 -> JobStatus.SUCCESS
-                        else -> JobStatus.FAILED
+                        !exit -> AdhocStatus.UNKNOWN
+                        proc.exitValue() == 0 -> AdhocStatus.SUCCESS
+                        else -> AdhocStatus.FAILED
                     }
                 }
-                SparkAppHandle.State.FAILED -> JobStatus.FAILED
-                SparkAppHandle.State.KILLED -> JobStatus.KILLED
-                SparkAppHandle.State.LOST -> JobStatus.FAILED
-                else -> JobStatus.UNKNOWN
+                SparkAppHandle.State.FAILED -> AdhocStatus.FAILED
+                SparkAppHandle.State.KILLED -> AdhocStatus.KILLED
+                SparkAppHandle.State.LOST -> AdhocStatus.FAILED
             }
         }
 

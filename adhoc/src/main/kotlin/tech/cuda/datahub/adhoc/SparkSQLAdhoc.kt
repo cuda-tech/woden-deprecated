@@ -11,14 +11,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.scheduler.ops
+package tech.cuda.datahub.adhoc
 
-import tech.cuda.datahub.service.dto.TaskDTO
+import java.io.File
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class MapReduceOperator(task: TaskDTO) : HadoopBaseOperator(task, "hadoop") {
+class SparkSQLAdhoc(
+    code: String,
+    override val sparkConf: Map<String, String> = mapOf()
+) : AbstractSparkAdhoc() {
+
+    private val tempFile = File.createTempFile("__adhoc__", ".sql").also {
+        it.writeText(code, Charsets.UTF_8)
+        it.deleteOnExit()
+    }
+
+    override val mainClass = "org.apache.spark.sql.hive.thriftserver.SparkSQLCLIDriver"
+
+    override val appArgs = mapOf(
+        "--conf" to "spark.hadoop.hive.cli.print.header=true",
+        "-f" to tempFile.path
+    )
 
 }
