@@ -22,41 +22,29 @@ import io.kotest.matchers.string.shouldNotContain
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class SparkShellJobTest : AnnotationSpec() {
-
-    private fun autoSetLocalDir(block: (Map<String, String>) -> Unit) {
-        val tempDir = createTempDir(prefix = "__adhoc__", suffix = ".spark.local")
-        val sparkLocal = tempDir.path.replace("\\", "/")
-        val log4j = this.javaClass.classLoader.getResource("log4j.properties")!!.path
-        block(mapOf(
-            "spark.local.dir" to sparkLocal,
-            "spark.driver.extraJavaOptions" to "-Dlog4j.configuration=file:$log4j",
-            "spark.executor.extraJavaOptions" to "-Dlog4j.configuration=file:$log4j"
-        ))
-        tempDir.deleteRecursively()
-    }
+class SparkShellAdhocTest : AnnotationSpec() {
 
     @Test
-    fun testSparkContextInited() = autoSetLocalDir { sparkConf ->
-        val job = SparkShellJob(code = """println("sc = " + sc.toString())""", sparkConf = sparkConf)
+    fun testSparkContextInited() = EnvSetter.autoSetLocalAndDerbyDir {
+        val job = SparkShellAdhoc(code = """println("sc = " + sc.toString())""")
         job.startAndJoin()
-        job.status shouldBe JobStatus.SUCCESS
+        job.status shouldBe AdhocStatus.SUCCESS
         job.output shouldContain "sc = org.apache.spark.SparkContext@"
         job.close()
     }
 
     @Test
-    fun testWrongStatement() = autoSetLocalDir { sparkConf ->
-        val job = SparkShellJob(code = "println(notExistsVariable)", sparkConf = sparkConf)
+    fun testWrongStatement() = EnvSetter.autoSetLocalAndDerbyDir {
+        val job = SparkShellAdhoc(code = "println(notExistsVariable)")
         job.startAndJoin()
-        job.status shouldBe JobStatus.FAILED
+        job.status shouldBe AdhocStatus.FAILED
         job.output shouldContain "error: not found: value notExistsVariable"
         job.close()
     }
 
     @Test
-    fun testWordCount() = autoSetLocalDir { sparkConf ->
-        val job = SparkShellJob(code = """
+    fun testWordCount() = EnvSetter.autoSetLocalAndDerbyDir {
+        val job = SparkShellAdhoc(code = """
             val wordCount = sc.parallelize(Array(
                 "apple apple facebook microsoft apple microsoft google apple google google",
                 "alibaba tencent alibaba alibaba"
@@ -66,28 +54,28 @@ class SparkShellJobTest : AnnotationSpec() {
               .map(a => a._2)
               .reduce((a, b) => a + b)
             println("word count = " + wordCount)
-        """.trimIndent(), sparkConf = sparkConf)
+        """.trimIndent())
         job.startAndJoin()
-        job.status shouldBe JobStatus.SUCCESS
+        job.status shouldBe AdhocStatus.SUCCESS
         job.output shouldContain "word count = 14"
         job.close()
     }
 
     @Test
-    fun testKillJob() = autoSetLocalDir { sparkConf ->
-        val job = SparkShellJob(code = """
+    fun testKillJob() = EnvSetter.autoSetLocalAndDerbyDir {
+        val job = SparkShellAdhoc(code = """
             Thread.sleep(30000)
             println("now, wake up")
-        """.trimIndent(), sparkConf = sparkConf)
+        """.trimIndent())
         job.start()
-        while (job.status != JobStatus.RUNNING) {
+        while (job.status != AdhocStatus.RUNNING) {
             Thread.sleep(1000)
         }
         Thread.sleep(3000).also { job.kill() }
         do {
             Thread.sleep(1000)
-        } while (job.status == JobStatus.RUNNING)
-        job.status shouldBe JobStatus.KILLED
+        } while (job.status == AdhocStatus.RUNNING)
+        job.status shouldBe AdhocStatus.KILLED
         job.output shouldNotContain "now, wake up"
         job.close()
     }

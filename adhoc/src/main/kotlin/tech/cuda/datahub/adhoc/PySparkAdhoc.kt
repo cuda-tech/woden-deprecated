@@ -19,10 +19,10 @@ import java.io.File
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class PySparkJob(
+class PySparkAdhoc(
     code: String,
     override val sparkConf: Map<String, String> = mapOf()
-) : AbstractSparkJob() {
+) : AbstractSparkAdhoc() {
 
     override val mainClass = "org.apache.spark.deploy.SparkSubmit"
 

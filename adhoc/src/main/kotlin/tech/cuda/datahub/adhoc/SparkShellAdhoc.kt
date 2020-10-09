@@ -19,30 +19,30 @@ import java.io.File
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class SparkShellJob(
+class SparkShellAdhoc(
     code: String,
     override val sparkConf: Map<String, String> = mapOf()
-) : AbstractSparkJob() {
+) : AbstractSparkAdhoc() {
     override val mainClass = "org.apache.spark.repl.Main"
 
     private val tempFile = File.createTempFile("__adhoc__", ".scala").also {
         // Spark-Shell 抛的异常貌似没法被 Throwable 捕获，所以在 try 里面正常退出，try 外面异常退出
         it.writeText("""
-            println(s""${'"'}Welcome to
-                  ____              __
-                 / __/__  ___ _____/ /__
-                _\\ \\/ _ \\/ _ `/ __/  '_/
-               /___/ .__/\\_,_/_/ /_/\\_\\   version ${"$"}{sc.version}
-                  /_/
+            |println(s""${'"'}Welcome to
+            |      ____              __
+            |     / __/__  ___ _____/ /__
+            |    _\\ \\/ _ \\/ _ `/ __/  '_/
+            |   /___/ .__/\\_,_/_/ /_/\\_\\   version ${"$"}{sc.version}
+            |      /_/
 
-            Using Scala ${"$"}{util.Properties.versionString} (${"$"}{System.getProperty("java.vm.name")}, Java ${"$"}{System.getProperty("java.version")})
-            ""${'"'})
-            try{
-                $code
-                System.exit(0)
-            }finally{}
-            System.exit(-1)
-        """.trimIndent(), Charsets.UTF_8)
+            |Using Scala ${"$"}{util.Properties.versionString} (${"$"}{System.getProperty("java.vm.name")}, Java ${"$"}{System.getProperty("java.version")})
+            |""${'"'})
+            |try{
+            |    $code
+            |    System.exit(0)
+            |}finally{}
+            |System.exit(-1)
+        """.trimMargin(), Charsets.UTF_8)
         it.deleteOnExit()
     }
 
