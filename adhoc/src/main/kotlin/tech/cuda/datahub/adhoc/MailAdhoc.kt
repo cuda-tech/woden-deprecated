@@ -11,13 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.scheduler.ops
+package tech.cuda.datahub.adhoc
 
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import tech.cuda.datahub.config.Datahub
-import tech.cuda.datahub.service.exception.OperationNotAllowException
-import javax.mail.*
+import javax.mail.Session
+import javax.mail.Transport
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
@@ -25,18 +27,21 @@ import javax.mail.internet.MimeMessage
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-class MailOperator(private val to: List<String>, private val title: String, private val content: String) : Operator() {
-    override val isFinish: Boolean
-        get() = this.job.isCompleted
+class MailAdhoc(private val to: List<String>, private val title: String, private val content: String) : Adhoc {
 
-    override val isSuccess: Boolean
-        get() = isFinish && !hasException
+    private var hasException = false
+    private lateinit var job: Deferred<Unit>
 
     override val output: String
         get() = ""
 
-    private var hasException = false
-
+    override val status: AdhocStatus
+        get() = when {
+            !this::job.isInitialized -> AdhocStatus.NOT_START
+            !this.job.isCompleted -> AdhocStatus.RUNNING
+            job.isCompleted -> if (hasException) AdhocStatus.FAILED else AdhocStatus.SUCCESS
+            else -> AdhocStatus.FAILED
+        }
 
     override fun start() {
         this.job = GlobalScope.async {
@@ -50,10 +55,19 @@ class MailOperator(private val to: List<String>, private val title: String, priv
             } catch (e: Throwable) {
                 hasException = true
                 e.printStackTrace()
-                throw e
             }
         }
     }
 
-    override fun kill() = throw OperationNotAllowException("Sending Email could not be stip")
+    override fun join() {
+        runBlocking {
+            if (this@MailAdhoc::job.isInitialized) {
+                job.await()
+            }
+        }
+    }
+
+    override fun close() {}
+
+    override fun kill() {}
 }

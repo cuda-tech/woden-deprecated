@@ -11,27 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.datahub.scheduler.ops
+package tech.cuda.datahub.adhoc
 
-import com.icegreen.greenmail.util.*
-import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.DoNotParallelize
-import io.kotest.core.spec.style.StringSpec
+import com.icegreen.greenmail.util.GreenMail
+import com.icegreen.greenmail.util.GreenMailUtil
+import com.icegreen.greenmail.util.ServerSetup
+import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.fp.Tuple2
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
-import tech.cuda.datahub.scheduler.TestWithDistribution
-import tech.cuda.datahub.service.exception.OperationNotAllowException
-
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 1.0.0
  */
-@DoNotParallelize
-class MailOperatorTest : TestWithDistribution() {
+class MailAdhocTest : AnnotationSpec() {
 
     private val greenMail: GreenMail = GreenMail(ServerSetup.SMTPS)
 
@@ -49,14 +45,10 @@ class MailOperatorTest : TestWithDistribution() {
     @Test
     fun testSend() {
         val receivers = listOf("user1@test1", "user2@test2", "user3@test3")
-        val op = MailOperator(to = receivers, title = "test email", content = "this is a test email")
-        op.start()
-        op.isFinish shouldBe false
-        op.isSuccess shouldBe false
-        op.join()
-        op.isFinish shouldBe true
-        op.isSuccess shouldBe true
-
+        val job = MailAdhoc(to = receivers, title = "test email", content = "this is a test email")
+        job.status shouldBe AdhocStatus.NOT_START
+        job.startAndJoin()
+        job.status shouldBe AdhocStatus.SUCCESS
         val mails = greenMail.receivedMessages
         mails.size shouldBe 3
         mails.forEach {
@@ -65,11 +57,6 @@ class MailOperatorTest : TestWithDistribution() {
             it.allRecipients.map { addr -> addr.toString() } shouldContainInOrder receivers
             it.from.size shouldBe 1
             it.from.first().toString() shouldBe "root@host.com"
-        }
-        
-        op.start()
-        shouldThrow<OperationNotAllowException> {
-            op.kill()
         }
     }
 }
