@@ -38,13 +38,10 @@
         <port>465</port>
     </email>
 
-    <livy>
-        <host>localhost</host>
-        <port>8998</port>
-    </livy>
-
     <scheduler>
         <role>master</role>
         <spark.home/>
+        <anaconda.path/>
+        <bash.path/>
     </scheduler>
 </datahub>

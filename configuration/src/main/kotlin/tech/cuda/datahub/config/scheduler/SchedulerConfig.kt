@@ -25,7 +25,25 @@ data class SchedulerConfig(
     val role: String,
 
     @JsonProperty("spark.home")
-    private val _sparkHome: String?
+    private val _sparkHome: String?,
+
+    @JsonProperty("anaconda.path")
+    private val _anacondaPath: String?,
+
+    @JsonProperty("bash.path")
+    private val _bashPath: String?
 ) {
-    val sparkHome: String = _sparkHome ?: System.getenv("SPARK_HOME") ?: System.getProperty("SPARK_HOME")
+    val sparkHome: String = _sparkHome
+        ?: System.getenv("SPARK_HOME")
+        ?: System.getProperty("SPARK_HOME")
+
+    val anacondaPath: String = _anacondaPath
+        ?: System.getenv("ANACONDA_PATH")
+        ?: System.getProperty("ANACONDA_PATH")
+        ?: "/usr/bin/python3"
+
+    val bashPath: String = _bashPath
+        ?: System.getenv("BASH_PATH")
+        ?: System.getProperty("BASH_PATH")
+        ?: "/bin/bash"
 }
