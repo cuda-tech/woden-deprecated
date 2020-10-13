@@ -7,8 +7,15 @@ dependencies {
     implementation "org.apache.spark:spark-hive_$scala_version:$spark_version"
     implementation "org.apache.spark:spark-streaming_$scala_version:$spark_version"
     implementation "org.apache.spark:spark-launcher_$scala_version:$spark_version"
+    implementation "org.apache.commons:commons-exec:$commons_exec_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
 
     testImplementation project(':configuration').sourceSets.test.output
+    testImplementation "com.icegreen:greenmail:$green_mail_version"
+}
+
+configurations.all {
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 }
 
 test {
