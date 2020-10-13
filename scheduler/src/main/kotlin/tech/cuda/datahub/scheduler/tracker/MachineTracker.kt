@@ -49,12 +49,6 @@ class MachineTracker(private val afterStarted: (MachineDTO) -> Unit = {}) : Trac
         afterStarted(machine)
     }
 
-    override fun onDestroyed() {}
-
-    override fun onDateChange() {}
-
-    override fun onHourChange() {}
-
     /**
      * 每次心跳检查机器负载并更新
      */

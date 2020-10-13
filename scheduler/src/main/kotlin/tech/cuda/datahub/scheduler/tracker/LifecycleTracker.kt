@@ -24,17 +24,8 @@ object LifecycleTracker : Tracker() {
 
     }
 
-    override fun onStarted() {}
-
-    override fun onDestroyed() {}
-
     override fun onDateChange() {
         cleanPartition()
     }
-
-    override fun onHourChange() {}
-
-    override fun onHeartBeat() {}
-
 
 }

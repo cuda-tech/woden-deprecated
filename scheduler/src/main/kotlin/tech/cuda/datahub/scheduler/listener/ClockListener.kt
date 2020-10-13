@@ -18,7 +18,7 @@ package tech.cuda.datahub.scheduler.listener
  * @since 1.0.0
  */
 interface ClockListener {
-    fun onDateChange()
-    fun onHourChange()
-    fun onHeartBeat()
+    fun onDateChange() {}
+    fun onHourChange() {}
+    fun onHeartBeat() {}
 }

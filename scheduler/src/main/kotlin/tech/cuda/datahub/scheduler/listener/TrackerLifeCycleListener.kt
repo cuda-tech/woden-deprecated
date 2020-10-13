@@ -18,6 +18,6 @@ package tech.cuda.datahub.scheduler.listener
  * @since 1.0.0
  */
 interface TrackerLifeCycleListener {
-    fun onStarted()
-    fun onDestroyed()
+    fun onStarted() {}
+    fun onDestroyed() {}
 }
