@@ -31,6 +31,7 @@ internal interface JobPO : Entity<JobPO> {
     var status: JobStatus
     var hour: Int
     var minute: Int
+    var runCount: Int
     var isRemove: Boolean
     var createTime: LocalDateTime
     var updateTime: LocalDateTime

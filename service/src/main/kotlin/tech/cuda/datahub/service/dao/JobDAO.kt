@@ -14,6 +14,7 @@
 package tech.cuda.datahub.service.dao
 
 import me.liuwj.ktorm.schema.*
+import org.checkerframework.common.value.qual.IntVal
 import tech.cuda.datahub.service.po.JobPO
 import tech.cuda.datahub.annotation.mysql.*
 import tech.cuda.datahub.service.po.dtype.JobStatus
@@ -50,8 +51,12 @@ internal object JobDAO : Table<JobPO>("jobs") {
     val hour = int("hour").bindTo { it.hour }
 
     @TINYINT
-    @COMMENT("执行时间（小时)")
+    @COMMENT("执行时间（分钟)")
     val minute = int("minute").bindTo { it.minute }
+
+    @INT
+    @COMMENT("执行次数")
+    val runCount = int("run_count").bindTo { it.runCount }
 
     @BOOL
     @COMMENT("逻辑删除")

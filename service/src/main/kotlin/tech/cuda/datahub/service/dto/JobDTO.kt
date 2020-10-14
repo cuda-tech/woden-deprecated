@@ -30,6 +30,7 @@ data class JobDTO(
     val status: JobStatus,
     val hour: Int,
     val minute: Int,
+    val runCount: Int,
     val createTime: LocalDateTime,
     val updateTime: LocalDateTime
 )
