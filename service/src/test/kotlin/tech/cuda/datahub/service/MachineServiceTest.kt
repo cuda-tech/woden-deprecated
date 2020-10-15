@@ -206,6 +206,14 @@ class MachineServiceTest : TestWithMaria({
         MachineService.findByMac("not exists") shouldBe null
     }
 
+    "查询负载最低的服务器" {
+        val machine = MachineService.findSlackMachine()
+        machine.id shouldBe 58
+        machine.hostname shouldBe "kaefkqop"
+        machine.memLoad shouldBe 0
+        machine.cpuLoad shouldBe 59
+    }
+
     "创建服务器" {
         val machine = MachineService.create("192.168.1.1", "test_create", "mac_addr")
         machine.hostname shouldBe "test_create"

@@ -37,9 +37,7 @@ class ClusterTracker(private val machine: MachineDTO, private val afterStarted: 
      * 如果当前没有存活的 slave, 则抛出 NotFoundException
      */
     private fun electMasterFromSlave() {
-        val (slaves, slaveCount) = MachineService.listingActiveSlave()
-        if (slaveCount == 0) throw NotFoundException()
-        val nextMaster = slaves.sortedWith(compareBy({ it.memLoad }, { it.cpuLoad })).first()
+        val nextMaster = MachineService.findSlackMachine()
         MachineService.update(nextMaster.id, role = MachineRole.MASTER)
     }
 
@@ -49,7 +47,6 @@ class ClusterTracker(private val machine: MachineDTO, private val afterStarted: 
     private fun resetMasters(masters: List<MachineDTO>) = masters.forEach {
         MachineService.update(it.id, role = MachineRole.SLAVE)
     }
-
 
     /**
      * 确保只有一个 master
@@ -86,12 +83,6 @@ class ClusterTracker(private val machine: MachineDTO, private val afterStarted: 
         onHeartBeat()
         afterStarted()
     }
-
-    override fun onDestroyed() {}
-
-    override fun onDateChange() {}
-
-    override fun onHourChange() {}
 
     override fun onHeartBeat() = Database.global.useTransaction {
         ensureOnlyOneMaster()

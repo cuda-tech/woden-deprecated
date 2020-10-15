@@ -86,6 +86,15 @@ object MachineService : Service(MachineDAO) {
     fun findByMac(mac: String) = find<MachinePO>(MachineDAO.isRemove eq false and (MachineDAO.mac eq mac))?.toMachineDTO()
 
     /**
+     * 返回一台正在摸鱼的服务器(ie. 内存 & CPU 负载最低的服务器)
+     */
+    fun findSlackMachine(): MachineDTO {
+        val (machines, count) = listingActiveSlave()
+        if (count == 0) throw NotFoundException()
+        return machines.sortedWith(compareBy({ it.memLoad }, { it.cpuLoad })).first()
+    }
+
+    /**
      * 查找当前所有生效的 master
      */
     fun listingActiveMaster() = listing(role = MachineRole.MASTER, isActive = true)
