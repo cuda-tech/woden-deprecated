@@ -21,8 +21,7 @@ enum class JobStatus {
     INIT, // 新建状态
     READY, // 可执行状态
     RUNNING, // 执行中
-    HOLD, // 挂起，即该作业不会调度，并且后续作业将会中止调度
-    PASS, // 跳过，即该作业不会调度，但后续作业会继续调度
     SUCCESS,
-    FAILED
+    FAILED, // 执行失败后，如果允许后续会自动重试
+    KILLED, // Kill 后，后续不会自动重试
 }

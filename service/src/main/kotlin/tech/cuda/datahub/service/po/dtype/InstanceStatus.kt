@@ -20,5 +20,6 @@ package tech.cuda.datahub.service.po.dtype
 enum class InstanceStatus {
     RUNNING,
     SUCCESS,
-    FAILED
+    FAILED,
+    KILLED
 }

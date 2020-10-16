@@ -88,11 +88,11 @@ class InstanceServiceTest : TestWithMaria({
 
         shouldThrow<OperationNotAllowException> {
             InstanceService.create(JobService.findById(15)!!)
-        }.message shouldBe "调度作业 15 状态 HOLD 禁止创建调度实例"
+        }.message shouldBe "调度作业 15 状态 KILLED 禁止创建调度实例"
 
         shouldThrow<OperationNotAllowException> {
             InstanceService.create(JobService.findById(23)!!)
-        }.message shouldBe "调度作业 23 状态 PASS 禁止创建调度实例"
+        }.message shouldBe "调度作业 23 状态 SUCCESS 禁止创建调度实例"
     }
 
     "更新实例" {
