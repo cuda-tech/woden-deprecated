@@ -288,7 +288,7 @@ id	file_id	content	message	is_remove	create_time	update_time
 287	11	mtxqxlgygdkvxqvzrwzxccoxcoojfgcmfvjkytpppwzogqeazmuqrsfsrznyfvvn	qewmuohv	0	2013-01-11 19:33:30	2013-10-27 18:31:16
 288	0	qbuezlioxtmcbyzckkncerpphvfmonnzvadtbvdbkadqghigpjtjgtvfcaihujod	exxhgpbz	0	2041-08-13 09:54:07	2042-08-29 11:38:54
 289	13	zzjnvolbxabmrcopmkqctsxxoocaxtuhctwyqybfmljokkqcdxhkkljzguzjprsw	pnfuytvo	0	2026-06-17 03:58:30	2027-12-12 06:11:02
-290	7	select "hello world"	prljtlds	0	2011-04-09 20:30:46	2013-12-09 19:39:16
+290	7	select "hello world" as string_column	prljtlds	0	2011-04-09 20:30:46	2013-12-09 19:39:16
 291	12	nwhqokrgnciogigiaxphrlcsszgtszleoukbttfangkecqbwknnnwozecxsaiqio	zpvpjlaa	0	2001-01-14 11:25:48	2002-03-30 19:56:44
 292	15	mxufnspvgvsoktlpjkepywmucdrlyayhzvmljnxjuemmmaspzdhisahkuxezxqiu	httcwcwd	0	2038-11-09 06:55:11	2039-02-18 04:07:17
 293	18	yyvxpczwibogcpswwqmtokqrneloqzjyvbeophpexuqunhmlntetygttyosnjmxr	zjyyhmkw	0	2023-06-27 14:22:44	2023-12-10 12:11:12

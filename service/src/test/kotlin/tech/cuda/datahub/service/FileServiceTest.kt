@@ -30,7 +30,6 @@ import tech.cuda.datahub.service.exception.NotFoundException
 import tech.cuda.datahub.service.exception.OperationNotAllowException
 import tech.cuda.datahub.service.exception.PermissionException
 import tech.cuda.datahub.service.po.dtype.FileType
-import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 
 /**
@@ -78,7 +77,7 @@ class FileServiceTest : TestWithMaria({
             val (files, count) = this
             files.size shouldBe 5
             count shouldBe 5
-            files.map { it.type } shouldContainInOrder listOf(FileType.DIR, FileType.SQL, FileType.SQL, FileType.SQL, FileType.SPARK)
+            files.map { it.type } shouldContainInOrder listOf(FileType.DIR, FileType.SPARK_SQL, FileType.SPARK_SQL, FileType.SPARK_SQL, FileType.SPARK_SHELL)
             files.map { it.name } shouldContainInOrder listOf("zwgjydgn", "kniovyqn", "ladlehnr", "yoglnkyc", "jldwzlys")
         }
 
@@ -86,7 +85,7 @@ class FileServiceTest : TestWithMaria({
             val (files, count) = this
             files.size shouldBe 3
             count shouldBe 3
-            files.map { it.type } shouldContainInOrder listOf(FileType.DIR, FileType.SQL, FileType.SPARK)
+            files.map { it.type } shouldContainInOrder listOf(FileType.DIR, FileType.SPARK_SQL, FileType.SPARK_SHELL)
             files.map { it.name } shouldContainInOrder listOf("zvdjsdhz", "yijlstlq", "yzhamcqc")
         }
     }
@@ -186,13 +185,13 @@ class FileServiceTest : TestWithMaria({
             groupId = 1,
             user = UserService.findById(1)!!,
             name = "test create",
-            type = FileType.SQL,
+            type = FileType.SPARK_SQL,
             parentId = 1
         )
         sqlFile.ownerId shouldBe 1
         sqlFile.id shouldBe 70
         sqlFile.name shouldBe "test create"
-        sqlFile.type shouldBe FileType.SQL
+        sqlFile.type shouldBe FileType.SPARK_SQL
         sqlFile.parentId shouldBe 1
 
         // 创建同目录下同名但不同类型的文件
@@ -200,13 +199,13 @@ class FileServiceTest : TestWithMaria({
             groupId = 1,
             user = UserService.findById(2)!!,
             name = "test create",
-            type = FileType.SPARK,
+            type = FileType.SPARK_SHELL,
             parentId = 1
         )
         sparkFile.ownerId shouldBe 2
         sparkFile.id shouldBe 71
         sparkFile.name shouldBe "test create"
-        sparkFile.type shouldBe FileType.SPARK
+        sparkFile.type shouldBe FileType.SPARK_SHELL
         sparkFile.parentId shouldBe 1
 
         // 父节点不存在
@@ -215,7 +214,7 @@ class FileServiceTest : TestWithMaria({
                 groupId = 1,
                 user = UserService.findById(1)!!,
                 name = "test create",
-                type = FileType.SQL,
+                type = FileType.SPARK_SQL,
                 parentId = 21
             )
         }.message shouldBe "父节点 21 不存在或已被删除"
@@ -226,7 +225,7 @@ class FileServiceTest : TestWithMaria({
                 groupId = 1,
                 user = UserService.findById(1)!!,
                 name = "test create",
-                type = FileType.SQL,
+                type = FileType.SPARK_SQL,
                 parentId = 2
             )
         }.message shouldBe "父节点 2 不是 文件夹"
@@ -237,7 +236,7 @@ class FileServiceTest : TestWithMaria({
                 groupId = 7,
                 user = UserService.findById(1)!!,
                 name = "test create",
-                type = FileType.SQL,
+                type = FileType.SPARK_SQL,
                 parentId = 1
             )
         }.message shouldBe "项目组 7 不存在或已被删除"
@@ -255,7 +254,7 @@ class FileServiceTest : TestWithMaria({
                     updateTime = LocalDateTime.now()
                 ),
                 name = "test create",
-                type = FileType.SQL,
+                type = FileType.SPARK_SQL,
                 parentId = 1
             )
         }.message shouldBe "用户 4 不存在或已被删除"
@@ -266,7 +265,7 @@ class FileServiceTest : TestWithMaria({
                 groupId = 1,
                 user = UserService.findById(3)!!,
                 name = "test create",
-                type = FileType.SQL,
+                type = FileType.SPARK_SQL,
                 parentId = 1
             )
         }.message shouldBe "用户 3 不归属于 项目组 1"
@@ -277,10 +276,10 @@ class FileServiceTest : TestWithMaria({
                 groupId = 1,
                 user = UserService.findById(1)!!,
                 name = "test create",
-                type = FileType.SQL,
+                type = FileType.SPARK_SQL,
                 parentId = 1
             )
-        }.message shouldBe "文件夹 1 存在 文件类型 SQL 文件节点 test create"
+        }.message shouldBe "文件夹 1 存在 文件类型 SPARK_SQL 文件节点 test create"
     }
 
     "更新文件节点" {
@@ -326,7 +325,7 @@ class FileServiceTest : TestWithMaria({
         // 同目录下同类型同名
         shouldThrow<DuplicateException> {
             FileService.update(3, name = "yijlstlq")
-        }.message shouldBe "文件夹 3 存在 文件类型 SQL 文件节点 yijlstlq"
+        }.message shouldBe "文件夹 3 存在 文件类型 SPARK_SQL 文件节点 yijlstlq"
 
         // 更新文件夹 content
         shouldThrow<OperationNotAllowException> {

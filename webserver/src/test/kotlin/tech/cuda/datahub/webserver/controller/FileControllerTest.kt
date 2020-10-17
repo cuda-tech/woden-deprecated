@@ -37,7 +37,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
             val count = this.get<Int>("count")
             files.size shouldBe 5
             count shouldBe 5
-            files.map { it.type } shouldContainExactly listOf(FileType.DIR, FileType.SQL, FileType.SQL, FileType.SQL, FileType.SPARK)
+            files.map { it.type } shouldContainExactly listOf(FileType.DIR, FileType.SPARK_SQL, FileType.SPARK_SQL, FileType.SPARK_SQL, FileType.SPARK_SHELL)
             files.map { it.name } shouldContainExactly listOf("zwgjydgn", "kniovyqn", "ladlehnr", "yoglnkyc", "jldwzlys")
             files.forEach {
                 it.groupId shouldBe 1
@@ -51,7 +51,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
             val count = this.get<Int>("count")
             files.size shouldBe 3
             count shouldBe 3
-            files.map { it.type } shouldContainExactly listOf(FileType.DIR, FileType.SQL, FileType.SPARK)
+            files.map { it.type } shouldContainExactly listOf(FileType.DIR, FileType.SPARK_SQL, FileType.SPARK_SHELL)
             files.map { it.name } shouldContainExactly listOf("zvdjsdhz", "yijlstlq", "yzhamcqc")
             files.forEach {
                 it.groupId shouldBe 1
@@ -209,7 +209,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
             it.groupId shouldBe 1
             it.ownerId shouldBe 1
             it.name shouldBe "test create"
-            it.type shouldBe FileType.SQL
+            it.type shouldBe FileType.SPARK_SQL
             it.parentId shouldBe 4
         }
 
@@ -226,7 +226,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
                 it.groupId shouldBe 1
                 it.ownerId shouldBe 1
                 it.name shouldBe "test create"
-                it.type shouldBe FileType.SQL
+                it.type shouldBe FileType.SPARK_SQL
                 it.parentId shouldBe 4
             }
         }

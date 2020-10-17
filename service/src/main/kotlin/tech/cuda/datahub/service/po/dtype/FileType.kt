@@ -21,7 +21,13 @@ import java.time.LocalDateTime
  * @since 1.0.0
  */
 enum class FileType {
-    DIR, SQL, SPARK, MR, PYTHON, BASH;
+    DIR,
+    SPARK_SQL,
+    SPARK_SHELL,
+    PY_SPARK,
+    MR,
+    ANACONDA,
+    BASH;
 
     fun initVal(author: String, createTime: LocalDateTime) = when (this) {
         DIR -> null

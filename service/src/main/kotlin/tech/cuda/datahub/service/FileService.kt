@@ -50,11 +50,12 @@ object FileService : Service(FileDAO) {
             {
                 when (it.type) {
                     FileType.DIR -> 0
-                    FileType.SQL -> 1
+                    FileType.SPARK_SQL -> 1
                     FileType.MR -> 2
-                    FileType.SPARK -> 3
+                    FileType.SPARK_SHELL -> 3
                     FileType.BASH -> 4
-                    FileType.PYTHON -> 5
+                    FileType.ANACONDA -> 5
+                    FileType.PY_SPARK -> 6
                 }
             },
             // 文件名作为第二优先级
