@@ -14,6 +14,7 @@
 package tech.cuda.datahub.service
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import tech.cuda.datahub.TestWithMaria
@@ -40,6 +41,7 @@ class JobServiceTest : TestWithMaria({
         job.machineId shouldBe 1
         job.status shouldBe JobStatus.READY
         job.hour shouldBe 16
+        job.runCount shouldBe 1
         job.minute shouldBe 30
         job.createTime shouldBe "2025-01-10 16:56:13".toLocalDateTime()
         job.updateTime shouldBe "2026-01-26 23:09:37".toLocalDateTime()
@@ -74,9 +76,15 @@ class JobServiceTest : TestWithMaria({
         }
     }
 
+    "按执行时间查询" {
+        val (jobs, count) = JobService.listing(1, 1000, status = JobStatus.SUCCESS, hour = 5)
+        count shouldBe 8
+        jobs.map { it.id } shouldContainExactlyInAnyOrder listOf(26, 58, 64, 104, 108, 153, 224, 283)
+    }
+
     "按状态分页查询" {
         val status = JobStatus.SUCCESS
-        val total = 56
+        val total = 110
         val pageSize = 5
         val queryTimes = total / pageSize + 1
         val lastPageCount = total % pageSize
@@ -88,7 +96,7 @@ class JobServiceTest : TestWithMaria({
         }
     }
 
-    "按时间查询" {
+    "按创建时间查询" {
         val before = "2020-01-01 00:00:00".toLocalDateTime()
         val after = "2010-01-01 00:00:00".toLocalDateTime()
         JobService.listing(1, 13, before = before).second shouldBe 105
@@ -99,8 +107,8 @@ class JobServiceTest : TestWithMaria({
     "复合查询" {
         val taskId = 3
         val status = JobStatus.SUCCESS
-        JobService.listing(1, 13, taskId = taskId, status = status).second shouldBe 3
-        JobService.listing(1, 13, taskId = taskId, status = status, machineId = 15).second shouldBe 1
+        JobService.listing(1, 13, taskId = taskId, status = status).second shouldBe 14
+        JobService.listing(1, 13, taskId = taskId, status = status, machineId = 15).second shouldBe 2
         JobService.listing(1, 13, taskId = 4, status = status).second shouldBe 0
     }
 
@@ -119,6 +127,7 @@ class JobServiceTest : TestWithMaria({
                 job.machineId shouldBe null
                 job.hour shouldBe hr
                 job.minute shouldBe 38
+                job.runCount shouldBe 0
                 job.status shouldBe JobStatus.INIT
                 job.createTime
             }
@@ -139,6 +148,7 @@ class JobServiceTest : TestWithMaria({
             job.machineId shouldBe null
             job.status shouldBe JobStatus.INIT
             job.hour shouldBe 16
+            job.runCount shouldBe 0
             job.minute shouldBe 59
             Thread.sleep(1000)
             val jobCreateAgain = JobService.create(TaskService.findById(112)!!)
@@ -166,11 +176,11 @@ class JobServiceTest : TestWithMaria({
     }
 
     "更新作业" {
-
-        JobService.update(4, status = JobStatus.INIT, machineId = 1)
+        JobService.update(4, status = JobStatus.INIT, machineId = 1, runCount = 123)
         val job = JobService.findById(4)!!
         job.status shouldBe JobStatus.INIT
         job.machineId shouldBe 1
+        job.runCount shouldBe 123
         job.updateTime shouldNotBe "2026-01-26 23:09:37".toLocalDateTime()
 
         shouldThrow<NotFoundException> {
@@ -188,6 +198,71 @@ class JobServiceTest : TestWithMaria({
         shouldThrow<NotFoundException> {
             JobService.update(4, machineId = 247)
         }.message shouldBe "调度服务器 247 不存在或已被删除"
+    }
+
+    "Ready状态测试" {
+
+        // RUNNING 状态直接返回 false
+        JobService.isReady(JobService.findById(14)!!) shouldBe false
+
+        // READY 状态直接返回 true
+        JobService.isReady(JobService.findById(4)!!) shouldBe true
+
+        // 上游不依赖任何任务
+        JobService.isReady(JobService.findById(11)!!) shouldBe true
+
+        // 上游为 ONCE 调度
+        JobService.isReady(JobService.findById(2)!!) shouldBe true // 归属任务 411, 依赖已完成任务 419
+        JobService.isReady(JobService.findById(3)!!) shouldBe false // 归属任务 383, 依赖未完成任务 384
+
+        // 上游为 YEAR 调度
+        JobService.isReady(JobService.findById(35)!!) shouldBe true // 归属任务 289, 依赖已完成任务 282
+        JobService.isReady(JobService.findById(37)!!) shouldBe false // 归属任务 289, 依赖未完成任务 282
+
+        // 上游为 MONTH 调度
+        JobService.isReady(JobService.findById(47)!!) shouldBe true  // 归属任务 356, 依赖于已完成任务 346
+        JobService.isReady(JobService.findById(52)!!) shouldBe false  // 归属任务 356, 依赖于未完成任务 346
+
+        // 上游为 WEEK 调度
+        JobService.isReady(JobService.findById(60)!!) shouldBe true  // 归属任务 333, 依赖于已完成任务 330
+        JobService.isReady(JobService.findById(63)!!) shouldBe false  // 归属任务 333, 依赖于未完成任务 330
+
+        // 上游为 DAY 调度
+        JobService.isReady(JobService.findById(71)!!) shouldBe true  // 归属任务 442, 依赖于已完成任务 447
+        JobService.isReady(JobService.findById(73)!!) shouldBe false  // 归属任务 442, 依赖于未完成任务 447
+
+        // 上游为 HOUR 调度且当前为 HOUR 调度
+        JobService.isReady(JobService.findById(84)!!) shouldBe true  // 归属任务 117, 依赖于 22 时已完成任务 122
+        JobService.isReady(JobService.findById(88)!!) shouldBe false  // 归属任务 117, 依赖于 23 时未完成任务 122
+
+        // 上游为 HOUR 调度且当前不为 HOUR 调度
+        JobService.isReady(JobService.findById(116)!!) shouldBe true  // 归属任务 244，依赖小时级任务 218
+        JobService.isReady(JobService.findById(118)!!) shouldBe false  // 归属任务 244，依赖小时级任务 218
+    }
+
+    "可重试状态测试" {
+        // 重试次数超限
+        JobService.canRetry(5) shouldBe false
+
+        // 允许重试
+        JobService.canRetry(3) shouldBe true
+
+        // 作业状态不为 FAILED
+        JobService.canRetry(9) shouldBe false // INIT
+        JobService.canRetry(4) shouldBe false // READY
+        JobService.canRetry(14) shouldBe false // RUNNING
+        JobService.canRetry(13) shouldBe false // SUCCESS
+        JobService.canRetry(15) shouldBe false // KILLED
+
+        // 作业不存在
+        shouldThrow<NotFoundException> {
+            JobService.canRetry(351)
+        }
+
+        // job 已删除
+        shouldThrow<NotFoundException> {
+            JobService.canRetry(1)
+        }
     }
 
 }, TaskDAO, JobDAO, MachineDAO)
