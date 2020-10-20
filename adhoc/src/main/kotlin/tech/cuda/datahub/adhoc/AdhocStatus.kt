@@ -18,9 +18,6 @@ package tech.cuda.datahub.adhoc
  * @since 1.0.0
  */
 enum class AdhocStatus {
-    UNKNOWN {
-        override val isFinish = false
-    },
     NOT_START {
         override val isFinish = false
     },

@@ -56,7 +56,7 @@ abstract class AbstractSparkAdhoc : Adhoc {
                         .get(handler) as Process
                     val exit = proc.waitFor(60, TimeUnit.SECONDS)
                     when {
-                        !exit -> AdhocStatus.UNKNOWN
+                        !exit -> throw Exception()
                         proc.exitValue() == 0 -> AdhocStatus.SUCCESS
                         else -> AdhocStatus.FAILED
                     }

@@ -56,7 +56,7 @@ abstract class AbstractBashAdhoc(
                 !this.resultHandler.hasResult() -> AdhocStatus.RUNNING
                 this.resultHandler.exitValue == expectedExitValue -> AdhocStatus.SUCCESS
                 this.resultHandler.exitValue != expectedExitValue -> if (killed) AdhocStatus.KILLED else AdhocStatus.FAILED
-                else -> AdhocStatus.UNKNOWN
+                else -> throw Exception()
             }
         }
 
