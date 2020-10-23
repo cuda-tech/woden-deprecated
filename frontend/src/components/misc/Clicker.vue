@@ -8,7 +8,7 @@
     /**
      * 鼠标单击 & 双击 wrapper
      * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
-     * @since 1.0.0
+     * @since 0.1.0
      */
     export default {
         name: "Clicker",

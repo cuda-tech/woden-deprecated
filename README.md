@@ -1,4 +1,4 @@
-# Datahub
+# Woden: Workshop of Data Enhancement
 一款集成 ETL 开发、元数据管理、任务调度、数据质量监控、算法建模的数据平台
 
 ## 目录
@@ -13,6 +13,17 @@
 todo
 
 ## 安装指南
+### 系统依赖
+* hadoop 3.3.0
+* spark 3.0.0
+* java8
+
+### docker 安装
+
+### 手动安装
+
+
+### 源码安装
 todo
 
 ## 使用指南

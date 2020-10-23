@@ -1,6 +1,6 @@
 allprojects {
     group = 'tech.cuda'
-    version = '1.0.0-SNAPSHOT'
+    version = '0.1.0-SNAPSHOT'
     allprojects {
         repositories {
             maven { url 'https://maven.aliyun.com/repository/google/' }

@@ -96,7 +96,7 @@
             <Header style="height: 60px; ">
                 <Menu mode="horizontal" theme="dark" active-name="1" style="height: 60px;">
                     <span class="logo">
-                        DataHub
+                        Woden
                     </span>
                     <span style="float: right;">
                         <Submenu name="user">

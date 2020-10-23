@@ -19,7 +19,7 @@ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/ch
 
 填入
 ```
-/path/to/datahub/frontend/test/unit/jest.conf.js
+/path/to/woden/frontend/test/unit/jest.conf.js
 ```
 这样你就可以直接在 IDEA 里直接右键执行某个文件的单测而不需要去命令行里执行 jest 命令
 
@@ -29,7 +29,7 @@ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/ch
 
 将配置文件路径更新为
 ```
-/path/to/datahub/frontend/build_script/webpack.dev.conf.js
+/path/to/woden/frontend/build_script/webpack.dev.conf.js
 ```
 
 这样你就可以使用

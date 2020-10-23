@@ -1,7 +1,7 @@
 {
-    "name": "datahub-frontend",
-    "version": "1.0.0",
-    "description": "Frontend for application datahub",
+    "name": "woden-frontend",
+    "version": "0.1.0",
+    "description": "Frontend for application woden",
     "author": "Jensen Qi <jinxiu.qi@alu.hit.edu.cn>",
     "private": true,
     "scripts": {

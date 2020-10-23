@@ -61,7 +61,7 @@ describe('用户服务', () => {
                     id: 1,
                     groups: [1],
                     name: 'root',
-                    email: 'root@datahub.com',
+                    email: 'root@woden.com',
                     createTime: '2048-08-14 06:10:35',
                     updateTime: '2051-03-13 21:06:23'
                 },
@@ -69,7 +69,7 @@ describe('用户服务', () => {
                     id: 2,
                     groups: [1, 2, 5, 6, 7, 8, 9],
                     name: 'guest',
-                    email: 'guest@datahub.com',
+                    email: 'guest@woden.com',
                     createTime: '2041-02-10 19:37:55',
                     updateTime: '2042-03-23 08:54:17'
                 },
@@ -92,7 +92,7 @@ describe('用户服务', () => {
                 id: 1,
                 groups: [1],
                 name: 'root',
-                email: 'root@datahub.com',
+                email: 'root@woden.com',
                 createTime: '2048-08-14 06:10:35',
                 updateTime: '2051-03-13 21:06:23'
             });

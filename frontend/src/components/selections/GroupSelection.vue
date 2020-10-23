@@ -17,7 +17,7 @@
     /**
      * 项目组选择菜单
      * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
-     * @since 1.0.0
+     * @since 0.1.0
      */
     export default {
         name: 'GroupSelection',

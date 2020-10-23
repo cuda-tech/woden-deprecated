@@ -5,7 +5,7 @@ npm install apidoc -g
 ```
 然后生成 api 文档
 ```
-apidoc -i src/main/kotlin/tech/cuda/datahub/webserver/controller -o apidoc
+apidoc -i src/main/kotlin/tech/cuda/woden/webserver/controller -o apidoc
 ```
 
 为了方面编写文档，可以在 IDEA 新建一个模板

@@ -6,8 +6,8 @@ webpackConfig.module.rules.push({
 });
 
 module.exports = {
-    title: 'datahub 前端文档',
-    version: '1.0.0',
+    title: 'woden 前端文档',
+    version: '0.1.0',
     webpackConfig: require('./build_script/webpack.base.conf'),
     sections: [
         {

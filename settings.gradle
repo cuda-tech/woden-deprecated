@@ -1,4 +1,4 @@
-rootProject.name = 'datahub'
+rootProject.name = 'woden'
 include(':scheduler')
 include(':service')
 include(':annotation-processor')

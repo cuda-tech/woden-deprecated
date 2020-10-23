@@ -2,6 +2,7 @@ apply plugin: 'kotlin'
 
 dependencies {
     implementation project(':service')
+    implementation project(':adhoc')
     implementation "org.apache.commons:commons-exec:$commons_exec_version"
     implementation "com.github.kittinunf.fuel:fuel-jackson:$fuel_ersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
@@ -9,6 +10,7 @@ dependencies {
     implementation "javax.mail:mail:$java_mail_version"
 
     testImplementation "com.icegreen:greenmail:$green_mail_version"
+    testImplementation project(':adhoc').sourceSets.test.output
     testImplementation project(':service').sourceSets.test.output
     testImplementation project(':configuration').sourceSets.test.output
 }
