@@ -1,0 +1,4 @@
+
+```cmd
+Set-ExecutionPolicy Unrestricted
+```

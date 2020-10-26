@@ -5,7 +5,7 @@ DOWNLOAD_PATH=$1
 
 echo "下载 hadoop"
 if [[ ! -f "$DOWNLOAD_PATH/hadoop-2.7.7.tar.gz" ]];then
-    axel -n8 https://mirrors.tuna.tsinghua.edu.cn/apache/hadoop/common/hadoop-2.7.7/hadoop-2.7.7.tar.gz \
+    axel -n8 https://mirrors.tuna.tsinghua.edu.cn/apache/hadoop/common/hadoop-3.3.0/hadoop-3.3.0.tar.gz \
         --output=${DOWNLOAD_PATH}/hadoop-2.7.7.tar.gz
 fi
 
