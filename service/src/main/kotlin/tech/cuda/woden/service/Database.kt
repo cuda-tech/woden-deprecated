@@ -13,17 +13,17 @@
  */
 package tech.cuda.woden.service
 
-import com.alibaba.druid.pool.DruidDataSourceFactory
 import com.google.common.base.Charsets
 import com.google.common.io.Resources
-import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.global.connectGlobally
+import me.liuwj.ktorm.global.global
 import me.liuwj.ktorm.schema.Table
 import org.apache.log4j.Logger
 import org.reflections.Reflections
-import tech.cuda.woden.config.database.DatabaseConfig
+import tech.cuda.woden.config.Woden
 import tech.cuda.woden.service.exception.OperationNotAllowException
+import javax.sql.DataSource
 
 
 /**
@@ -35,7 +35,6 @@ object Database {
     private const val lightBlue = "\u001B[1;94m"
     private const val end = "\u001B[m"
     private lateinit var db: Database
-    private lateinit var dbConfig: DatabaseConfig
 
     /**
      * 通过反射获取 dao 下的所有类
@@ -45,27 +44,13 @@ object Database {
     }
 
 
-    fun connect(dbConfig: DatabaseConfig) {
-        this.dbConfig = dbConfig
-        try {
-            this.db = Database.connectGlobally(DruidDataSourceFactory.createDataSource(dbConfig.properties))
-        } catch (e: MySQLSyntaxErrorException) {
-            if (e.message == "Unknown database '${dbConfig.mysql.dbName}'") {
-                Database.connectGlobally(DruidDataSourceFactory.createDataSource(dbConfig.dbNotExistsproperties))
-                    .useConnection { conn ->
-                        conn.prepareStatement("create database if not exists ${dbConfig.mysql.dbName} default character set = 'utf8'")
-                            .use { it.execute() }
-                    }
-                this.db = Database.connectGlobally(DruidDataSourceFactory.createDataSource(dbConfig.properties))
-            } else {
-                throw e
-            }
-        }
+    fun connect(dataSource: DataSource) {
+        this.db = Database.connectGlobally(dataSource)
         build()
     }
 
     private fun checkConnected(block: () -> Unit) {
-        if (!this::db.isInitialized || !this::dbConfig.isInitialized) {
+        if (!this::db.isInitialized || !this::db.isInitialized) {
             throw OperationNotAllowException("database disconnected")
         } else {
             block()
@@ -77,17 +62,18 @@ object Database {
      */
     private fun build() = checkConnected {
         db.useConnection { conn ->
-            logger.info("create database ${dbConfig.mysql.dbName}")
-            conn.prepareStatement("create database if not exists ${dbConfig.mysql.dbName} default character set = 'utf8'").use { it.execute() }
-            logger.info("database ${dbConfig.mysql.dbName} have been created")
-            conn.catalog = dbConfig.mysql.dbName
+            val dbName = conn.catalog
+            logger.info("create database $dbName")
+            conn.prepareStatement("create database if not exists $dbName default character set = 'utf8'").use { it.execute() }
+            logger.info("database $dbName have been created")
+            conn.catalog = dbName
             models.forEach { table ->
                 val ddl = Class.forName("${table::class.qualifiedName}DDLKt")
                     .getMethod("getDDL", table::class.java)
                     .invoke(null, table) as String // kotlin 的扩展属性本质上是静态方法
                 logger.info("create table for class ${table.javaClass.name}:\n" + lightBlue + ddl + end)
                 conn.prepareStatement(ddl).use { it.execute() }
-                logger.info("table ${dbConfig.mysql.dbName}.${table.tableName} have been created")
+                logger.info("table $dbName.${table.tableName} have been created")
             }
         }
     }
@@ -97,21 +83,24 @@ object Database {
      */
     private fun clean() = checkConnected {
         db.useConnection { conn ->
+            val dbName = conn.catalog
             models.forEach { table ->
                 logger.info("drop table for class ${table.javaClass.name}")
-                conn.prepareStatement("drop table if exists ${dbConfig.mysql.dbName}.${table.tableName}").use { it.execute() }
-                logger.info("table ${dbConfig.mysql.dbName}.${table.tableName} have been drop")
+                conn.prepareStatement("drop table if exists $dbName.${table.tableName}").use { it.execute() }
+                logger.info("table $dbName.${table.tableName} have been drop")
             }
-            logger.info("drop database ${dbConfig.mysql.dbName}")
-            conn.prepareStatement("drop database if exists ${dbConfig.mysql.dbName}").use { it.execute() }
-            logger.info("database ${dbConfig.mysql.dbName} have been drop")
+            logger.info("drop database $dbName")
+            conn.prepareStatement("drop database if exists $dbName").use { it.execute() }
+            logger.info("database $dbName have been drop")
         }
     }
 
     /**
      * 清空所有表，然后重新建表
      */
-    fun rebuild() = clean().also { build() }
+    fun rebuild() = clean().also {
+        build()
+    }
 
     /**
      * 寻找当前模块 resource 目录下与[tableName]的表名同名的 txt 文件，然后导入数据库
@@ -120,7 +109,7 @@ object Database {
     fun mock(tableName: String) = checkConnected {
         db.useConnection { conn ->
             val filePath = this.javaClass.classLoader.getResource("tables/$tableName.txt")!!.path
-            val meta = conn.prepareStatement("select * from $tableName").metaData
+            val meta = conn.prepareStatement("select * from $tableName").use { it.metaData }
             val types = (1..meta.columnCount).map { meta.getColumnTypeName(it)!! }
 
             val file = Resources.readLines(java.io.File(filePath).toURI().toURL(), Charsets.UTF_8)

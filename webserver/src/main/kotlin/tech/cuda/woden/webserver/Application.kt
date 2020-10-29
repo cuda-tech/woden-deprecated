@@ -13,13 +13,11 @@
  */
 package tech.cuda.woden.webserver
 
-import com.alibaba.druid.pool.DruidDataSourceFactory
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.google.common.io.Resources
-import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.jackson.KtormModule
 import org.apache.log4j.Logger
 import org.springframework.boot.Banner
@@ -30,9 +28,9 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import java.io.FileReader
+import tech.cuda.woden.config.Woden
+import tech.cuda.woden.service.Database
 import java.time.format.DateTimeFormatter
-import java.util.*
 import javax.servlet.*
 import javax.servlet.http.HttpServletRequest
 
@@ -88,7 +86,6 @@ fun main(args: Array<String>) {
         setBannerMode(Banner.Mode.OFF)
         run(*args)
         Logger.getLogger("Woden").info(logo)
-        val props = Properties().also { it.load(FileReader(Resources.getResource("druid.properties").file)) }
-        Database.connect(DruidDataSourceFactory.createDataSource(props))
+        Database.connect(Woden.datasource)
     }
 }

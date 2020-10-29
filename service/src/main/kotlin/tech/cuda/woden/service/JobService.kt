@@ -95,7 +95,7 @@ object JobService : Service(JobDAO) {
             throw OperationNotAllowException(I18N.task, task.id, I18N.invalid)
         }
         if (!task.format.isValid(task.period)) {
-            throw OperationNotAllowException(I18N.scheduleFormat, I18N.illegal)
+            throw OperationNotAllowException(I18N.task, task.id, I18N.scheduleFormat, I18N.illegal)
         }
         // 只有当天需要调度的任务才会生成作业, 如果当天的作业已生成，则跳过创建，直接返回
         if (task.format.shouldSchedule(task.period)) {

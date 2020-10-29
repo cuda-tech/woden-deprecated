@@ -11,23 +11,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.woden.config.database
+package tech.cuda.woden.config.datasource
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonRootName
+import com.zaxxer.hikari.HikariConfig
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-@JsonRootName("mysql")
-data class MySQLConfig(
+@JsonRootName("datasource")
+data class DataSourceConfig(
+    val name: String,
     val username: String,
-    val password: String?,
+    val password: String,
     val host: String,
     val port: Int,
-    val encoding: String,
-
-    @JsonProperty("db")
-    val dbName: String
-)
+    val dbName: String,
+    val minimumIdle: Int,
+    val maximumPoolSize: Int
+) {
+    @JsonIgnore
+    val hikariConfig = HikariConfig().also {
+        it.jdbcUrl = "jdbc:mysql://${host}:${port}/${dbName}?characterEncoding=UTF-8"
+        it.poolName = name
+        it.username = username
+        it.password = password
+        it.minimumIdle = minimumIdle
+        it.maximumPoolSize = maximumPoolSize
+    }
+}

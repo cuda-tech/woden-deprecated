@@ -6,11 +6,9 @@ dependencies {
     compile "me.liuwj.ktorm:ktorm-jackson:$ktorm_version"
     compile "me.liuwj.ktorm:ktorm-support-mysql:$ktorm_version"
     compile "me.liuwj.ktorm:ktorm-global:$ktorm_version"
-    compile "com.alibaba:druid:$druid_version"
     compile project(':i18n')
     compile project(':configuration')
 
-    implementation "mysql:mysql-connector-java:$mysql_connector_version"
     implementation "com.auth0:java-jwt:$jwt_version"
     implementation "org.reflections:reflections:$reflections_version"
     implementation "org.apache.velocity:velocity-engine-core:$velocity_version"

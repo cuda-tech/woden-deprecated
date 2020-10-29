@@ -13,40 +13,47 @@
  */
 package tech.cuda.woden.config
 
+import com.zaxxer.hikari.HikariDataSource
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldEndWith
+import io.kotest.matchers.string.shouldStartWith
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
 class WodenConfigTest : StringSpec({
-    "database config" {
-        Woden.database.druid.name shouldBe "WodenServiceTest"
-        Woden.database.druid.initialSize shouldBe 1
-        Woden.database.druid.maxActive shouldBe null
-        Woden.database.druid.minIdle shouldBe null
-        Woden.database.druid.maxWait shouldBe null
-        Woden.database.druid.connectionInitSqls shouldBe null
-        Woden.database.druid.poolPreparedStatements shouldBe null
-        Woden.database.druid.maxPoolPreparedStatementPerConnectionSize shouldBe null
-        Woden.database.druid.validationQuery shouldBe null
-        Woden.database.druid.validationQueryTimeout shouldBe null
-        Woden.database.druid.testOnBorrow shouldBe null
-        Woden.database.druid.testOnReturn shouldBe null
-        Woden.database.druid.testWhileIdle shouldBe null
-        Woden.database.druid.timeBetweenEvictionRunsMillis shouldBe null
-        Woden.database.druid.keepAlive shouldBe null
-        Woden.database.druid.minEvictableIdleTimeMillis shouldBe null
-        Woden.database.druid.filters shouldBe null
-
-        Woden.database.mysql.username shouldBe "root"
-        Woden.database.mysql.password shouldBe "root"
-        Woden.database.mysql.host shouldBe "localhost"
-        Woden.database.mysql.port shouldBe 3306
-        Woden.database.mysql.encoding shouldBe "UTF-8"
-        Woden.database.mysql.dbName shouldBe "woden"
+    "datasource config" {
+        DataSourceMocker.mock()
+        val datasource = Woden.datasource as HikariDataSource
+        datasource.jdbcUrl shouldStartWith "jdbc:mysql://localhost:"
+        datasource.jdbcUrl shouldEndWith "/test?characterEncoding=UTF-8"
+        datasource.username shouldBe "root"
+        datasource.password shouldBe null
+        datasource.isAutoCommit shouldBe true
+        datasource.connectionTimeout shouldBe 30000
+        datasource.idleTimeout shouldBe 600000
+        datasource.maxLifetime shouldBe 1800000
+        datasource.connectionTestQuery shouldBe null
+        datasource.minimumIdle shouldBe 10
+        datasource.maximumPoolSize shouldBe 20
+        datasource.metricRegistry shouldBe null
+        datasource.healthCheckRegistry shouldBe null
+        datasource.initializationFailTimeout shouldBe 1
+        datasource.isIsolateInternalQueries shouldBe false
+        datasource.isAllowPoolSuspension shouldBe false
+        datasource.isReadOnly shouldBe false
+        datasource.isRegisterMbeans shouldBe false
+        datasource.catalog shouldBe null
+        datasource.connectionInitSql shouldBe null
+        datasource.driverClassName shouldBe null
+        datasource.validationTimeout shouldBe 5000
+        datasource.leakDetectionThreshold shouldBe 0
+        datasource.threadFactory shouldBe null
+        datasource.scheduledExecutor shouldBe null
+        DataSourceMocker.unMock()
     }
 
     "email config" {

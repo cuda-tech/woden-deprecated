@@ -13,8 +13,6 @@
  */
 package tech.cuda.woden.webserver
 
-import ch.vorburger.mariadb4j.DB
-import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
@@ -34,6 +32,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import tech.cuda.woden.config.DataSourceMocker
 import tech.cuda.woden.config.Woden
 import tech.cuda.woden.service.Database
 import java.time.LocalDateTime
@@ -62,21 +61,13 @@ open class RestfulTestToolbox(private vararg val tables: String = arrayOf()) : A
 
     @BeforeAll
     fun beforeAll() {
-        val db = DB.newEmbeddedDB(DBConfigurationBuilder.newBuilder().also {
-            it.port = 0
-            it.baseDir = System.getProperty("java.io.tmpdir") + this.javaClass.simpleName
-        }.build()).also { it.start() }
-        mockkObject(Woden.database)
-        every { Woden.database.properties } returns Properties().also { props ->
-            props["url"] = "jdbc:mysql://localhost:${db.configuration.port}/?characterEncoding=UTF-8"
-            props["username"] = "root"
-        }
-        Database.connect(Woden.database)
+        DataSourceMocker.mock()
+        Database.connect(Woden.datasource)
     }
 
     @AfterAll
     fun afterAll() {
-        unmockkObject(Woden.database)
+        DataSourceMocker.unMock()
     }
 
     @BeforeEach

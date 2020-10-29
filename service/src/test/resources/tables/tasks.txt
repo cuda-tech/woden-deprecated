@@ -216,7 +216,7 @@ id	mirror_id	group_id	name	owners	args	is_soft_fail	period	format	queue	priority
 215	33	19	yjdxijvq	[]	{}	0	HOUR	{"year": null, "month": null, "day": null, "weekday": null, "hour": null, "minute": 39}	vrhhqehr	LOW	24	19	{}	[]	0	24	1	0	2048-06-04 08:48:17	2050-04-17 10:38:00
 216	189	9	bheducph	[61]	{}	0	HOUR	{"year": null, "month": null, "day": null, "weekday": null, "hour": null, "minute": 13}	miqenccs	MIDDLE	30	12	{}	[]	1	14	1	0	2017-10-01 12:45:11	2018-02-03 03:10:12
 217	11	24	liptxvjo	[134,116,81]	{}	0	YEAR	{"year": null, "month": 1, "day": 18, "weekday": null, "hour": 4, "minute": 46}	chjstpjv	HIGH	25	31	{}	[]	2	42	1	0	2027-05-08 10:10:40	2028-06-22 02:27:35
-218	253	15	vxkxheky	[168,19]	{}	0	HOUR	{"year": 2010, "month": 7, "day": 17, "weekday": null, "hour": 22, "minute": 54}	vtzmuyjs	HIGH	18	51	{}	[244]	0	11	1	0	2044-02-20 16:55:27	2045-10-22 18:14:52
+218	253	15	vxkxheky	[168,19]	{}	0	HOUR	{"year": null, "month": null, "day": null, "weekday": null, "hour": null, "minute": 54}	vtzmuyjs	HIGH	18	51	{}	[244]	0	11	1	0	2044-02-20 16:55:27	2045-10-22 18:14:52
 219	0	37	gjqaizmk	[118,140,43,129]	{}	0	ONCE	{"year": 2014, "month": 11, "day": 15, "weekday": null, "hour": 2, "minute": 5}	fmyxfbom	HIGH	9	13	{}	[]	0	33	1	0	2024-05-11 06:27:13	2025-11-30 23:20:45
 220	203	8	qynkklnl	[119,172,103,66]	{}	0	WEEK	{"year": null, "month": null, "day": null, "weekday": 2, "hour": 2, "minute": 43}	afywmmvd	VERY_HIGH	2	3	{}	[]	0	24	0	1	2044-05-14 03:04:09	2046-11-21 20:41:54
 221	296	20	fcrujdpr	[174,90,96,28]	{}	0	HOUR	{"year": null, "month": null, "day": null, "weekday": null, "hour": null, "minute": 0}	uhbwoloh	VERY_HIGH	59	8	{}	[]	3	43	1	1	2039-01-07 14:24:00	2040-04-12 19:34:17

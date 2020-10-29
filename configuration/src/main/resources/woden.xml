@@ -1,35 +1,14 @@
 <woden>
-    <database>
-        <mysql>
-            <username>root</username>
-            <password>root</password>
-            <host>localhost</host>
-            <port>3306</port>
-            <encoding>UTF-8</encoding>
-            <db>woden</db>
-        </mysql>
-
-        <druid>
-            <name>WodenService</name>
-            <initial-size>1</initial-size>
-            <max-active/>
-            <min-active/>
-            <max-wait/>
-            <connection-init-sqls/>
-            <pool-prepared-statements/>
-            <max-pool-prepared-statement-per-connection-size/>
-            <validation-query/>
-            <validation-query-timeout/>
-            <test-on-borrow/>
-            <test-on-return/>
-            <test-while-idle/>
-            <time-between-eviction-runs-millis/>
-            <keep-alive/>
-            <min-evictable-idle-time-millis/>
-            <filters/>
-        </druid>
-
-    </database>
+    <datasource>
+        <name>WodenService</name>
+        <username>root</username>
+        <password>root</password>
+        <host>localhost</host>
+        <port>3306</port>
+        <dbName>woden</dbName>
+        <minimumIdle>10</minimumIdle>
+        <maximumPoolSize>10</maximumPoolSize>
+    </datasource>
     <email>
         <!-- SMTP host, e.g smtp.host.com-->
         <host>localhost</host>

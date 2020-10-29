@@ -13,17 +13,16 @@
  */
 package tech.cuda.woden.scheduler
 
-import ch.vorburger.mariadb4j.DB
-import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import io.kotest.core.spec.style.AnnotationSpec
 import io.mockk.*
+import tech.cuda.woden.config.DataSourceMocker
 import tech.cuda.woden.config.Woden
 import tech.cuda.woden.scheduler.util.MachineUtil
 import tech.cuda.woden.service.Database
 import tech.cuda.woden.service.MachineService
 import tech.cuda.woden.service.exception.NotFoundException
-import java.time.*
-import java.util.*
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 /**
@@ -34,21 +33,13 @@ abstract class TestWithDistribution(private vararg val tables: String = arrayOf(
 
     @BeforeAll
     fun beforeAll() {
-        val db = DB.newEmbeddedDB(DBConfigurationBuilder.newBuilder().also {
-            it.port = 0
-            it.baseDir = System.getProperty("java.io.tmpdir") + this.javaClass.simpleName
-        }.build()).also { it.start() }
-        mockkObject(Woden.database)
-        every { Woden.database.properties } returns Properties().also { props ->
-            props["url"] = "jdbc:mysql://localhost:${db.configuration.port}/?characterEncoding=UTF-8"
-            props["username"] = "root"
-        }
-        Database.connect(Woden.database)
+        DataSourceMocker.mock()
+        Database.connect(Woden.datasource)
     }
 
     @AfterAll
     fun afterAll() {
-        unmockkObject(Woden.database)
+        DataSourceMocker.unMock()
     }
 
     @BeforeEach

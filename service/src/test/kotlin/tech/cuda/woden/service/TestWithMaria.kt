@@ -13,15 +13,12 @@
  */
 package tech.cuda.woden.service
 
-import ch.vorburger.mariadb4j.DB
-import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestCase
-import io.mockk.*
 import me.liuwj.ktorm.schema.Table
+import tech.cuda.woden.config.DataSourceMocker
 import tech.cuda.woden.config.Woden
-import java.util.*
 
 /**
  * 基于 maria 数据库的测试套件，所有测试用例执行前启动 maria 数据库
@@ -34,22 +31,14 @@ abstract class TestWithMaria(body: StringSpec.() -> Unit = {}, private vararg va
 
     override fun beforeSpec(spec: Spec) {
         super.beforeSpec(spec)
-        val db = DB.newEmbeddedDB(DBConfigurationBuilder.newBuilder().also {
-            it.port = 0
-            it.baseDir = System.getProperty("java.io.tmpdir") + this.javaClass.simpleName
-        }.build()).also { it.start() }
+        DataSourceMocker.mock()
+        Database.connect(Woden.datasource)
 
-        mockkObject(Woden.database)
-        every { Woden.database.properties } returns Properties().also { props ->
-            props["url"] = "jdbc:mysql://localhost:${db.configuration.port}/?characterEncoding=UTF-8"
-            props["username"] = "root"
-        }
-        Database.connect(Woden.database)
     }
 
     override fun afterSpec(spec: Spec) {
         super.afterSpec(spec)
-        unmockkObject(Woden.database)
+        DataSourceMocker.unMock()
     }
 
 

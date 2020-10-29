@@ -173,7 +173,7 @@ class JobServiceTest : TestWithMaria({
                 children = setOf(), retries = 0, retryDelay = 0, isValid = true, createTime = LocalDateTime.now(),
                 updateTime = LocalDateTime.now()
             ))
-        }.message shouldBe "调度时间格式 非法"
+        }.message shouldBe "调度任务 1 调度时间格式 非法"
     }
 
     "更新作业" {
