@@ -100,27 +100,21 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
         logger.info("$className started")
     }
 
-    fun await() {
+    fun join() {
         if (this::job.isInitialized) {
-            runBlocking {
-                job.await()
+            while (!job.isCancelled && !job.isCompleted) {
+                Thread.sleep(1000)
             }
         } else {
             logger.error("try to join a not started $className")
         }
     }
 
-    fun cancelAndAwait() {
+    fun cancel() {
         if (this::job.isInitialized) {
-            try {
-                runBlocking {
-                    delay(1000)
-                    job.cancel()
-                    job.await()
-                    onDestroyed()
-                }
-            } catch (e: CancellationException) {
-                logger.info("cancel $className")
+            runBlocking {
+                job.cancel()
+                job.await()
             }
         } else {
             logger.error("try to cancel a not started $className")

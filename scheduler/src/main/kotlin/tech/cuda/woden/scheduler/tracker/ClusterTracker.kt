@@ -26,7 +26,7 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class ClusterTracker(private val machine: MachineDTO, private val afterStarted: () -> Unit = {}) : Tracker() {
+class ClusterTracker(private val machine: MachineDTO, private val afterStarted: (ClusterTracker) -> Unit = {}) : Tracker() {
 
     private val maxHeartbeatTimeout = 30L
 
@@ -81,7 +81,7 @@ class ClusterTracker(private val machine: MachineDTO, private val afterStarted: 
 
     override fun onStarted() {
         onHeartBeat()
-        afterStarted()
+        afterStarted(this)
     }
 
     override fun onHeartBeat() = Database.global.useTransaction {

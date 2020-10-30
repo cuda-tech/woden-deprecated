@@ -23,7 +23,7 @@ import tech.cuda.woden.service.dto.MachineDTO
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class MachineTracker(private val afterStarted: (MachineDTO) -> Unit = {}) : Tracker() {
+class MachineTracker(private val afterStarted: (MachineTracker) -> Unit = {}) : Tracker() {
 
     lateinit var machine: MachineDTO
 
@@ -46,7 +46,7 @@ class MachineTracker(private val afterStarted: (MachineDTO) -> Unit = {}) : Trac
             memLoad = loadInfo.memory,
             diskUsage = loadInfo.diskUsage
         )
-        afterStarted(machine)
+        afterStarted(this)
     }
 
     /**

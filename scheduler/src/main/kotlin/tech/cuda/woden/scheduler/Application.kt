@@ -25,12 +25,12 @@ import tech.cuda.woden.service.Database
  * @since 0.1.0
  */
 fun main() {
-    Database.connect(Woden.database)
+    Database.connect(Woden.datasource)
     val machineTracker = MachineTracker(afterStarted = {
-        ClusterTracker(it).start()
+        ClusterTracker(it.machine).start()
         JobTracker().start()
-        InstanceTracker(it).start()
+        InstanceTracker(it.machine).start()
     })
     machineTracker.start()
-    machineTracker.await()
+    machineTracker.join()
 }

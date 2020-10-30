@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class InstanceTracker(
     private val machine: MachineDTO,
-    private val afterStarted: () -> Unit = {}
+    private val afterStarted: (InstanceTracker) -> Unit = {}
 ) : Tracker() {
 
     // 需要使用线程安全的容器，避免 forEach 的时候因 remove 而产生 ConcurrentModificationException
@@ -104,7 +104,7 @@ class InstanceTracker(
 
     override fun onStarted() {
         onHeartBeat()
-        afterStarted()
+        afterStarted(this)
     }
 
     override fun onDestroyed() {

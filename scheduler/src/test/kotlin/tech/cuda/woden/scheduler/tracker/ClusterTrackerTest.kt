@@ -34,9 +34,10 @@ class ClusterTrackerTest : TestWithDistribution("machines") {
             val (masters, count) = MachineService.listingActiveMaster()
             count shouldBe 1
             masters.first() shouldBe MachineService.findById(58)!!
+            it.cancel()
         })
         tracker.start()
-        tracker.cancelAndAwait()
+        tracker.join()
         MachineService.findById(1)!!.role shouldBe MachineRole.SLAVE
     }
 
@@ -45,9 +46,10 @@ class ClusterTrackerTest : TestWithDistribution("machines") {
         MachineService.listingActiveMaster().second shouldBe 3
         val tracker = ClusterTracker(MachineService.findById(1)!!, afterStarted = {
             MachineService.listingActiveMaster().second shouldBe 1
+            it.cancel()
         })
         tracker.start()
-        tracker.cancelAndAwait()
+        tracker.join()
     }
 
     @Test
@@ -56,8 +58,9 @@ class ClusterTrackerTest : TestWithDistribution("machines") {
         MachineService.listingActiveSlave().second shouldBe 156
         val tracker = ClusterTracker(MachineService.findById(58)!!, afterStarted = {
             MachineService.listingActiveSlave().second shouldBe 102 + 3 // 原有的 102 个活跃 slave + 3 个降级的 master
+            it.cancel()
         })
         tracker.start()
-        tracker.cancelAndAwait()
+        tracker.join()
     }
 }
