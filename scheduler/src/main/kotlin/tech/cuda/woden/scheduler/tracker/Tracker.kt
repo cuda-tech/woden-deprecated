@@ -29,24 +29,29 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
     protected val logger: Logger = Logger.getLogger(this::class.java)
     private val className: String get() = this.javaClass.simpleName
     private val heartbeat = 500L
-    private lateinit var job: Deferred<Unit>
+    private lateinit var job: Deferred<Unit> // 因为要捕获 AssertionError，因此需要使用 Deferred
     private lateinit var datetimeSnapshot: LocalDateTime
+    private var alive = true
 
     private fun dealWithHourChange(current: LocalDateTime) {
-        if (current.hour != datetimeSnapshot.hour) {
+        if (alive && current.hour != datetimeSnapshot.hour) {
             onHourChange()
             logger.info("hour change")
         }
     }
 
     private fun dealWithDateChange(current: LocalDateTime) {
-        if (current.toLocalDate().isAfter(datetimeSnapshot.toLocalDate())) {
+        if (alive && current.toLocalDate().isAfter(datetimeSnapshot.toLocalDate())) {
             onDateChange()
             logger.info("day change")
         }
     }
 
-    private fun dealWithHeartBeat() = onHeartBeat()
+    private fun dealWithHeartBeat() {
+        if (alive) {
+            onHeartBeat()
+        }
+    }
 
     /**
      * 分数表达式
@@ -75,7 +80,7 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
             try {
                 onStarted()
                 datetimeSnapshot = LocalDateTime.now()
-                while (true) {
+                while (alive) {
                     val current = LocalDateTime.now()
                     dealWithDateChange(current)
                     dealWithHourChange(current)
@@ -86,8 +91,7 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
                 }
             } catch (exception: Throwable) {
                 when (exception) {
-                    // 不捕获由协程取消引起的 CancellationException 和单测引起的 AssertionError
-                    is CancellationException, is AssertionError -> throw exception
+                    is AssertionError -> throw exception // 不捕获由单测引起的 AssertionError
                     else -> {
                         logger.error(exception.message)
                         exception.printStackTrace()
@@ -101,9 +105,9 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
     }
 
     fun join() {
-        if (this::job.isInitialized) {
-            while (!job.isCancelled && !job.isCompleted) {
-                Thread.sleep(1000)
+        if (this::job.isInitialized && !job.isCompleted) {
+            runBlocking {
+                job.await()
             }
         } else {
             logger.error("try to join a not started $className")
@@ -111,13 +115,6 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
     }
 
     fun cancel() {
-        if (this::job.isInitialized) {
-            runBlocking {
-                job.cancel()
-                job.await()
-            }
-        } else {
-            logger.error("try to cancel a not started $className")
-        }
+        alive = false
     }
 }
