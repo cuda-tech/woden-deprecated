@@ -71,12 +71,10 @@ class BashAdhocTest : AnnotationSpec() {
         job.start()
         do {
             Thread.sleep(1000)
-        } while (job.status == AdhocStatus.NOT_START)
+        } while (job.status == AdhocStatus.NOT_START || !job.output.contains("hello"))
         job.kill()
-        println("killed")
         job.join()
         job.status shouldBe AdhocStatus.KILLED
-        println(job.output)
         job.output shouldContain "hello\n"
         job.output shouldNotContain "world"
     }
