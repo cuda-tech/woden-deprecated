@@ -1,10 +1,5 @@
 
 # 前端开发环境配置
-* chromedriver
-```shell
-npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
-```
-
 * 安装 jest 支持
 
 在 IDEA 里, File -> Settings -> Languages & Frameworks -> JavaScript -> Libraries
