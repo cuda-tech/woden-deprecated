@@ -3,8 +3,8 @@ allprojects {
     version = '0.1.0-SNAPSHOT'
     allprojects {
         repositories {
-            maven { url 'https://maven.aliyun.com/repository/google/' }
-            maven { url 'https://maven.aliyun.com/repository/jcenter/' }
+            maven { url 'https://archiva-maven-storage-prod.oss-cn-beijing.aliyuncs.com/repository/google/' }
+            maven { url 'https://archiva-maven-storage-prod.oss-cn-beijing.aliyuncs.com/repository/jcenter/' }
             maven { url 'http://conjars.org/repo' }
             jcenter()
         }
