@@ -31,14 +31,19 @@ import javax.lang.model.element.TypeElement
  */
 @AutoService(Processor::class)
 @SupportedSourceVersion(value = SourceVersion.RELEASE_8)
-@SupportedAnnotationTypes("tech.cuda.woden.annotation.pojo.DTO")
 @SupportedOptions(DTOProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME)
 class DTOProcessor : AbstractProcessor() {
     companion object {
         const val KAPT_KOTLIN_GENERATED_OPTION_NAME = "kapt.kotlin.generated"
     }
 
+    private val isUnitTest = System.getProperty("WODEN_UNITTEST") == "true"
+
     private lateinit var trees: JavacTrees
+
+    override fun getSupportedAnnotationTypes(): MutableSet<String> {
+        return mutableSetOf(DTO::class.java.canonicalName)
+    }
 
     override fun init(env: ProcessingEnvironment) = super.init(env).also {
         with(env as JavacProcessingEnvironment) {
@@ -49,30 +54,37 @@ class DTOProcessor : AbstractProcessor() {
     override fun process(annotations: MutableSet<out TypeElement>?, env: RoundEnvironment): Boolean {
         env.getElementsAnnotatedWith(DTO::class.java).forEach { elem ->
             elem as Symbol.ClassSymbol
-            val po = elem.rawAttributes.filter {
-                it.type.toString() == "tech.cuda.woden.annotation.pojo.DTO"
-            }.first().values.first().snd.toString().replace(".class", "")
+            val poCanonicalName = elem.rawAttributes.first {
+                it.type.toString() == DTO::class.java.canonicalName
+            }.values.first().snd.toString().replace(".class", "")
 
             trees.getTree(elem).accept(object : TreeTranslator() {
                 override fun visitClassDef(clzz: JCTree.JCClassDecl) {
                     super.visitClassDef(clzz)
-                    val names = clzz.defs.asSequence()
+                    val neededMembers = clzz.defs.asSequence()
                         .filter { it.tag.name == "VARDEF" }
                         .map {
-                            val name = (it as JCTree.JCVariableDecl).name.toString()
-                            "$name = this.$name"
-                        }.joinToString(",")
+                            val neededMember = (it as JCTree.JCVariableDecl).name.toString()
+                            "$neededMember = this.$neededMember"
+                        }.joinToString(",\n    ")
 
-                    File(processingEnv.options[DDLProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME], "${clzz.name}Util.kt").apply {
-                        parentFile.mkdirs()
-                        writeText("""
-                        package tech.cuda.woden.service.dto
-                        import $po
-                        import tech.cuda.woden.service.dto.${clzz.name}
-                        internal fun $po.to${clzz.name}() = ${clzz.name}($names)
-                    """.trimIndent())
+                    val extendFunction = """
+                        |package ${elem.packge()}
+                        |import $poCanonicalName
+                        |import ${elem.packge()}.${clzz.name}
+                        |internal fun $poCanonicalName.to${clzz.name}() = ${clzz.name}(
+                        |    $neededMembers
+                        |)
+                    """.trimMargin()
+
+                    if (isUnitTest) {
+                        processingEnv.messager.printMessage(javax.tools.Diagnostic.Kind.NOTE, extendFunction)
+                    } else {
+                        File(processingEnv.options[DDLProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME], "${clzz.name}Util.kt").apply {
+                            parentFile.mkdirs()
+                            writeText(extendFunction)
+                        }
                     }
-
                 }
             })
         }

@@ -23,6 +23,7 @@ import com.sun.tools.javac.tree.TreeTranslator
 import com.sun.tools.javac.util.Name
 import org.apache.commons.lang3.StringEscapeUtils
 import java.io.File
+import java.io.FileNotFoundException
 import java.lang.Exception
 import java.nio.charset.Charset
 import javax.annotation.processing.*
@@ -38,14 +39,19 @@ import javax.lang.model.element.TypeElement
  */
 @AutoService(Processor::class)
 @SupportedSourceVersion(value = SourceVersion.RELEASE_8)
-@SupportedAnnotationTypes("tech.cuda.woden.annotation.mysql.STORE_IN_MYSQL")
 @SupportedOptions(DDLProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME)
 class DDLProcessor : AbstractProcessor() {
     companion object {
         const val KAPT_KOTLIN_GENERATED_OPTION_NAME = "kapt.kotlin.generated"
     }
 
+    private val isUnitTest = System.getProperty("WODEN_UNITTEST") == "true"
+
     private lateinit var trees: JavacTrees
+
+    override fun getSupportedAnnotationTypes(): MutableSet<String> {
+        return mutableSetOf(STORE_IN_MYSQL::class.java.canonicalName)
+    }
 
     override fun init(env: ProcessingEnvironment) = super.init(env).also {
         with(env as JavacProcessingEnvironment) {
@@ -59,10 +65,17 @@ class DDLProcessor : AbstractProcessor() {
      * 所以这里用 quick & dirty 的方法，直接读取源文件，正则提取出表名 & 列名
      */
     private fun Symbol.ClassSymbol.sourceCode(): String {
-        val path = this.sourcefile.toUri().path
-            .replace("build/tmp/kapt3/stubs/main", "src/main/kotlin")
-            .replace(".java", ".kt")
-        return Files.readLines(File(path), Charset.defaultCharset()).joinToString("\n")
+        return if (isUnitTest) { // 单测阶段的源文件
+            val path = this.sourcefile.toUri().path.replace("\\", "/")
+            val fileName = path.split("/").last().replace(".java", ".kt")
+            val prefix = path.split("/kapt/stubs").first()
+            Files.readLines(File("$prefix/sources/$fileName"), Charset.defaultCharset()).joinToString("\n")
+        } else { // 真实编译的源文件
+            val path = this.sourcefile.toUri().path
+                .replace("build/tmp/kapt3/stubs/main", "src/main/kotlin")
+                .replace(".java", ".kt")
+            Files.readLines(File(path), Charset.defaultCharset()).joinToString("\n")
+        }
     }
 
     private fun String.tableName(className: Name): String {
@@ -163,15 +176,19 @@ class DDLProcessor : AbstractProcessor() {
                             ).joinToString(" ")
                         }.joinToString(",\n", "\"\"\"create table if not exists $tableName(\n", "\n)default charset=utf8mb4\"\"\"")
 
-                    // 生成扩展属性
-                    File(processingEnv.options[KAPT_KOTLIN_GENERATED_OPTION_NAME], "${clzz.name}DDL.kt").apply {
-                        parentFile.mkdirs()
-                        writeText("""
-                        package tech.cuda.woden.service.dao
-                        import tech.cuda.woden.service.dao.${clzz.name}
-                        internal val ${clzz.name}.DDL: String
-                            get() = $ddl
-                    """.trimIndent())
+                    if (isUnitTest) {
+                        processingEnv.messager.printMessage(javax.tools.Diagnostic.Kind.NOTE, "\n" + ddl.replace("\"\"\"", ""))
+                    } else {
+                        // 生成扩展属性
+                        File(processingEnv.options[KAPT_KOTLIN_GENERATED_OPTION_NAME], "${clzz.name}DDL.kt").apply {
+                            parentFile.mkdirs()
+                            writeText("""
+                                package ${elem.packge()}
+                                import ${elem.packge()}.${clzz.name}
+                                internal val ${clzz.name}.DDL: String
+                                    get() = $ddl
+                            """.trimIndent())
+                        }
                     }
                 }
             })

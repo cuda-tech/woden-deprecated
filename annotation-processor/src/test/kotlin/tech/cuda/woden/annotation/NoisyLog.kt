@@ -11,12 +11,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.woden.annotation.mysql
+package tech.cuda.woden.annotation
+
+import java.io.PrintStream
 
 /**
+ * 关闭单测期间编译产生的错误日志
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-@Target(AnnotationTarget.PROPERTY)
-@Retention(value = AnnotationRetention.SOURCE)
-annotation class TINYBLOB
+object NoisyLog {
+    fun shutUp(block: () -> Unit) {
+        val stdout = System.out
+        val tempFile = createTempFile("tmp_", "_compile.log")
+        System.setProperty("WODEN_UNITTEST", "true")
+
+        System.setOut(PrintStream(tempFile.outputStream())) // Shut up compile error
+        try {
+            block()
+        } finally {
+            System.setOut(stdout)
+            tempFile.delete()
+        }
+        System.clearProperty("WODEN_UNITTEST")
+    }
+}
