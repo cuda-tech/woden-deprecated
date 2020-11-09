@@ -17,11 +17,9 @@ import com.google.common.base.Charsets
 import com.google.common.io.Resources
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.global.connectGlobally
-import me.liuwj.ktorm.global.global
 import me.liuwj.ktorm.schema.Table
 import org.apache.log4j.Logger
 import org.reflections.Reflections
-import tech.cuda.woden.config.Woden
 import tech.cuda.woden.service.exception.OperationNotAllowException
 import javax.sql.DataSource
 
@@ -130,4 +128,7 @@ object Database {
     }
 
     fun mock(table: Table<*>) = mock(table.tableName)
+
+    fun mockAll() = models.forEach { mock(it) }
+
 }
