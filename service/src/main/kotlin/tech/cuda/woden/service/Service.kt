@@ -96,6 +96,7 @@ abstract class Service(private val table: Table<*>) {
         var items = table.select(table.columns - exclude)
         val filters = filter + like
         filters?.let { items = items.where { filters } }
+        println(items.sql)
         val count = items.totalRecords
         orderBy?.let { items = items.orderBy(orderBy) }
         if (pageId != null && pageSize != null) {

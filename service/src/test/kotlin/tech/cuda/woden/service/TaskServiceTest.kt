@@ -643,9 +643,22 @@ class TaskServiceTest : TestWithMaria({
     }
 
     "删除任务" {
-        TaskService.findById(6) shouldNotBe null
-        TaskService.remove(6)
-        TaskService.findById(6) shouldBe null
+        val taskId = 7
+        val jobs = JobService.listing(1, Integer.MAX_VALUE, taskId).first
+        val instances = jobs.map {
+            InstanceService.listing(1, Integer.MAX_VALUE, it.id).first
+        }.flatten()
+        jobs.size shouldBe 3
+        instances.size shouldBe 9
+        TaskService.findById(taskId) shouldNotBe null
+        jobs.forEach { JobService.findById(it.id) shouldNotBe null }
+        instances.forEach { InstanceService.findById(it.id) shouldNotBe null }
+
+        TaskService.remove(taskId)
+
+        TaskService.findById(taskId) shouldBe null
+        jobs.forEach { JobService.findById(it.id) shouldBe null }
+        instances.forEach { InstanceService.findById(it.id) shouldBe null }
 
         // 不存在
         shouldThrow<NotFoundException> {
@@ -662,4 +675,4 @@ class TaskServiceTest : TestWithMaria({
         }.message shouldBe "子任务 未失效 , 禁止删除"
     }
 
-}, TaskDAO, GroupDAO, UserDAO, FileMirrorDAO, FileDAO)
+}, TaskDAO, JobDAO, InstanceDAO, GroupDAO, UserDAO, FileMirrorDAO, FileDAO)

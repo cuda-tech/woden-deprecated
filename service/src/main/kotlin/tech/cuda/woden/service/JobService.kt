@@ -190,13 +190,14 @@ object JobService : Service(JobDAO) {
      * todo: 暂时不支持偏移
      */
     fun isReady(job: JobDTO): Boolean {
-        if(job.status == JobStatus.RUNNING){
+        if (job.status == JobStatus.RUNNING) {
             return false
         }
-        if(job.status == JobStatus.READY){
+        if (job.status == JobStatus.READY) {
             return true
         }
-        val task = TaskService.findById(job.taskId) ?: throw NotFoundException()
+        val task = TaskService.findById(job.taskId)
+            ?: throw NotFoundException(I18N.job, job.id, I18N.task, job.taskId, I18N.notExistsOrHasBeenRemove)
         for (parent in TaskService.listingParent(task)) {
             val success = when (parent.period) {
                 SchedulePeriod.ONCE -> parent.successCount(end = job.createTime) == 1

@@ -25,14 +25,27 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 作业 Tracker，每当跨天的时候，生成当天应该调度的作业
- * 其中 [afterStarted] 是启动后的回调，一般只用于单测
+ * 其中 [afterJobGenerated]、[afterMakeReady]、 [afterMakeRunning]、
+ * [afterInstanceCheck]、[afterRetry]回调一般只用于单测
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class JobTracker(private val afterStarted: () -> Unit = {}) : Tracker() {
+class JobTracker(
+    private val afterJobGenerated: (JobTracker) -> Unit = {},
+    private val afterMakeReady: (JobTracker) -> Unit = {},
+    private val afterMakeRunning: (JobTracker) -> Unit = {},
+    private val afterInstanceCheck: (JobTracker) -> Unit = {},
+    private val afterRetry: (JobTracker) -> Unit = {}
+) : Tracker() {
 
     private val readyJobs = HashSet<JobDTO>()
     private val runningJobs = ConcurrentHashMap<Int, Int>() // (jobId, instanceId)
+
+    val readyJobsCount: Int
+        get() = readyJobs.size
+
+    val runningJobsCount: Int
+        get() = runningJobs.size
 
     /**
      * 对当前生效的任务，分批地生成调度作业
@@ -46,6 +59,7 @@ class JobTracker(private val afterStarted: () -> Unit = {}) : Tracker() {
             tasks.size over total
         }
         logger.info("generate today's jobs done")
+        afterJobGenerated(this)
     }
 
     /**
@@ -54,16 +68,19 @@ class JobTracker(private val afterStarted: () -> Unit = {}) : Tracker() {
      */
     private fun makeReadyForInitedJob() {
         batchExecute { batch, batchSize ->
-            val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.READY)
+            val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.INIT)
             jobs.forEach { job ->
                 if (JobService.isReady(job)) {
                     val worker = MachineService.findSlackMachine()
                     JobService.update(job.id, JobStatus.READY, machineId = worker.id)
                     readyJobs.add(job)
+                } else {
+                    println(job)
                 }
             }
             jobs.size over total
         }
+        afterMakeReady(this)
     }
 
     /**
@@ -85,6 +102,7 @@ class JobTracker(private val afterStarted: () -> Unit = {}) : Tracker() {
             }
         }
         readyJobs.removeIf { runningJobs.containsKey(it.id) }
+        afterMakeRunning(this)
     }
 
     /**
@@ -104,6 +122,7 @@ class JobTracker(private val afterStarted: () -> Unit = {}) : Tracker() {
                 runningJobs.remove(jobId)
             }
         }
+        afterInstanceCheck(this)
     }
 
     /**
@@ -121,8 +140,12 @@ class JobTracker(private val afterStarted: () -> Unit = {}) : Tracker() {
             }
             jobs.size over total
         }
+        afterRetry(this)
     }
 
+    override fun onStarted() {
+        generateTodayJob()
+    }
 
     override fun onDateChange() = generateTodayJob()
 

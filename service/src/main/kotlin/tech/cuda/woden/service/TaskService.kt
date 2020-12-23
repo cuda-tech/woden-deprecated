@@ -19,6 +19,8 @@ import me.liuwj.ktorm.global.add
 import me.liuwj.ktorm.global.findList
 import me.liuwj.ktorm.global.global
 import tech.cuda.woden.i18n.I18N
+import tech.cuda.woden.service.dao.InstanceDAO
+import tech.cuda.woden.service.dao.JobDAO
 import tech.cuda.woden.service.dao.TaskDAO
 import tech.cuda.woden.service.dto.TaskDTO
 import tech.cuda.woden.service.dto.toTaskDTO
@@ -26,6 +28,8 @@ import tech.cuda.woden.service.exception.NotFoundException
 import tech.cuda.woden.service.exception.OperationNotAllowException
 import tech.cuda.woden.service.exception.PermissionException
 import tech.cuda.woden.service.mysql.function.contains
+import tech.cuda.woden.service.po.InstancePO
+import tech.cuda.woden.service.po.JobPO
 import tech.cuda.woden.service.po.TaskPO
 import tech.cuda.woden.service.po.dtype.ScheduleDependencyInfo
 import tech.cuda.woden.service.po.dtype.ScheduleFormat
@@ -311,7 +315,7 @@ object TaskService : Service(TaskDAO) {
     }
 
     /**
-     * 删除指定[id]的任务
+     * 删除指定[id]的任务，并清理它归属的任务和实例
      * 如果任务[id]不存在或已被删除，则抛出 NotFoundException
      * 如果任务[id]处于调度生效状态，则抛出，则抛出 OperationNotAllowException
      * 如果任务[id]的子任务存在未失效的子任务，则抛出 OperationNotAllowException
@@ -322,11 +326,37 @@ object TaskService : Service(TaskDAO) {
                 and (TaskDAO.id eq id)
         ) ?: throw NotFoundException(I18N.task, id, I18N.notExistsOrHasBeenRemove)
         if (task.isValid) throw OperationNotAllowException(I18N.task, I18N.isValid, ",", I18N.removeNotAllow)
-        if (batch<TaskPO>(filter = TaskDAO.isRemove eq false
-                and (TaskDAO.id.inList(task.children) eq true)
-                and (TaskDAO.isValid eq true)).second > 0) throw OperationNotAllowException(I18N.childrenTask, I18N.isValid, ",", I18N.removeNotAllow)
+
+        if (task.children.isNotEmpty()) {
+            val childrenStillValid = batch<TaskPO>(
+                filter = TaskDAO.isRemove eq false
+                    and (TaskDAO.id.inList(task.children) eq true)
+                    and (TaskDAO.isValid eq true)
+            ).second > 0
+            if (childrenStillValid) throw OperationNotAllowException(I18N.childrenTask, I18N.isValid, ",", I18N.removeNotAllow)
+        }
+        val now = LocalDateTime.now()
+
+        // 清理归属的作业
+        val (jobs, _) = batch<JobPO>(filter = JobDAO.isRemove eq false
+            and (JobDAO.taskId eq task.id))
+        jobs.forEach {
+            it.isRemove = true
+            it.updateTime = now
+        }
+        if (jobs.isNotEmpty()) { // 清理归属的实例
+            val (instance, _) = batch<InstancePO>(
+                filter = InstanceDAO.isRemove eq false and (InstanceDAO.id.inList(jobs.map { it.id }) eq true)
+            )
+            instance.forEach {
+                it.isRemove = true
+                it.updateTime = now
+            }
+        }
+
+        // 最后清理任务
         task.isRemove = true
-        task.updateTime = LocalDateTime.now()
+        task.updateTime = now
         task.flushChanges()
     }
 }
