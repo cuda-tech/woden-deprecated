@@ -60,7 +60,7 @@ class WodenConfigTest : StringSpec({
         Woden.email.host shouldBe "localhost"
         Woden.email.sender shouldBe "root@host.com"
         Woden.email.password shouldBe "root"
-        Woden.email.port shouldBe 465
+        Woden.email.port shouldBe 3465
     }
 
     "scheduler config" {

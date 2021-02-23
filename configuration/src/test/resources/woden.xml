@@ -14,7 +14,7 @@
         <host>localhost</host>
         <sender>root@host.com</sender>
         <password>root</password>
-        <port>465</port>
+        <port>3465</port>
     </email>
 
     <scheduler>

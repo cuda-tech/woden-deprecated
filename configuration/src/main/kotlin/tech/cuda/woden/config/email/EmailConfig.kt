@@ -42,6 +42,7 @@ data class EmailConfig(
         it["mail.smtp.host"] = host
         it["mail.from"] = sender
         it["mail.smtp.socketFactory.port"] = port
+        it["mail.smtp.port"] = port
         it["mail.smtp.auth"] = "true"
         it["mail.smtp.ssl.enable"] = true
         it["mail.smtp.ssl.socketFactory"] = MailSSLSocketFactory().also { sf -> sf.isTrustAllHosts = true }

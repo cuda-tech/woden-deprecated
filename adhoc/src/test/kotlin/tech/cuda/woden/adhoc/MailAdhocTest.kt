@@ -15,7 +15,7 @@ package tech.cuda.woden.adhoc
 
 import com.icegreen.greenmail.util.GreenMail
 import com.icegreen.greenmail.util.GreenMailUtil
-import com.icegreen.greenmail.util.ServerSetup
+import com.icegreen.greenmail.util.ServerSetupTest
 import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
@@ -29,7 +29,7 @@ import io.kotest.matchers.shouldBe
  */
 class MailAdhocTest : AnnotationSpec() {
 
-    private val greenMail: GreenMail = GreenMail(ServerSetup.SMTPS)
+    private val greenMail: GreenMail = GreenMail(ServerSetupTest.SMTPS)
 
     override fun beforeTest(testCase: TestCase) {
         super.beforeTest(testCase)
