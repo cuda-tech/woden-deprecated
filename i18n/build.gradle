@@ -1,6 +1,0 @@
-apply plugin: 'kotlin'
-
-dependencies {
-}
-
-description = 'i18n'

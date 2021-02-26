@@ -13,13 +13,13 @@
  */
 package tech.cuda.woden.scheduler.tracker
 
-import tech.cuda.woden.service.dto.MachineDTO
-import tech.cuda.woden.service.exception.OperationNotAllowException
-import tech.cuda.woden.adhoc.*
-import tech.cuda.woden.service.*
-import tech.cuda.woden.service.po.dtype.FileType
-import tech.cuda.woden.service.po.dtype.InstanceStatus
-import tech.cuda.woden.service.po.dtype.JobStatus
+import tech.cuda.woden.common.service.dto.MachineDTO
+import tech.cuda.woden.common.service.exception.OperationNotAllowException
+import tech.cuda.woden.common.service.*
+import tech.cuda.woden.common.service.po.dtype.FileType
+import tech.cuda.woden.common.service.po.dtype.InstanceStatus
+import tech.cuda.woden.common.service.po.dtype.JobStatus
+import tech.cuda.woden.scheduler.runner.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**

@@ -29,7 +29,7 @@ class DTOProcessorTest : AnnotationSpec() {
     @Test
     fun testDTOProcess() = NoisyLog.shutUp {
         val source = SourceFile.kotlin("ExampleDTO.kt", """
-            package tech.cuda.woden.service.dto
+            package tech.cuda.woden.common.service.dto
             
             import tech.cuda.woden.annotation.pojo.DTO
             import java.time.LocalDateTime
@@ -67,9 +67,9 @@ class DTOProcessorTest : AnnotationSpec() {
             suppressWarnings = true
         }.compile()
         result.messages.replace("\r\n", "\n") shouldContain """
-           |  import tech.cuda.woden.service.dto.Example
-           |  import tech.cuda.woden.service.dto.ExampleDTO
-           |  internal fun tech.cuda.woden.service.dto.Example.toExampleDTO() = ExampleDTO(
+           |  import tech.cuda.woden.common.service.dto.Example
+           |  import tech.cuda.woden.common.service.dto.ExampleDTO
+           |  internal fun tech.cuda.woden.common.service.dto.Example.toExampleDTO() = ExampleDTO(
            |      id = this.id,
            |      column1 = this.column1,
            |      column2 = this.column2,

@@ -14,13 +14,13 @@
 package tech.cuda.woden.webserver.controller
 
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.ints.shouldBeGreaterThan
+import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import tech.cuda.woden.service.dto.FileContentDTO
-import tech.cuda.woden.service.dto.FileDTO
-import tech.cuda.woden.service.po.dtype.FileType
-import tech.cuda.woden.service.toLocalDateTime
+import tech.cuda.woden.common.service.dto.FileContentDTO
+import tech.cuda.woden.common.service.dto.FileDTO
+import tech.cuda.woden.common.service.po.dtype.FileType
+import tech.cuda.woden.common.service.toLocalDateTime
 import tech.cuda.woden.webserver.RestfulTestToolbox
 
 /**

@@ -1,18 +1,27 @@
 apply plugin: 'kotlin'
 
 dependencies {
-    implementation project(':service')
-    implementation project(':adhoc')
+    implementation project(':common')
     implementation "org.apache.commons:commons-exec:$commons_exec_version"
     implementation "com.github.kittinunf.fuel:fuel-jackson:$fuel_ersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "com.github.oshi:oshi-core:$oshi_version"
     implementation "javax.mail:mail:$java_mail_version"
 
+    implementation "org.apache.spark:spark-sql_$scala_version:$spark_version"
+    implementation "org.apache.spark:spark-core_$scala_version:$spark_version"
+    implementation "org.apache.spark:spark-hive_$scala_version:$spark_version"
+    implementation "org.apache.spark:spark-streaming_$scala_version:$spark_version"
+    implementation "org.apache.spark:spark-launcher_$scala_version:$spark_version"
+    implementation "org.apache.commons:commons-exec:$commons_exec_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+
     testImplementation "com.icegreen:greenmail:$green_mail_version"
-    testImplementation project(':adhoc').sourceSets.test.output
-    testImplementation project(':service').sourceSets.test.output
-    testImplementation project(':configuration').sourceSets.test.output
+    testImplementation project(':common').sourceSets.test.output
+}
+
+configurations.all {
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 }
 
 test {

@@ -15,10 +15,10 @@ package tech.cuda.woden.scheduler.tracker
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import tech.cuda.woden.adhoc.EnvSetter
 import tech.cuda.woden.scheduler.TestWithDistribution
-import tech.cuda.woden.service.InstanceService
-import tech.cuda.woden.service.po.dtype.InstanceStatus
+import tech.cuda.woden.common.service.InstanceService
+import tech.cuda.woden.common.service.po.dtype.InstanceStatus
+import tech.cuda.woden.scheduler.runner.EnvSetter
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>

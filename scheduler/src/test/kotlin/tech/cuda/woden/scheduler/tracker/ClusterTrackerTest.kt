@@ -16,8 +16,8 @@ package tech.cuda.woden.scheduler.tracker
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import tech.cuda.woden.scheduler.TestWithDistribution
-import tech.cuda.woden.service.MachineService
-import tech.cuda.woden.service.po.dtype.MachineRole
+import tech.cuda.woden.common.service.MachineService
+import tech.cuda.woden.common.service.po.dtype.MachineRole
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>

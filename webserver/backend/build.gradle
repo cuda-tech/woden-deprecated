@@ -5,7 +5,7 @@ configurations.all {
 }
 
 dependencies {
-    implementation project(':service')
+    implementation project(':common')
     implementation "org.springframework.boot:spring-boot-starter-web:$spring_version"
     implementation "org.springframework.boot:spring-boot-devtools:$spring_version"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
@@ -13,8 +13,7 @@ dependencies {
 
     testImplementation "org.springframework.boot:spring-boot-starter-test:$spring_version"
     testImplementation "io.kotest:kotest-extensions-spring:$kotest_version"
-    testImplementation project(':service').sourceSets.test.output
-    testImplementation project(':configuration').sourceSets.test.output
+    testImplementation project(':common').sourceSets.test.output
 }
 
 test {

@@ -15,7 +15,7 @@ package tech.cuda.woden.webserver.converter
 
 import org.springframework.core.convert.converter.Converter
 import org.springframework.stereotype.Component
-import tech.cuda.woden.service.po.dtype.FileType
+import tech.cuda.woden.common.service.po.dtype.FileType
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>

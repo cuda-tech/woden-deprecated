@@ -32,9 +32,9 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import tech.cuda.woden.config.DataSourceMocker
-import tech.cuda.woden.config.Woden
-import tech.cuda.woden.service.Database
+import tech.cuda.woden.common.configuration.DataSourceMocker
+import tech.cuda.woden.common.configuration.Woden
+import tech.cuda.woden.common.service.Database
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*

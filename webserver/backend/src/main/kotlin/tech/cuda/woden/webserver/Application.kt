@@ -28,8 +28,8 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import tech.cuda.woden.config.Woden
-import tech.cuda.woden.service.Database
+import tech.cuda.woden.common.configuration.Woden
+import tech.cuda.woden.common.service.Database
 import java.time.format.DateTimeFormatter
 import javax.servlet.*
 import javax.servlet.http.HttpServletRequest

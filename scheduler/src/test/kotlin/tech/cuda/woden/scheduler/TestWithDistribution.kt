@@ -15,12 +15,12 @@ package tech.cuda.woden.scheduler
 
 import io.kotest.core.spec.style.AnnotationSpec
 import io.mockk.*
-import tech.cuda.woden.config.DataSourceMocker
-import tech.cuda.woden.config.Woden
+import tech.cuda.woden.common.configuration.DataSourceMocker
+import tech.cuda.woden.common.configuration.Woden
+import tech.cuda.woden.common.service.Database
+import tech.cuda.woden.common.service.MachineService
 import tech.cuda.woden.scheduler.util.MachineUtil
-import tech.cuda.woden.service.Database
-import tech.cuda.woden.service.MachineService
-import tech.cuda.woden.service.exception.NotFoundException
+import tech.cuda.woden.common.service.exception.NotFoundException
 import java.time.LocalDate
 import java.time.LocalDateTime
 

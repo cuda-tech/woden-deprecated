@@ -15,9 +15,9 @@ package tech.cuda.woden.webserver.controller
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
-import tech.cuda.woden.i18n.I18N
-import tech.cuda.woden.service.GroupService
-import tech.cuda.woden.service.exception.NotFoundException
+import tech.cuda.woden.common.i18n.I18N
+import tech.cuda.woden.common.service.GroupService
+import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.webserver.Response
 import tech.cuda.woden.webserver.ResponseData
 import java.lang.Exception

@@ -15,10 +15,10 @@ package tech.cuda.woden.scheduler.tracker
 
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.global.global
-import tech.cuda.woden.service.MachineService
-import tech.cuda.woden.service.dto.MachineDTO
-import tech.cuda.woden.service.exception.NotFoundException
-import tech.cuda.woden.service.po.dtype.MachineRole
+import tech.cuda.woden.common.service.MachineService
+import tech.cuda.woden.common.service.dto.MachineDTO
+import tech.cuda.woden.common.service.exception.NotFoundException
+import tech.cuda.woden.common.service.po.dtype.MachineRole
 import java.time.LocalDateTime
 
 /**

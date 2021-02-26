@@ -1,9 +1,6 @@
 rootProject.name = 'woden'
-include(':scheduler')
-include(':service')
 include(':annotation-processor')
-include(':i18n')
-include(':configuration')
-include(':adhoc')
+include(':common')
+include(':scheduler')
 include(':webserver:frontend')
 include(':webserver:backend')

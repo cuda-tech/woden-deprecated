@@ -14,8 +14,8 @@
 package tech.cuda.woden.scheduler.tracker
 
 import tech.cuda.woden.scheduler.util.MachineUtil
-import tech.cuda.woden.service.MachineService
-import tech.cuda.woden.service.dto.MachineDTO
+import tech.cuda.woden.common.service.MachineService
+import tech.cuda.woden.common.service.dto.MachineDTO
 
 /**
  * 负责服务器注册 & 负载更新

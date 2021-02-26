@@ -15,8 +15,8 @@ package tech.cuda.woden.webserver.controller
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
-import tech.cuda.woden.i18n.I18N
-import tech.cuda.woden.service.MachineService
+import tech.cuda.woden.common.i18n.I18N
+import tech.cuda.woden.common.service.MachineService
 import tech.cuda.woden.webserver.Response
 import tech.cuda.woden.webserver.ResponseData
 

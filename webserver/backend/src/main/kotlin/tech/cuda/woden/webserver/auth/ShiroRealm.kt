@@ -20,7 +20,7 @@ import org.apache.shiro.authz.AuthorizationInfo
 import org.apache.shiro.authz.SimpleAuthorizationInfo
 import org.apache.shiro.realm.AuthorizingRealm
 import org.apache.shiro.subject.PrincipalCollection
-import tech.cuda.woden.service.UserService
+import tech.cuda.woden.common.service.UserService
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>

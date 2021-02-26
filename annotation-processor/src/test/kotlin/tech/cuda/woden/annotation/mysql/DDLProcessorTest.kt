@@ -29,11 +29,11 @@ class DDLProcessorTest : AnnotationSpec() {
     @Test
     fun testCreateTableStatement() = NoisyLog.shutUp {
         val kotlinSource = SourceFile.kotlin("FileDAO.kt", """
-            package tech.cuda.woden.service.dao
+            package tech.cuda.woden.common.service.dao
 
             import tech.cuda.woden.annotation.mysql.*
-            import tech.cuda.woden.service.po.FilePO
-            import tech.cuda.woden.service.po.dtype.FileType
+            import tech.cuda.woden.common.service.po.FilePO
+            import tech.cuda.woden.common.service.po.dtype.FileType
 
             @STORE_IN_MYSQL
             internal object FileDAO : Table<FilePO>("files") {

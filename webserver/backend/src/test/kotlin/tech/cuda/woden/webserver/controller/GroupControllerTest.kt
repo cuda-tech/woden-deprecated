@@ -15,8 +15,8 @@ package tech.cuda.woden.webserver.controller
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import tech.cuda.woden.service.dto.GroupDTO
-import tech.cuda.woden.service.toLocalDateTime
+import tech.cuda.woden.common.service.dto.GroupDTO
+import tech.cuda.woden.common.service.toLocalDateTime
 import tech.cuda.woden.webserver.RestfulTestToolbox
 
 /**

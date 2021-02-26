@@ -15,7 +15,7 @@ package tech.cuda.woden.webserver.controller
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
-import tech.cuda.woden.service.UserService
+import tech.cuda.woden.common.service.UserService
 import tech.cuda.woden.webserver.Response
 import javax.validation.constraints.NotBlank
 

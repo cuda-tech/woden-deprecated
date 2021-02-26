@@ -14,7 +14,7 @@
 package tech.cuda.woden.webserver.controller
 
 import io.kotest.matchers.shouldBe
-import tech.cuda.woden.service.UserService
+import tech.cuda.woden.common.service.UserService
 import tech.cuda.woden.webserver.RestfulTestToolbox
 
 /**

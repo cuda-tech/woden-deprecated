@@ -14,14 +14,9 @@
 package tech.cuda.woden.scheduler.tracker
 
 import io.kotest.matchers.shouldBe
-import io.mockk.every
-import io.mockk.mockkObject
-import me.liuwj.ktorm.database.Database
-import me.liuwj.ktorm.global.global
-import tech.cuda.woden.config.Woden
 import tech.cuda.woden.scheduler.TestWithDistribution
-import tech.cuda.woden.service.JobService
-import tech.cuda.woden.service.po.dtype.JobStatus
+import tech.cuda.woden.common.service.JobService
+import tech.cuda.woden.common.service.po.dtype.JobStatus
 import java.time.LocalDateTime
 
 /**

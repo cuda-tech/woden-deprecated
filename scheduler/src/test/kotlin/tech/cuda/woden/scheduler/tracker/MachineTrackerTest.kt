@@ -19,9 +19,9 @@ import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
+import tech.cuda.woden.common.service.toLocalDateTime
 import tech.cuda.woden.scheduler.TestWithDistribution
 import tech.cuda.woden.scheduler.util.MachineUtil
-import tech.cuda.woden.service.toLocalDateTime
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>

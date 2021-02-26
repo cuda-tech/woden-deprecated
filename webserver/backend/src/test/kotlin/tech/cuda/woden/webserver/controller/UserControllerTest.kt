@@ -16,9 +16,9 @@ package tech.cuda.woden.webserver.controller
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import tech.cuda.woden.service.UserService
-import tech.cuda.woden.service.dto.UserDTO
-import tech.cuda.woden.service.toLocalDateTime
+import tech.cuda.woden.common.service.UserService
+import tech.cuda.woden.common.service.dto.UserDTO
+import tech.cuda.woden.common.service.toLocalDateTime
 import tech.cuda.woden.webserver.RestfulTestToolbox
 
 /**

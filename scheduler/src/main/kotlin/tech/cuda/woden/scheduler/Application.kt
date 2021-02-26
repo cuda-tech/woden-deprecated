@@ -13,12 +13,12 @@
  */
 package tech.cuda.woden.scheduler
 
-import tech.cuda.woden.config.Woden
+import tech.cuda.woden.common.configuration.Woden
+import tech.cuda.woden.common.service.Database
 import tech.cuda.woden.scheduler.tracker.ClusterTracker
 import tech.cuda.woden.scheduler.tracker.InstanceTracker
 import tech.cuda.woden.scheduler.tracker.JobTracker
 import tech.cuda.woden.scheduler.tracker.MachineTracker
-import tech.cuda.woden.service.Database
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
