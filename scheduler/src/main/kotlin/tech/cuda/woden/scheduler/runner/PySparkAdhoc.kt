@@ -69,6 +69,6 @@ class PySparkAdhoc(
         it.deleteOnExit()
     }
 
-    override val appArgs = mapOf("" to tempFile.path)
+    override val appArgs = listOf(tempFile.path)
 
 }

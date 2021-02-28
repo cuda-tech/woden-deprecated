@@ -31,9 +31,9 @@ class SparkSQLAdhoc(
 
     override val mainClass = "org.apache.spark.sql.hive.thriftserver.SparkSQLCLIDriver"
 
-    override val appArgs = mapOf(
-        "--conf" to "spark.hadoop.hive.cli.print.header=true",
-        "-f" to tempFile.path
+    override val appArgs = listOf(
+        "--conf", "spark.hadoop.hive.cli.print.header=true",
+        "-f", tempFile.path
     )
 
 }

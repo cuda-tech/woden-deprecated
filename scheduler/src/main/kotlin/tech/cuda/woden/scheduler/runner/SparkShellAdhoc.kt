@@ -49,9 +49,9 @@ class SparkShellAdhoc(
 
     private val interactive = "-I".takeIf {
         File(Woden.scheduler.sparkHome, "jars").listFiles()
-            ?.firstOrNull { it.name.startsWith("spark-core")}
+            ?.firstOrNull { it.name.startsWith("spark-core") }
             ?.name?.split("-")?.last()?.split(".")?.first() == "3"
     } ?: "-i"
 
-    override val appArgs = mapOf( interactive to tempFile.path, "-usejavacp" to "")
+    override val appArgs = listOf(interactive, tempFile.path, "-usejavacp")
 }

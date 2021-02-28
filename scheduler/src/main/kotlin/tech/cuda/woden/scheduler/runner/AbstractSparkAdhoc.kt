@@ -29,7 +29,7 @@ abstract class AbstractSparkAdhoc : Adhoc {
 
     abstract val mainClass: String
     open val jar: String = "${Woden.scheduler.sparkHome}${File.separator}jars${File.separator}spark-sql*.jar"
-    open val appArgs: Map<String, String> = mapOf()
+    open val appArgs: List<String> = listOf()
     open val sparkConf: Map<String, String> = mapOf()
 
     private val logFile = File.createTempFile("__adhoc__", ".log")
@@ -74,10 +74,11 @@ abstract class AbstractSparkAdhoc : Adhoc {
             handler = SparkLauncher()
                 .redirectOutput(logFile)
                 .redirectError(logFile)
+                .setSparkHome(Woden.scheduler.sparkHome)
                 .setMainClass(mainClass)
                 .setAppResource(jar)
                 .also {
-                    appArgs.forEach { (k, v) -> it.addAppArgs(k, v) }
+                    appArgs.forEach { arg -> it.addAppArgs(arg) }
                     sparkConf.forEach { (k, v) -> it.setConf(k, v) }
                 }
                 .startApplication()
