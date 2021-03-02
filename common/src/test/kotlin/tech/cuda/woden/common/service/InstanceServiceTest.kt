@@ -180,4 +180,20 @@ class InstanceServiceTest : TestWithMaria({
         }.message shouldBe "调度实例 458 不存在或已被删除"
     }
 
+    "删除实例" {
+        // 通过 id 删除
+        InstanceService.findById(1) shouldNotBe null
+        InstanceService.remove(id = 1)
+        InstanceService.findById(1) shouldBe null
+
+        // 通过 taskId 删除
+        InstanceService.listing(1, 100, jobId = 1).second shouldBe 6
+        InstanceService.remove(jobId = 1)
+        InstanceService.listing(1, 100, jobId = 1).second shouldBe 0
+
+        shouldThrow<OperationNotAllowException> {
+            InstanceService.remove()
+        }
+    }
+
 }, InstanceDAO, JobDAO)

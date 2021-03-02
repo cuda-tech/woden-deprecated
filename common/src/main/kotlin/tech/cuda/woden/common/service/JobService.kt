@@ -19,6 +19,7 @@ import me.liuwj.ktorm.global.add
 import me.liuwj.ktorm.global.global
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.dao.JobDAO
+import tech.cuda.woden.common.service.dao.TaskDAO
 import tech.cuda.woden.common.service.dto.JobDTO
 import tech.cuda.woden.common.service.dto.toJobDTO
 import tech.cuda.woden.common.service.dto.TaskDTO
@@ -27,12 +28,10 @@ import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.mysql.function.toDate
 import tech.cuda.woden.common.service.po.JobPO
+import tech.cuda.woden.common.service.po.TaskPO
 import tech.cuda.woden.common.service.po.dtype.JobStatus
 import tech.cuda.woden.common.service.po.dtype.SchedulePeriod
-import tech.cuda.woden.common.utils.monday
-import tech.cuda.woden.common.utils.monthStartDay
-import tech.cuda.woden.common.utils.newYearDay
-import tech.cuda.woden.common.utils.yesterday
+import tech.cuda.woden.common.utils.*
 import java.time.LocalDateTime
 
 /**
@@ -232,4 +231,26 @@ object JobService : Service(JobDAO) {
         return job.runCount - 1 < task.retries // 第一次执行不算重试，因此 runCount 需要减 1
     }
 
+    /**
+     * 清理 ID 为[id]或者归属任务 ID 为[taskId]的作业，并清理归属于这些作业的实例
+     * 如果[id]和[taskId]都没有指定，则抛出异常
+     */
+    fun remove(id: Int? = null, taskId: Int? = null) = Database.global.useTransaction {
+        if (Checker.allNull(id, taskId)) {
+            throw OperationNotAllowException()
+        }
+        val conditions = mutableListOf(JobDAO.isRemove eq false)
+        id?.let { conditions.add(JobDAO.id eq id) }
+        taskId?.let { conditions.add(JobDAO.taskId eq taskId) }
+
+        val (jobs, count) = batch<JobPO>(filter = conditions.reduce { a, b -> a and b })
+
+        val now = LocalDateTime.now()
+        jobs.forEach {
+            it.isRemove = true
+            it.updateTime = now
+            InstanceService.remove(jobId = it.id)
+            it.flushChanges()
+        }
+    }
 }

@@ -17,6 +17,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import tech.cuda.woden.common.service.dao.InstanceDAO
 import tech.cuda.woden.common.service.dao.JobDAO
 import tech.cuda.woden.common.service.dao.MachineDAO
 import tech.cuda.woden.common.service.dao.TaskDAO
@@ -201,6 +202,28 @@ class JobServiceTest : TestWithMaria({
         }.message shouldBe "调度服务器 247 不存在或已被删除"
     }
 
+    "删除作业" {
+        // 通过 id 删除
+        JobService.findById(2) shouldNotBe null
+        InstanceService.listing(pageId = 1, pageSize = 100, jobId = 2).second shouldBe 4
+        JobService.remove(id = 2)
+        JobService.findById(2) shouldBe null
+        InstanceService.listing(pageId = 1, pageSize = 100, jobId = 2).second shouldBe 0
+
+        // 通过 taskId 删除
+        val jobIds = JobService.listing(pageId = 1, pageSize = 100, taskId = 3).first.map { it.id }
+        jobIds shouldContainExactlyInAnyOrder listOf(23, 24, 25, 26, 27, 56, 57, 58, 59, 76,
+            77, 78, 79, 80, 100, 101, 102, 112, 137, 138, 171, 172, 173, 174, 175, 176)
+        jobIds.map { InstanceService.listing(1, 100, jobId = it).second }.sum() shouldBe 47
+        JobService.remove(taskId = 3)
+        JobService.listing(pageId = 1, pageSize = 100, taskId = 3).second shouldBe 0
+        jobIds.map { InstanceService.listing(1, 100, jobId = it).second }.sum() shouldBe 0
+
+        shouldThrow<OperationNotAllowException> {
+            JobService.remove()
+        }
+    }
+
     "Ready状态测试" {
 
         // RUNNING 状态直接返回 false
@@ -266,4 +289,4 @@ class JobServiceTest : TestWithMaria({
         }
     }
 
-}, TaskDAO, JobDAO, MachineDAO)
+}, TaskDAO, JobDAO, InstanceDAO, MachineDAO)

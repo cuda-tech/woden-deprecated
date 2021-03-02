@@ -29,6 +29,7 @@ import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.po.InstancePO
 import tech.cuda.woden.common.service.po.dtype.InstanceStatus
 import tech.cuda.woden.common.service.po.dtype.JobStatus
+import tech.cuda.woden.common.utils.Checker
 import java.time.LocalDateTime
 
 /**
@@ -104,6 +105,26 @@ object InstanceService : Service(InstanceDAO) {
             instance.flushChanges()
         }
         return instance.toInstanceDTO()
+    }
+
+    /**
+     * 清理 ID 为[id]或者归属作业 ID 为[jobId]的实例
+     * 如果[id]和[jobId]都没有指定，则抛出异常
+     */
+    fun remove(id: Int? = null, jobId: Int? = null) = Database.global.useTransaction {
+        if (Checker.allNull(id, jobId)) {
+            throw OperationNotAllowException()
+        }
+        val conditions = mutableListOf(InstanceDAO.isRemove eq false)
+        id?.let { conditions.add(InstanceDAO.id eq id) }
+        jobId?.let { conditions.add(InstanceDAO.jobId eq jobId) }
+        val (instances, count) = batch<InstancePO>(filter = conditions.reduce { a, b -> a and b })
+        val now = LocalDateTime.now()
+        instances.forEach {
+            it.isRemove = true
+            it.updateTime = now
+            it.flushChanges()
+        }
     }
 
     /**

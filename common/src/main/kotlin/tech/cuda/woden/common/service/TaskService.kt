@@ -338,21 +338,7 @@ object TaskService : Service(TaskDAO) {
         val now = LocalDateTime.now()
 
         // 清理归属的作业
-        val (jobs, _) = batch<JobPO>(filter = JobDAO.isRemove eq false
-            and (JobDAO.taskId eq task.id))
-        jobs.forEach {
-            it.isRemove = true
-            it.updateTime = now
-        }
-        if (jobs.isNotEmpty()) { // 清理归属的实例
-            val (instance, _) = batch<InstancePO>(
-                filter = InstanceDAO.isRemove eq false and (InstanceDAO.id.inList(jobs.map { it.id }) eq true)
-            )
-            instance.forEach {
-                it.isRemove = true
-                it.updateTime = now
-            }
-        }
+        JobService.remove(taskId = task.id)
 
         // 最后清理任务
         task.isRemove = true
