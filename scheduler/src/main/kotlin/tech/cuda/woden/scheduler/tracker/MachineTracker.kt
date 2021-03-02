@@ -28,20 +28,16 @@ class MachineTracker(private val afterStarted: (MachineTracker) -> Unit = {}) : 
     lateinit var machine: MachineDTO
 
     /**
-     * 启动时根据 MAC 地址判断机器是否已注册
+     * 启动时根据 hostname 地址判断机器是否已注册
      * 如果尚未注册，则注册机器
-     * 如果已注册，则检查 IP 和 hostname 是否发生变更，如果发生变更则更新
      * 最后更新机器的负载信息
      */
     override fun onStarted() {
         val systemInfo = MachineUtil.systemInfo
         val loadInfo = MachineUtil.loadInfo
-        machine = MachineService.findByMac(systemInfo.mac)
-            ?: MachineService.create(systemInfo.ip, systemInfo.hostname, systemInfo.mac)
+        machine = MachineService.findByHostname(systemInfo.hostname) ?: MachineService.create(systemInfo.hostname)
         machine = MachineService.update(
             id = machine.id,
-            ip = if (systemInfo.ip != machine.ip) systemInfo.ip else null,
-            hostname = if (systemInfo.hostname != machine.hostname) systemInfo.hostname else null,
             cpuLoad = loadInfo.cpu,
             memLoad = loadInfo.memory,
             diskUsage = loadInfo.diskUsage

@@ -26,8 +26,6 @@ import java.time.LocalDateTime
 data class MachineDTO(
     val id: Int,
     val hostname: String,
-    val mac: String,
-    val ip: String,
     val cpuLoad: Int,
     val memLoad: Int,
     val diskUsage: Int,

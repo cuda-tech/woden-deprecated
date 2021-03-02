@@ -50,7 +50,6 @@ data class English(
     override val exists: String = "exists",
     override val fileType: String = "file type",
     override val updateNotAllow: String = "update not allow",
-    override val ipAddress: String = "ip address",
     override val existsAlready: String = "exists already",
     override val hasBeenRemove: String = "has been remove",
     override val illegal: String = "illegal",
@@ -59,6 +58,5 @@ data class English(
     override val createInstanceNotAllow: String = "create instance not allow",
     override val status: String = "status",
     override val canNotUpdateTo: String = "can not update to",
-    override val hostname: String = "hostname",
-    override val mac: String = "MAC"
+    override val hostname: String = "hostname"
 ) : Language

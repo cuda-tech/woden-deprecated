@@ -27,8 +27,6 @@ internal interface MachinePO : Entity<MachinePO> {
 
     val id: Int
     var hostname: String
-    var mac: String
-    var ip: String
     var cpuLoad: Int
     var memLoad: Int
     var diskUsage: Int

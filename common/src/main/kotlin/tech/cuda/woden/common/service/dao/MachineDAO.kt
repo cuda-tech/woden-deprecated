@@ -35,15 +35,6 @@ internal object MachineDAO : Table<MachinePO>("machines") {
     @COMMENT("服务器名称")
     val hostname = varchar("hostname").bindTo { it.hostname }
 
-    @VARCHAR(17)
-    @COMMENT("服务器 MAC 地址")
-    val mac = varchar("mac").bindTo { it.mac }
-
-
-    @VARCHAR(15)
-    @COMMENT("服务器 IP 地址")
-    val ip = varchar("ip").bindTo { it.ip }
-
     @TINYINT(4)
     @COMMENT("CPU 负载")
     val cpuLoad = int("cpu_load").bindTo { it.cpuLoad }

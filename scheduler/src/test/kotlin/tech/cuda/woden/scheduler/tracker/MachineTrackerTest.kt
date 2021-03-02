@@ -32,32 +32,10 @@ class MachineTrackerTest : TestWithDistribution("machines") {
     @Test
     fun testStart() {
         mockkObject(MachineUtil)
-        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("17.212.169.100", "9E-EE-49-FA-00-F4", "nknvleif", false)
+        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("nknvleif", false)
         val machineTracker = MachineTracker(afterStarted = {
             it.machine.id shouldBe 3
-            it.machine.ip shouldBe "17.212.169.100"
-            it.machine.mac shouldBe "9E-EE-49-FA-00-F4"
             it.machine.hostname shouldBe "nknvleif"
-            it.machine.cpuLoad shouldBeGreaterThan 0
-            it.machine.memLoad shouldBeGreaterThan 0
-            it.machine.diskUsage shouldBeGreaterThan 0
-            it.machine.updateTime shouldNotBe "2036-03-31 18:40:59".toLocalDateTime()
-            it.cancel()
-        })
-        machineTracker.start()
-        machineTracker.join()
-        unmockkObject(MachineUtil)
-    }
-
-    @Test
-    fun testStartWhenIpAndHostChange() {
-        mockkObject(MachineUtil)
-        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("192.168.1.1", "9E-EE-49-FA-00-F4", "HOSTNAME", false)
-        val machineTracker = MachineTracker(afterStarted = {
-            it.machine.id shouldBe 3
-            it.machine.ip shouldBe "192.168.1.1"
-            it.machine.mac shouldBe "9E-EE-49-FA-00-F4"
-            it.machine.hostname shouldBe "HOSTNAME"
             it.machine.cpuLoad shouldBeGreaterThan 0
             it.machine.memLoad shouldBeGreaterThan 0
             it.machine.diskUsage shouldBeGreaterThan 0
@@ -72,11 +50,9 @@ class MachineTrackerTest : TestWithDistribution("machines") {
     @Test
     fun testStartWhenNotRegister() {
         mockkObject(MachineUtil)
-        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("192.168.1.1", "01-23-45-67-89-AB", "HOSTNAME", false)
+        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo("HOSTNAME", false)
         val machineTracker = MachineTracker(afterStarted = {
             it.machine.id shouldBe 247
-            it.machine.ip shouldBe "192.168.1.1"
-            it.machine.mac shouldBe "01-23-45-67-89-AB"
             it.machine.hostname shouldBe "HOSTNAME"
             it.machine.cpuLoad shouldBeGreaterThan 0
             it.machine.memLoad shouldBeGreaterThan 0

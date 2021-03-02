@@ -132,8 +132,6 @@ class MachineServiceTest : TestWithMaria({
         machine shouldNotBe null
         machine!!
         machine.hostname shouldBe "nncxrbwz"
-        machine.ip shouldBe "237.223.177.192"
-        machine.mac shouldBe "7E-C5-BA-DE-97-6F"
         machine.cpuLoad shouldBe 16
         machine.memLoad shouldBe 11
         machine.isActive shouldBe false
@@ -146,32 +144,12 @@ class MachineServiceTest : TestWithMaria({
         MachineService.findById(300) shouldBe null
     }
 
-    "按 ip 查找服务器" {
-        val machine = MachineService.findByIP("17.212.169.100")
-        machine shouldNotBe null
-        machine!!
-        machine.id shouldBe 3
-        machine.hostname shouldBe "nknvleif"
-        machine.mac shouldBe "9E-EE-49-FA-00-F4"
-        machine.cpuLoad shouldBe 98
-        machine.memLoad shouldBe 48
-        machine.diskUsage shouldBe 31
-        machine.isActive shouldBe true
-        machine.role shouldBe MachineRole.MASTER
-        machine.createTime shouldBe "2035-11-05 14:17:43".toLocalDateTime()
-        machine.updateTime shouldBe "2036-03-31 18:40:59".toLocalDateTime()
-        MachineService.findByIP("131.236.90.140") shouldBe null
-        MachineService.findByIP("257.0.0.1") shouldBe null
-    }
-
     "按 hostname 查找服务器" {
         val machine = MachineService.findByHostname("nknvleif")
         machine shouldNotBe null
         machine!!
         machine.id shouldBe 3
         machine.hostname shouldBe "nknvleif"
-        machine.ip shouldBe "17.212.169.100"
-        machine.mac shouldBe "9E-EE-49-FA-00-F4"
         machine.cpuLoad shouldBe 98
         machine.memLoad shouldBe 48
         machine.diskUsage shouldBe 31
@@ -184,26 +162,6 @@ class MachineServiceTest : TestWithMaria({
         MachineService.findByHostname("not exists") shouldBe null
     }
 
-    "按 MAC 查找服务器" {
-        val machine = MachineService.findByMac("9E-EE-49-FA-00-F4")
-        machine shouldNotBe null
-        machine!!
-        machine.id shouldBe 3
-        machine.hostname shouldBe "nknvleif"
-        machine.ip shouldBe "17.212.169.100"
-        machine.mac shouldBe "9E-EE-49-FA-00-F4"
-        machine.cpuLoad shouldBe 98
-        machine.memLoad shouldBe 48
-        machine.diskUsage shouldBe 31
-        machine.isActive shouldBe true
-        machine.role shouldBe MachineRole.MASTER
-        machine.createTime shouldBe "2035-11-05 14:17:43".toLocalDateTime()
-        machine.updateTime shouldBe "2036-03-31 18:40:59".toLocalDateTime()
-
-        MachineService.findByMac("FE-C6-DA-85-32-23") shouldBe null
-        MachineService.findByMac("not exists") shouldBe null
-    }
-
     "查询负载最低的服务器" {
         val machine = MachineService.findSlackMachine()
         machine.id shouldBe 58
@@ -213,10 +171,8 @@ class MachineServiceTest : TestWithMaria({
     }
 
     "创建服务器" {
-        val machine = MachineService.create("192.168.1.1", "test_create", "mac_addr")
+        val machine = MachineService.create("test_create")
         machine.hostname shouldBe "test_create"
-        machine.mac shouldBe "mac_addr"
-        machine.ip shouldBe "192.168.1.1"
         machine.cpuLoad shouldBe 0
         machine.memLoad shouldBe 0
         machine.diskUsage shouldBe 0
@@ -225,34 +181,23 @@ class MachineServiceTest : TestWithMaria({
         machine.createTime shouldBeLessThanOrEqualTo LocalDateTime.now()
         machine.updateTime shouldBeLessThanOrEqualTo LocalDateTime.now()
 
-        // IP 已存在
-        shouldThrow<DuplicateException> {
-            MachineService.create("107.116.90.29", "hostname", "mac")
-        }.message shouldBe "IP 地址 107.116.90.29 已存在"
-
         // hostname 已存在
         shouldThrow<DuplicateException> {
-            MachineService.create("192.168.1.2", "tejxajfq", "mac not exists")
+            MachineService.create("tejxajfq")
         }.message shouldBe "主机名 tejxajfq 已存在"
 
-        // mac 已存在
-        shouldThrow<DuplicateException> {
-            MachineService.create("192.168.1.2", "host name not exists", "1F-72-5B-F7-10-AB")
-        }.message shouldBe "网卡 MAC 地址 1F-72-5B-F7-10-AB 已存在"
     }
 
     "更新服务器信息" {
-        MachineService.update(id = 1, hostname = "new_name", ip = "192.168.1.1")
+        MachineService.update(id = 1, hostname = "new_name")
         var machine = MachineService.findById(1)!!
         machine.hostname shouldBe "new_name"
-        machine.ip shouldBe "192.168.1.1"
         val updateTime = machine.updateTime
         updateTime shouldNotBe "2032-06-08 19:36:03".toLocalDateTime()
 
         MachineService.update(id = 1, cpuLoad = 1, memLoad = 2, diskUsage = 3)
         machine = MachineService.findById(1)!!
         machine.hostname shouldBe "new_name"
-        machine.ip shouldBe "192.168.1.1"
         machine.cpuLoad shouldBe 1
         machine.memLoad shouldBe 2
         machine.diskUsage shouldBe 3
@@ -274,11 +219,6 @@ class MachineServiceTest : TestWithMaria({
         shouldThrow<NotFoundException> {
             MachineService.update(300, hostname = "anything")
         }.message shouldBe "调度服务器 300 不存在或已被删除"
-
-        // IP 已存在
-        shouldThrow<DuplicateException> {
-            MachineService.update(1, ip = "17.212.169.100")
-        }.message shouldBe "IP 地址 17.212.169.100 已存在"
 
         // hostname 已存在
         shouldThrow<DuplicateException> {

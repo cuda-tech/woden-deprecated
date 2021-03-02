@@ -74,18 +74,6 @@ object MachineService : Service(MachineDAO) {
     fun findByHostname(name: String) = find<MachinePO>(MachineDAO.hostname eq name and (MachineDAO.isRemove eq false))?.toMachineDTO()
 
     /**
-     * 通过[ip]查找服务器信息
-     * 如果找不到或已被删除，则返回 null
-     */
-    fun findByIP(ip: String) = find<MachinePO>(MachineDAO.isRemove eq false and (MachineDAO.ip eq ip))?.toMachineDTO()
-
-    /**
-     * 通过[mac]查找服务器信息
-     * 如果找不到或已被删除，则返回 null
-     */
-    fun findByMac(mac: String) = find<MachinePO>(MachineDAO.isRemove eq false and (MachineDAO.mac eq mac))?.toMachineDTO()
-
-    /**
      * 返回一台正在摸鱼的服务器(ie. 内存 & CPU 负载最低的服务器)
      */
     fun findSlackMachine(): MachineDTO {
@@ -107,22 +95,18 @@ object MachineService : Service(MachineDAO) {
 
     /**
      * 创建服务器
-     * 如果提供的[ip]或[hostname]或[mac]已存在，则抛出 DuplicateException
+     * 如果提供的[hostname]已存在，则抛出 DuplicateException
      * 服务器的 cpu/内存/磁盘 负载由 Tracker 自行获取，因此不需要提供
      */
-    fun create(ip: String, hostname: String, mac: String): MachineDTO = Database.global.useTransaction {
-        findByIP(ip)?.let { throw DuplicateException(I18N.ipAddress, ip, I18N.existsAlready) }
+    fun create(hostname: String): MachineDTO = Database.global.useTransaction {
         findByHostname(hostname)?.let { throw DuplicateException(I18N.hostname, hostname, I18N.existsAlready) }
-        findByMac(mac)?.let { throw DuplicateException(I18N.mac, mac, I18N.existsAlready) }
         val machine = MachinePO {
-            this.ip = ip
             this.isActive = true
             this.role = MachineRole.SLAVE
             this.isRemove = false
             this.createTime = LocalDateTime.now()
             this.updateTime = LocalDateTime.now()
             this.hostname = hostname
-            this.mac = mac
             this.cpuLoad = 0 // 以下字段由 MachineTracker 自动更新
             this.memLoad = 0
             this.diskUsage = 0
@@ -134,12 +118,10 @@ object MachineService : Service(MachineDAO) {
     /**
      * 更新服务器信息
      * 如果给定的服务器[id]不存在或已被删除，则抛出 NotFoundException
-     * 如果试图更新[ip], 且[ip]已存在，则抛出 DuplicateException
      * 如果试图更新[hostname], 且[hostname]已存在，则抛出 DuplicateException
      */
     fun update(
         id: Int,
-        ip: String? = null,
         hostname: String? = null,
         cpuLoad: Int? = null,
         memLoad: Int? = null,
@@ -149,10 +131,6 @@ object MachineService : Service(MachineDAO) {
     ): MachineDTO = Database.global.useTransaction {
         val machine = find<MachinePO>(MachineDAO.id eq id and (MachineDAO.isRemove eq false))
             ?: throw NotFoundException(I18N.machine, id, I18N.notExistsOrHasBeenRemove)
-        ip?.let {
-            findByIP(ip)?.let { throw DuplicateException(I18N.ipAddress, ip, I18N.existsAlready) }
-            machine.ip = ip
-        }
         hostname?.let {
             findByHostname(hostname)?.let { throw DuplicateException(I18N.hostname, hostname, I18N.existsAlready) }
             machine.hostname = hostname
@@ -162,7 +140,7 @@ object MachineService : Service(MachineDAO) {
         diskUsage?.let { machine.diskUsage = diskUsage }
         isActive?.let { machine.isActive = isActive }
         role?.let { machine.role = role }
-        anyNotNull(ip, hostname, cpuLoad, memLoad, diskUsage, isActive, role)?.let {
+        anyNotNull(hostname, cpuLoad, memLoad, diskUsage, isActive, role)?.let {
             machine.updateTime = LocalDateTime.now()
             machine.flushChanges()
         }

@@ -27,12 +27,6 @@ class MachineUtilTest : StringSpec({
     "获取硬件信息" {
         val systemInfo = MachineUtil.systemInfo
         systemInfo.hostname.length shouldBeGreaterThan 0
-        systemInfo.mac shouldContain Regex("([A-F0-9]{2}-){5}[A-F0-9]{2}")
-        systemInfo.ip.split(".").map { it.toInt() }.map {
-            it shouldBeGreaterThan 0
-            it shouldBeLessThan 256
-            it
-        }.size shouldBe 4
 
         Thread.sleep(1000L) // 为了统计 CPU 使用率，需要等待一会
         val loadInfo = MachineUtil.loadInfo

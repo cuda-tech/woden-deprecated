@@ -80,8 +80,6 @@ abstract class TestWithDistribution(private vararg val tables: String = arrayOf(
         mockkObject(MachineUtil)
         val machine = MachineService.findById(id) ?: throw NotFoundException()
         every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo( // machine ID = 1
-            ip = machine.ip,
-            mac = machine.mac,
             hostname = machine.hostname,
             isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
         )

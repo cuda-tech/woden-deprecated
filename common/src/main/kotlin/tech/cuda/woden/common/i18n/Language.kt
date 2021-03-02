@@ -53,14 +53,12 @@ interface Language {
     val existsAlready: String
     val fileType: String
     val updateNotAllow: String
-    val ipAddress: String
     val hasBeenRemove: String
     val illegal: String
     val scheduleFormat: String
     val missing: String
     val canNotUpdateTo: String
     val hostname: String
-    val mac: String
 }
 
 
