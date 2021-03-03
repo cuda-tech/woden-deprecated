@@ -14,22 +14,22 @@
 package tech.cuda.woden.webserver.controller
 
 import io.kotest.matchers.shouldBe
-import tech.cuda.woden.common.service.dto.MachineDTO
+import tech.cuda.woden.common.service.dto.ContainerDTO
 import tech.cuda.woden.webserver.RestfulTestToolbox
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-open class MachineControllerTest : RestfulTestToolbox("users", "machines") {
+open class ContainerControllerTest : RestfulTestToolbox("users", "containers") {
 
     @Test
     fun listing() {
         val validCount = 188
-        with(postman.get("/api/machine").shouldSuccess) {
-            val machines = this.getList<MachineDTO>("machines")
+        with(postman.get("/api/container").shouldSuccess) {
+            val containers = this.getList<ContainerDTO>("containers")
             val count = this.get<Int>("count")
-            machines.size shouldBe validCount
+            containers.size shouldBe validCount
             count shouldBe validCount
         }
 
@@ -37,10 +37,10 @@ open class MachineControllerTest : RestfulTestToolbox("users", "machines") {
         val queryTimes = validCount / pageSize + 1
         val lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/machine", mapOf("page" to page, "pageSize" to pageSize)).shouldSuccess) {
-                val machines = this.getList<MachineDTO>("machines")
+            with(postman.get("/api/container", mapOf("page" to page, "pageSize" to pageSize)).shouldSuccess) {
+                val containers = this.getList<ContainerDTO>("containers")
                 val count = this.get<Int>("count")
-                machines.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
         }
@@ -54,17 +54,17 @@ open class MachineControllerTest : RestfulTestToolbox("users", "machines") {
         var queryTimes = validCount / pageSize + 1
         var lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/machine", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess) {
-                val machines = this.getList<MachineDTO>("machines")
+            with(postman.get("/api/container", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess) {
+                val containers = this.getList<ContainerDTO>("containers")
                 val count = this.get<Int>("count")
-                machines.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
 
-            with(postman.get("/api/machine", mapOf("page" to page, "pageSize" to pageSize, "like" to "  ")).shouldSuccess) {
-                val machines = this.getList<MachineDTO>("machines")
+            with(postman.get("/api/container", mapOf("page" to page, "pageSize" to pageSize, "like" to "  ")).shouldSuccess) {
+                val containers = this.getList<ContainerDTO>("containers")
                 val count = this.get<Int>("count")
-                machines.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
         }
@@ -75,10 +75,10 @@ open class MachineControllerTest : RestfulTestToolbox("users", "machines") {
         queryTimes = validCount / pageSize + 1
         lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/machine", mapOf("page" to page, "pageSize" to pageSize, "like" to " a ")).shouldSuccess) {
-                val machines = this.getList<MachineDTO>("machines")
+            with(postman.get("/api/container", mapOf("page" to page, "pageSize" to pageSize, "like" to " a ")).shouldSuccess) {
+                val containers = this.getList<ContainerDTO>("containers")
                 val count = this.get<Int>("count")
-                machines.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
         }
@@ -89,10 +89,10 @@ open class MachineControllerTest : RestfulTestToolbox("users", "machines") {
         queryTimes = validCount / pageSize + 1
         lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/machine", mapOf("page" to page, "pageSize" to pageSize, "like" to " a b")).shouldSuccess) {
-                val machines = this.getList<MachineDTO>("machines")
+            with(postman.get("/api/container", mapOf("page" to page, "pageSize" to pageSize, "like" to " a b")).shouldSuccess) {
+                val containers = this.getList<ContainerDTO>("containers")
                 val count = this.get<Int>("count")
-                machines.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
         }

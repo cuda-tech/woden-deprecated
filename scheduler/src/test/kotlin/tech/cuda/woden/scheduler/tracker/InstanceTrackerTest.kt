@@ -24,14 +24,14 @@ import tech.cuda.woden.scheduler.runner.EnvSetter
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class InstanceTrackerTest : TestWithDistribution("machines", "jobs", "tasks", "files", "file_mirrors") {
+class InstanceTrackerTest : TestWithDistribution("containers", "jobs", "tasks", "files", "file_mirrors") {
 
     @Test
-    fun testCreateInstanceForReadyBashJob() = supposeImMachine(1) {
+    fun testCreateInstanceForReadyBashJob() = supposeImContainer(1) {
         EnvSetter.autoConvertPathFromWindows2WSL {
             // (Job Id = 4, task ID = 35, mirror ID = 235, File ID = 13)
-            val machineTracker = MachineTracker(afterStarted = {
-                val instanceTracker = InstanceTracker(it.machine, afterStarted = { self ->
+            val containerTracker = ContainerTracker(afterStarted = {
+                val instanceTracker = InstanceTracker(it.container, afterStarted = { self ->
                     val (instances, count) = InstanceService.listing(pageId = 1, pageSize = 1000, jobId = 4, status = InstanceStatus.RUNNING)
                     count shouldBe 1
                     val instance = instances.first()
@@ -46,16 +46,16 @@ class InstanceTrackerTest : TestWithDistribution("machines", "jobs", "tasks", "f
                 instance.log shouldBe "hello bash instance\n"
                 it.cancel()
             })
-            machineTracker.start()
-            machineTracker.join()
+            containerTracker.start()
+            containerTracker.join()
         }
     }
 
     @Test
-    fun testCreateInstanceForReadyPythonJob() = supposeImMachine(3) {
+    fun testCreateInstanceForReadyPythonJob() = supposeImContainer(3) {
         // (Job Id = 6, task ID = 59, mirror ID = 253, File ID = 15)
-        val machineTracker = MachineTracker(afterStarted = {
-            val instanceTracker = InstanceTracker(it.machine, afterStarted = { self ->
+        val containerTracker = ContainerTracker(afterStarted = {
+            val instanceTracker = InstanceTracker(it.container, afterStarted = { self ->
                 val (instances, count) = InstanceService.listing(pageId = 1, pageSize = 1000, jobId = 6, status = InstanceStatus.RUNNING)
                 count shouldBe 1
                 val instance = instances.first()
@@ -70,16 +70,16 @@ class InstanceTrackerTest : TestWithDistribution("machines", "jobs", "tasks", "f
             instance.log shouldBe "hello python instance\n"
             it.cancel()
         })
-        machineTracker.start()
-        machineTracker.join()
+        containerTracker.start()
+        containerTracker.join()
     }
 
     @Test
-    fun testCreateInstanceForReadySparkSqlJob() = supposeImMachine(10) {
+    fun testCreateInstanceForReadySparkSqlJob() = supposeImContainer(10) {
         EnvSetter.autoSetLocalAndDerbyDir {
             // (Job Id = 16, task ID = 49, mirror ID = 290, File ID = 7)
-            val machineTracker = MachineTracker(afterStarted = { it ->
-                val instanceTracker = InstanceTracker(it.machine, afterStarted = { self ->
+            val containerTracker = ContainerTracker(afterStarted = { it ->
+                val instanceTracker = InstanceTracker(it.container, afterStarted = { self ->
                     val (instances, count) = InstanceService.listing(pageId = 1, pageSize = 1000, jobId = 16, status = InstanceStatus.RUNNING)
                     count shouldBe 1
                     val instance = instances.first()
@@ -94,8 +94,8 @@ class InstanceTrackerTest : TestWithDistribution("machines", "jobs", "tasks", "f
                 instance.log shouldContain "string_column\nhello world"
                 it.cancel()
             })
-            machineTracker.start()
-            machineTracker.join()
+            containerTracker.start()
+            containerTracker.join()
         }
     }
 

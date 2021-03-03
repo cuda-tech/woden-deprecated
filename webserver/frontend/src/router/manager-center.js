@@ -10,8 +10,8 @@ export default [
         component: resolve => require(['../views/manager-center/GroupManager.vue'], resolve)
     },
     {
-        path: '/manager_center/machine',
-        name: 'MachineManager',
-        component: resolve => require(['../views/manager-center/MachineManager.vue'], resolve)
+        path: '/manager_center/container',
+        name: 'ContainerManager',
+        component: resolve => require(['../views/manager-center/ContainerManager.vue'], resolve)
     },
 ]

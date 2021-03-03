@@ -13,31 +13,31 @@
  */
 package tech.cuda.woden.scheduler.tracker
 
-import tech.cuda.woden.scheduler.util.MachineUtil
-import tech.cuda.woden.common.service.MachineService
-import tech.cuda.woden.common.service.dto.MachineDTO
+import tech.cuda.woden.scheduler.util.ContainerUtil
+import tech.cuda.woden.common.service.ContainerService
+import tech.cuda.woden.common.service.dto.ContainerDTO
 
 /**
- * 负责服务器注册 & 负载更新
+ * 负责容器注册 & 负载更新
  * 其中 [afterStarted] 是启动后的回调，一般只用于单测
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class MachineTracker(private val afterStarted: (MachineTracker) -> Unit = {}) : Tracker() {
+class ContainerTracker(private val afterStarted: (ContainerTracker) -> Unit = {}) : Tracker() {
 
-    lateinit var machine: MachineDTO
+    lateinit var container: ContainerDTO
 
     /**
-     * 启动时根据 hostname 地址判断机器是否已注册
-     * 如果尚未注册，则注册机器
-     * 最后更新机器的负载信息
+     * 启动时根据 hostname 地址判断容器是否已注册
+     * 如果尚未注册，则注册容器
+     * 最后更新容器的负载信息
      */
     override fun onStarted() {
-        val systemInfo = MachineUtil.systemInfo
-        val loadInfo = MachineUtil.loadInfo
-        machine = MachineService.findByHostname(systemInfo.hostname) ?: MachineService.create(systemInfo.hostname)
-        machine = MachineService.update(
-            id = machine.id,
+        val systemInfo = ContainerUtil.systemInfo
+        val loadInfo = ContainerUtil.loadInfo
+        container = ContainerService.findByHostname(systemInfo.hostname) ?: ContainerService.create(systemInfo.hostname)
+        container = ContainerService.update(
+            id = container.id,
             cpuLoad = loadInfo.cpu,
             memLoad = loadInfo.memory,
             diskUsage = loadInfo.diskUsage
@@ -46,12 +46,12 @@ class MachineTracker(private val afterStarted: (MachineTracker) -> Unit = {}) : 
     }
 
     /**
-     * 每次心跳检查机器负载并更新
+     * 每次心跳检查容器负载并更新
      */
     override fun onHeartBeat() {
-        val loadInfo = MachineUtil.loadInfo
-        machine = MachineService.update(
-            id = machine.id,
+        val loadInfo = ContainerUtil.loadInfo
+        container = ContainerService.update(
+            id = container.id,
             cpuLoad = loadInfo.cpu,
             memLoad = loadInfo.memory,
             diskUsage = loadInfo.diskUsage

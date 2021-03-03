@@ -20,7 +20,7 @@ package tech.cuda.woden.common.i18n
 interface Language {
     val user: String
     val group: String
-    val machine: String
+    val container: String
     val file: String
     val parentNode: String
     val fileMirror: String

@@ -26,7 +26,7 @@ import java.time.LocalDateTime
 data class JobDTO(
     val id: Int,
     val taskId: Int,
-    val machineId: Int?,
+    val containerId: Int?,
     val status: JobStatus,
     val hour: Int,
     val minute: Int,

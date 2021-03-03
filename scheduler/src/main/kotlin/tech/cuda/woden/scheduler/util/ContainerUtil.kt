@@ -25,7 +25,7 @@ import kotlin.math.ceil
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-object MachineUtil {
+object ContainerUtil {
 
     data class SystemInfo(val hostname: String, val isWindows: Boolean = false)
     data class LoadInfo(val cpu: Int, val memory: Int, val diskUsage: Int)

@@ -11,30 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.woden.common.service.po
-
-import me.liuwj.ktorm.entity.Entity
-import tech.cuda.woden.common.service.po.dtype.MachineRole
-import java.time.LocalDateTime
+package tech.cuda.woden.common.service.po.dtype
 
 /**
- * 调度服务器
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-internal interface MachinePO : Entity<MachinePO> {
-    companion object : Entity.Factory<MachinePO>()
-
-    val id: Int
-    var hostname: String
-    var cpuLoad: Int
-    var memLoad: Int
-    var diskUsage: Int
-    var role: MachineRole
-    var isActive: Boolean
-    var isRemove: Boolean
-    var createTime: LocalDateTime
-    var updateTime: LocalDateTime
+enum class ContainerRole {
+    MASTER,
+    SLAVE
 }
-
-

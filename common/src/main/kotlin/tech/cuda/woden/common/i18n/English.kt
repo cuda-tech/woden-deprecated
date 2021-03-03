@@ -21,7 +21,7 @@ data class English(
     override val user: String = "user",
     override val group: String = "group",
     override val notExistsOrHasBeenRemove: String = "does not exists or has been remove",
-    override val machine: String = "scheduler machine",
+    override val container: String = "scheduler container",
     override val file: String = "file node",
     override val fileMirror: String = "file mirror",
     override val task: String = "schedule task",

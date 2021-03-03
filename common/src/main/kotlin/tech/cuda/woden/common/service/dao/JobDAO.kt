@@ -38,8 +38,8 @@ internal object JobDAO : Table<JobPO>("jobs") {
 
     @BIGINT
     @UNSIGNED
-    @COMMENT("执行机器 ID")
-    val machineId = int("machine_id").bindTo { it.machineId }
+    @COMMENT("执行容器 ID")
+    val containerId = int("container_id").bindTo { it.containerId }
 
     @VARCHAR(10)
     @COMMENT("作业状态")

@@ -1,15 +1,13 @@
 import '../axios-mocker'
-import machineAPI from '@/api/MachineAPI'
+import containerAPI from '@/api/ContainerAPI'
 
-describe('服务器接口', () => {
+describe('容器接口', () => {
 
-    test('通过 ID 查找服务器', done => {
-        machineAPI.find(1, machine => {
-            expect(machine).toEqual({
+    test('通过 ID 查找容器', done => {
+        containerAPI.find(1, container => {
+            expect(container).toEqual({
                 id: 1,
                 hostname: 'new host name',
-                mac: '1F-72-5B-F7-10-AB',
-                ip: '107.116.90.29',
                 cpuLoad: 34,
                 memLoad: 31,
                 diskUsage: 63,
@@ -20,13 +18,11 @@ describe('服务器接口', () => {
         })
     });
 
-    test('创建服务器', done => {
-        machineAPI.create('192.168.1.20', token => {
+    test('创建容器', done => {
+        containerAPI.create('192.168.1.20', token => {
             expect(token).toEqual({
                 id: 247,
                 hostname: '',
-                mac: '',
-                ip: '192.168.1.20',
                 cpuLoad: 0,
                 memLoad: 0,
                 diskUsage: 0,
@@ -37,19 +33,17 @@ describe('服务器接口', () => {
         })
     });
 
-    test('删除服务器', done => {
-        machineAPI.delete(1, done)
+    test('删除容器', done => {
+        containerAPI.delete(1, done)
     });
 
-    test('服务器分页查询', done => {
-        machineAPI.listing({pageId: 1, pageSize: 3}, (count, machines) => {
+    test('容器分页查询', done => {
+        containerAPI.listing({pageId: 1, pageSize: 3}, (count, containers) => {
             expect(count).toBe(188);
-            expect(machines).toEqual([
+            expect(containers).toEqual([
                 {
                     id: 1,
                     hostname: 'new host name',
-                    mac: '1F-72-5B-F7-10-AB',
-                    ip: '107.116.90.29',
                     cpuLoad: 34,
                     memLoad: 31,
                     diskUsage: 63,
@@ -59,8 +53,6 @@ describe('服务器接口', () => {
                 {
                     id: 3,
                     hostname: 'nknvleif',
-                    mac: '9E-EE-49-FA-00-F4',
-                    ip: '192.168.1.1',
                     cpuLoad: 98,
                     memLoad: 48,
                     diskUsage: 31,
@@ -70,8 +62,6 @@ describe('服务器接口', () => {
                 {
                     id: 5,
                     hostname: 'anything',
-                    mac: '7D-75-70-DE-73-0E',
-                    ip: '192.168.1.2',
                     cpuLoad: 1,
                     memLoad: 60,
                     diskUsage: 59,
@@ -83,13 +73,11 @@ describe('服务器接口', () => {
         })
     });
 
-    test('更新服务器', done => {
-        machineAPI.update(3, {hostname: 'nknvleif'}, machine => {
-            expect(machine).toEqual({
+    test('更新容器', done => {
+        containerAPI.update(3, {hostname: 'nknvleif'}, container => {
+            expect(container).toEqual({
                 id: 3,
                 hostname: 'nknvleif',
-                mac: '9E-EE-49-FA-00-F4',
-                ip: '192.168.1.21',
                 cpuLoad: 98,
                 memLoad: 48,
                 diskUsage: 31,

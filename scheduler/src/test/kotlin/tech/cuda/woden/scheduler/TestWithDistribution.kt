@@ -18,8 +18,8 @@ import io.mockk.*
 import tech.cuda.woden.common.configuration.DataSourceMocker
 import tech.cuda.woden.common.configuration.Woden
 import tech.cuda.woden.common.service.Database
-import tech.cuda.woden.common.service.MachineService
-import tech.cuda.woden.scheduler.util.MachineUtil
+import tech.cuda.woden.common.service.ContainerService
+import tech.cuda.woden.scheduler.util.ContainerUtil
 import tech.cuda.woden.common.service.exception.NotFoundException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -74,17 +74,17 @@ abstract class TestWithDistribution(private vararg val tables: String = arrayOf(
     }
 
     /**
-     * mock 机器，假定自己是编号为[id]的服务器
+     * mock 容器，假定自己是编号为[id]的容器
      */
-    protected fun supposeImMachine(id: Int, block: () -> Unit) {
-        mockkObject(MachineUtil)
-        val machine = MachineService.findById(id) ?: throw NotFoundException()
-        every { MachineUtil.systemInfo } returns MachineUtil.SystemInfo( // machine ID = 1
-            hostname = machine.hostname,
+    protected fun supposeImContainer(id: Int, block: () -> Unit) {
+        mockkObject(ContainerUtil)
+        val container = ContainerService.findById(id) ?: throw NotFoundException()
+        every { ContainerUtil.systemInfo } returns ContainerUtil.SystemInfo( // container ID = 1
+            hostname = container.hostname,
             isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
         )
         block()
-        unmockkObject(MachineUtil)
+        unmockkObject(ContainerUtil)
     }
 }
 

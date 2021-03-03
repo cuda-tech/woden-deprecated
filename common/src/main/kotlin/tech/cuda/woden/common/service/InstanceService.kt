@@ -118,7 +118,7 @@ object InstanceService : Service(InstanceDAO) {
         val conditions = mutableListOf(InstanceDAO.isRemove eq false)
         id?.let { conditions.add(InstanceDAO.id eq id) }
         jobId?.let { conditions.add(InstanceDAO.jobId eq jobId) }
-        val (instances, count) = batch<InstancePO>(filter = conditions.reduce { a, b -> a and b })
+        val (instances, _) = batch<InstancePO>(filter = conditions.reduce { a, b -> a and b })
         val now = LocalDateTime.now()
         instances.forEach {
             it.isRemove = true

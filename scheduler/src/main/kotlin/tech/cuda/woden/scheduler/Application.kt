@@ -18,7 +18,7 @@ import tech.cuda.woden.common.service.Database
 import tech.cuda.woden.scheduler.tracker.ClusterTracker
 import tech.cuda.woden.scheduler.tracker.InstanceTracker
 import tech.cuda.woden.scheduler.tracker.JobTracker
-import tech.cuda.woden.scheduler.tracker.MachineTracker
+import tech.cuda.woden.scheduler.tracker.ContainerTracker
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -26,11 +26,11 @@ import tech.cuda.woden.scheduler.tracker.MachineTracker
  */
 fun main() {
     Database.connect(Woden.datasource)
-    val machineTracker = MachineTracker(afterStarted = {
-        ClusterTracker(it.machine).start()
+    val containerTracker = ContainerTracker(afterStarted = {
+        ClusterTracker(it.container).start()
         JobTracker().start()
-        InstanceTracker(it.machine).start()
+        InstanceTracker(it.container).start()
     })
-    machineTracker.start()
-    machineTracker.join()
+    containerTracker.start()
+    containerTracker.join()
 }

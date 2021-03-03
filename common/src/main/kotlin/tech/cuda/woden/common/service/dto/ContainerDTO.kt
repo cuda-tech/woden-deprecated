@@ -11,31 +11,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.woden.common.service.po
+package tech.cuda.woden.common.service.dto
 
-import me.liuwj.ktorm.entity.Entity
-import tech.cuda.woden.common.service.po.dtype.JobStatus
+import tech.cuda.woden.annotation.pojo.DTO
+import tech.cuda.woden.common.service.po.ContainerPO
+import tech.cuda.woden.common.service.po.dtype.ContainerRole
 import java.time.LocalDateTime
 
 /**
- * 当天的例行作业
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-internal interface JobPO : Entity<JobPO> {
-    companion object : Entity.Factory<JobPO>()
-
-    val id: Int
-    var taskId: Int
-    var containerId: Int?
-    var status: JobStatus
-    var hour: Int
-    var minute: Int
-    var runCount: Int
-    var isRemove: Boolean
-    var createTime: LocalDateTime
-    var updateTime: LocalDateTime
-}
-
-
-
+@DTO(ContainerPO::class)
+data class ContainerDTO(
+    val id: Int,
+    val hostname: String,
+    val cpuLoad: Int,
+    val memLoad: Int,
+    val diskUsage: Int,
+    val role: ContainerRole,
+    val isActive: Boolean,
+    val createTime: LocalDateTime,
+    val updateTime: LocalDateTime
+)

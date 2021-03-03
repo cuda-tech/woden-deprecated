@@ -19,7 +19,6 @@ import me.liuwj.ktorm.global.add
 import me.liuwj.ktorm.global.global
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.dao.JobDAO
-import tech.cuda.woden.common.service.dao.TaskDAO
 import tech.cuda.woden.common.service.dto.JobDTO
 import tech.cuda.woden.common.service.dto.toJobDTO
 import tech.cuda.woden.common.service.dto.TaskDTO
@@ -28,7 +27,6 @@ import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.mysql.function.toDate
 import tech.cuda.woden.common.service.po.JobPO
-import tech.cuda.woden.common.service.po.TaskPO
 import tech.cuda.woden.common.service.po.dtype.JobStatus
 import tech.cuda.woden.common.service.po.dtype.SchedulePeriod
 import tech.cuda.woden.common.utils.*
@@ -49,7 +47,7 @@ object JobService : Service(JobDAO) {
     /**
      * 分页查询作业信息，结果按创建时间倒序返回
      * 如果提供了[taskId]，则只返回该任务的作业
-     * 如果提供了[machineId]，则只返回该机器执行的作业
+     * 如果提供了[containerId]，则只返回该容器执行的作业
      * 如果提供了[hour]，则只返回在[hour]执行的作业
      * 如果提供了[status]，则只返回对应状态的作业
      * 如果提供了[after]，则只返回创建日期晚于或等于它的记录
@@ -59,7 +57,7 @@ object JobService : Service(JobDAO) {
         pageId: Int,
         pageSize: Int,
         taskId: Int? = null,
-        machineId: Int? = null,
+        containerId: Int? = null,
         status: JobStatus? = null,
         hour: Int? = null,
         after: LocalDateTime? = null,
@@ -67,7 +65,7 @@ object JobService : Service(JobDAO) {
     ): Pair<List<JobDTO>, Int> {
         val conditions = mutableListOf(JobDAO.isRemove eq false)
         taskId?.let { conditions.add(JobDAO.taskId eq taskId) }
-        machineId?.let { conditions.add(JobDAO.machineId eq machineId) }
+        containerId?.let { conditions.add(JobDAO.containerId eq containerId) }
         status?.let { conditions.add(JobDAO.status eq status) }
         hour?.let { conditions.add(JobDAO.hour eq hour) }
         after?.let { conditions.add(JobDAO.createTime.toDate() greaterEq after.toLocalDate()) }
@@ -103,7 +101,7 @@ object JobService : Service(JobDAO) {
             if (task.period != SchedulePeriod.HOUR) { // 非小时任务只会生成一个作业
                 val job = JobPO {
                     taskId = task.id
-                    machineId = null
+                    containerId = null
                     status = JobStatus.INIT
                     hour = task.format.hour!! // 非小时 hour 一定不为 null
                     minute = task.format.minute
@@ -122,7 +120,7 @@ object JobService : Service(JobDAO) {
                     0 -> (0..23).map { hr ->
                         val job = JobPO {
                             taskId = task.id
-                            machineId = null
+                            containerId = null
                             status = JobStatus.INIT
                             hour = hr
                             minute = task.format.minute
@@ -145,25 +143,25 @@ object JobService : Service(JobDAO) {
     /**
      * 更新指定[id]的作业信息
      * 如果指定[id]的作业不存在或已被删除，则抛出 NotFoundException
-     * 如果试图更新[machineId]，并且该机器不存在或已被删除，则抛出 NotFoundException
+     * 如果试图更新[containerId]，并且该容器不存在或已被删除，则抛出 NotFoundException
      */
-    fun update(id: Int, status: JobStatus? = null, machineId: Int? = null, runCount: Int? = null): JobDTO {
+    fun update(id: Int, status: JobStatus? = null, containerId: Int? = null, runCount: Int? = null): JobDTO {
         val job = find<JobPO>(JobDAO.id eq id and (JobDAO.isRemove eq false))
             ?: throw NotFoundException(I18N.job, id, I18N.notExistsOrHasBeenRemove)
         status?.let {
             // todo: 作业状态可达性判断
             job.status = status
         }
-        machineId?.let {
-            MachineService.findById(machineId)
-                ?: throw NotFoundException(I18N.machine, machineId, I18N.notExistsOrHasBeenRemove)
-            // todo: 机器存活性判断
-            job.machineId = machineId
+        containerId?.let {
+            ContainerService.findById(containerId)
+                ?: throw NotFoundException(I18N.container, containerId, I18N.notExistsOrHasBeenRemove)
+            // todo: 容器存活性判断
+            job.containerId = containerId
         }
         runCount?.let {
             job.runCount = runCount
         }
-        anyNotNull(status, machineId, runCount)?.let {
+        anyNotNull(status, containerId, runCount)?.let {
             job.updateTime = LocalDateTime.now()
             job.flushChanges()
         }
@@ -243,7 +241,7 @@ object JobService : Service(JobDAO) {
         id?.let { conditions.add(JobDAO.id eq id) }
         taskId?.let { conditions.add(JobDAO.taskId eq taskId) }
 
-        val (jobs, count) = batch<JobPO>(filter = conditions.reduce { a, b -> a and b })
+        val (jobs, _) = batch<JobPO>(filter = conditions.reduce { a, b -> a and b })
 
         val now = LocalDateTime.now()
         jobs.forEach {

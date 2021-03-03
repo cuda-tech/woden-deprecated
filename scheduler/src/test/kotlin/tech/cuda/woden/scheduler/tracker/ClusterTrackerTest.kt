@@ -16,36 +16,36 @@ package tech.cuda.woden.scheduler.tracker
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import tech.cuda.woden.scheduler.TestWithDistribution
-import tech.cuda.woden.common.service.MachineService
-import tech.cuda.woden.common.service.po.dtype.MachineRole
+import tech.cuda.woden.common.service.ContainerService
+import tech.cuda.woden.common.service.po.dtype.ContainerRole
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class ClusterTrackerTest : TestWithDistribution("machines") {
+class ClusterTrackerTest : TestWithDistribution("containers") {
 
     @Test
     fun testEnsureOnlyOneMaster() {
-        MachineService.findById(1)!!.role shouldBe MachineRole.MASTER
-        MachineService.listingActiveMaster().second shouldBe 3
-        MachineService.listingActiveMaster().first.map { it.id } shouldContainExactlyInAnyOrder listOf(1, 3, 5)
-        val tracker = ClusterTracker(MachineService.findById(1)!!, afterStarted = {
-            val (masters, count) = MachineService.listingActiveMaster()
+        ContainerService.findById(1)!!.role shouldBe ContainerRole.MASTER
+        ContainerService.listingActiveMaster().second shouldBe 3
+        ContainerService.listingActiveMaster().first.map { it.id } shouldContainExactlyInAnyOrder listOf(1, 3, 5)
+        val tracker = ClusterTracker(ContainerService.findById(1)!!, afterStarted = {
+            val (masters, count) = ContainerService.listingActiveMaster()
             count shouldBe 1
-            masters.first() shouldBe MachineService.findById(58)!!
+            masters.first() shouldBe ContainerService.findById(58)!!
             it.cancel()
         })
         tracker.start()
         tracker.join()
-        MachineService.findById(1)!!.role shouldBe MachineRole.SLAVE
+        ContainerService.findById(1)!!.role shouldBe ContainerRole.SLAVE
     }
 
     @Test
     fun testCheckMasterAlive() = supposeNowIs(2020, 1, 1, 0, 0, 30) {
-        MachineService.listingActiveMaster().second shouldBe 3
-        val tracker = ClusterTracker(MachineService.findById(1)!!, afterStarted = {
-            MachineService.listingActiveMaster().second shouldBe 1
+        ContainerService.listingActiveMaster().second shouldBe 3
+        val tracker = ClusterTracker(ContainerService.findById(1)!!, afterStarted = {
+            ContainerService.listingActiveMaster().second shouldBe 1
             it.cancel()
         })
         tracker.start()
@@ -54,10 +54,10 @@ class ClusterTrackerTest : TestWithDistribution("machines") {
 
     @Test
     fun testCheckSlave() = supposeNowIs(2020, 1, 1, 0, 0, 30) {
-        MachineService.listingActiveMaster().second shouldBe 3
-        MachineService.listingActiveSlave().second shouldBe 156
-        val tracker = ClusterTracker(MachineService.findById(58)!!, afterStarted = {
-            MachineService.listingActiveSlave().second shouldBe 102 + 3 // 原有的 102 个活跃 slave + 3 个降级的 master
+        ContainerService.listingActiveMaster().second shouldBe 3
+        ContainerService.listingActiveSlave().second shouldBe 156
+        val tracker = ClusterTracker(ContainerService.findById(58)!!, afterStarted = {
+            ContainerService.listingActiveSlave().second shouldBe 102 + 3 // 原有的 102 个活跃 slave + 3 个降级的 master
             it.cancel()
         })
         tracker.start()

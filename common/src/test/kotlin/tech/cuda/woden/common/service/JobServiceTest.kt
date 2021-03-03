@@ -19,7 +19,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import tech.cuda.woden.common.service.dao.InstanceDAO
 import tech.cuda.woden.common.service.dao.JobDAO
-import tech.cuda.woden.common.service.dao.MachineDAO
+import tech.cuda.woden.common.service.dao.ContainerDAO
 import tech.cuda.woden.common.service.dao.TaskDAO
 import tech.cuda.woden.common.service.dto.TaskDTO
 import tech.cuda.woden.common.service.exception.NotFoundException
@@ -40,7 +40,7 @@ class JobServiceTest : TestWithMaria({
         job shouldNotBe null
         job!!
         job.taskId shouldBe 35
-        job.machineId shouldBe 1
+        job.containerId shouldBe 1
         job.status shouldBe JobStatus.READY
         job.hour shouldBe 16
         job.runCount shouldBe 1
@@ -110,7 +110,7 @@ class JobServiceTest : TestWithMaria({
         val taskId = 3
         val status = JobStatus.SUCCESS
         JobService.listing(1, 13, taskId = taskId, status = status).second shouldBe 14
-        JobService.listing(1, 13, taskId = taskId, status = status, machineId = 15).second shouldBe 2
+        JobService.listing(1, 13, taskId = taskId, status = status, containerId = 15).second shouldBe 2
         JobService.listing(1, 13, taskId = 4, status = status).second shouldBe 0
     }
 
@@ -126,7 +126,7 @@ class JobServiceTest : TestWithMaria({
                 val job = jobs[hr]
                 job shouldNotBe null
                 job!!
-                job.machineId shouldBe null
+                job.containerId shouldBe null
                 job.hour shouldBe hr
                 job.minute shouldBe 38
                 job.runCount shouldBe 0
@@ -147,7 +147,7 @@ class JobServiceTest : TestWithMaria({
         with(JobService.listing(1, 100, taskId = 112, before = now, after = now)) {
             this.second shouldBe 1
             val job = this.first.first()
-            job.machineId shouldBe null
+            job.containerId shouldBe null
             job.status shouldBe JobStatus.INIT
             job.hour shouldBe 16
             job.runCount shouldBe 0
@@ -178,10 +178,10 @@ class JobServiceTest : TestWithMaria({
     }
 
     "更新作业" {
-        JobService.update(4, status = JobStatus.INIT, machineId = 1, runCount = 123)
+        JobService.update(4, status = JobStatus.INIT, containerId = 1, runCount = 123)
         val job = JobService.findById(4)!!
         job.status shouldBe JobStatus.INIT
-        job.machineId shouldBe 1
+        job.containerId shouldBe 1
         job.runCount shouldBe 123
         job.updateTime shouldNotBe "2026-01-26 23:09:37".toLocalDateTime()
 
@@ -194,12 +194,12 @@ class JobServiceTest : TestWithMaria({
         }.message shouldBe "调度作业 10086 不存在或已被删除"
 
         shouldThrow<NotFoundException> {
-            JobService.update(4, machineId = 2)
-        }.message shouldBe "调度服务器 2 不存在或已被删除"
+            JobService.update(4, containerId = 2)
+        }.message shouldBe "调度容器 2 不存在或已被删除"
 
         shouldThrow<NotFoundException> {
-            JobService.update(4, machineId = 247)
-        }.message shouldBe "调度服务器 247 不存在或已被删除"
+            JobService.update(4, containerId = 247)
+        }.message shouldBe "调度容器 247 不存在或已被删除"
     }
 
     "删除作业" {
@@ -289,4 +289,4 @@ class JobServiceTest : TestWithMaria({
         }
     }
 
-}, TaskDAO, JobDAO, InstanceDAO, MachineDAO)
+}, TaskDAO, JobDAO, InstanceDAO, ContainerDAO)

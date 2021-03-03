@@ -17,7 +17,7 @@ import tech.cuda.woden.common.service.dto.JobDTO
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.InstanceService
 import tech.cuda.woden.common.service.JobService
-import tech.cuda.woden.common.service.MachineService
+import tech.cuda.woden.common.service.ContainerService
 import tech.cuda.woden.common.service.TaskService
 import tech.cuda.woden.common.service.po.dtype.InstanceStatus
 import tech.cuda.woden.common.service.po.dtype.JobStatus
@@ -64,15 +64,15 @@ class JobTracker(
 
     /**
      * 检查 init 状态的作业其上游任务是否都执行成功或状态为 PASS
-     * 如果是，则为其分配执行机器，并将状态置为 Ready
+     * 如果是，则为其分配执行容器，并将状态置为 Ready
      */
     private fun makeReadyForInitedJob() {
         batchExecute { batch, batchSize ->
             val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.INIT)
             jobs.forEach { job ->
                 if (JobService.isReady(job)) {
-                    val worker = MachineService.findSlackMachine()
-                    JobService.update(job.id, JobStatus.READY, machineId = worker.id)
+                    val worker = ContainerService.findSlackContainer()
+                    JobService.update(job.id, JobStatus.READY, containerId = worker.id)
                     readyJobs.add(job)
                 } else {
                     println(job)
@@ -133,8 +133,8 @@ class JobTracker(
             val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.FAILED)
             jobs.forEach { job ->
                 if (JobService.canRetry(job.id)) {
-                    val worker = MachineService.findSlackMachine()
-                    JobService.update(job.id, JobStatus.READY, machineId = worker.id)
+                    val worker = ContainerService.findSlackContainer()
+                    JobService.update(job.id, JobStatus.READY, containerId = worker.id)
                     readyJobs.add(job)
                 }
             }

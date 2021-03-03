@@ -23,7 +23,7 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class JobTrackerTest : TestWithDistribution("jobs", "tasks", "machines") {
+class JobTrackerTest : TestWithDistribution("jobs", "tasks", "containers") {
 
     /**
      * 各调度格式的任务数
@@ -73,7 +73,7 @@ class JobTrackerTest : TestWithDistribution("jobs", "tasks", "machines") {
             afterJobGenerated = {
                 val jobs = JobService.listing(1, 10000, status = JobStatus.INIT, after = now, before = now).first
                 jobs.size shouldBe 1236
-                jobs.forEach { it.machineId shouldBe null }
+                jobs.forEach { it.containerId shouldBe null }
             },
             afterMakeReady = { tracker ->
 //                JobService.listing(1, 10, status = JobStatus.INIT, after = now, before = now)
@@ -81,7 +81,7 @@ class JobTrackerTest : TestWithDistribution("jobs", "tasks", "machines") {
                 val jobs = JobService.listing(1, 10000, status = JobStatus.READY, after = now, before = now).first
                 jobs.size shouldBe 1236
                 println(jobs.size)
-                jobs.forEach { it.machineId shouldBe null }
+                jobs.forEach { it.containerId shouldBe null }
                 tracker.cancel()
             }
         )

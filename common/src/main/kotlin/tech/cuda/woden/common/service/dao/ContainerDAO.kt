@@ -15,24 +15,24 @@ package tech.cuda.woden.common.service.dao
 
 import me.liuwj.ktorm.schema.*
 import tech.cuda.woden.annotation.mysql.*
-import tech.cuda.woden.common.service.po.MachinePO
-import tech.cuda.woden.common.service.po.dtype.MachineRole
+import tech.cuda.woden.common.service.po.ContainerPO
+import tech.cuda.woden.common.service.po.dtype.ContainerRole
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object MachineDAO : Table<MachinePO>("machines") {
+internal object ContainerDAO : Table<ContainerPO>("containers") {
     @BIGINT
     @UNSIGNED
     @AUTO_INCREMENT
     @PRIMARY_KEY
-    @COMMENT("服务器 ID")
+    @COMMENT("容器 ID")
     val id = int("id").primaryKey().bindTo { it.id }
 
     @VARCHAR(128)
-    @COMMENT("服务器名称")
+    @COMMENT("容器名称")
     val hostname = varchar("hostname").bindTo { it.hostname }
 
     @TINYINT(4)
@@ -48,11 +48,11 @@ internal object MachineDAO : Table<MachinePO>("machines") {
     val diskUsage = int("disk_usage").bindTo { it.diskUsage }
 
     @VARCHAR(8)
-    @COMMENT("服务器角色: MASTER/SLAVE")
-    val role = enum("role", typeRef<MachineRole>()).bindTo { it.role }
+    @COMMENT("容器角色: MASTER/SLAVE")
+    val role = enum("role", typeRef<ContainerRole>()).bindTo { it.role }
 
     @BOOL
-    @COMMENT("服务器是否存活")
+    @COMMENT("容器是否存活")
     val isActive = boolean("is_active").bindTo { it.isActive }
 
     @BOOL

@@ -1,4 +1,4 @@
-id	task_id	machine_id	status	hour	minute	run_count	is_remove	create_time	update_time
+id	task_id	container_id	status	hour	minute	run_count	is_remove	create_time	update_time
 1	423	16	FAILED	18	40	2	1	2035-10-19 08:22:25	2038-11-07 22:32:33
 2	411	12	FAILED	10	49	0	0	2033-10-24 23:27:16	2034-09-20 21:16:39
 3	383	20	FAILED	14	23	3	0	2004-12-23 23:42:25	2007-01-22 13:37:36

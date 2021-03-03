@@ -199,9 +199,9 @@
                                     项目组管理
                                 </div>
                             </MenuItem>
-                            <MenuItem name="MachineManager">
-                                <div @click="$router.push({name: 'MachineManager'})">
-                                    机器管理
+                            <MenuItem name="ContainerManager">
+                                <div @click="$router.push({name: 'ContainerManager'})">
+                                    容器管理
                                 </div>
                             </MenuItem>
                         </Submenu>

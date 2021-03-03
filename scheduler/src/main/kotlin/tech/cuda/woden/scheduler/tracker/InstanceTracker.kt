@@ -13,7 +13,7 @@
  */
 package tech.cuda.woden.scheduler.tracker
 
-import tech.cuda.woden.common.service.dto.MachineDTO
+import tech.cuda.woden.common.service.dto.ContainerDTO
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.*
 import tech.cuda.woden.common.service.po.dtype.FileType
@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @since 0.1.0
  */
 class InstanceTracker(
-    private val machine: MachineDTO,
+    private val container: ContainerDTO,
     private val afterStarted: (InstanceTracker) -> Unit = {}
 ) : Tracker() {
 
@@ -48,7 +48,7 @@ class InstanceTracker(
 
     private fun createInstanceForReadyJob() {
         batchExecute { batch, batchSize ->
-            val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.READY, machineId = machine.id)
+            val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.READY, containerId = container.id)
             jobs.filter { !runningJob.values.contains(it.id) }
                 .forEach { job ->
                     val task = TaskService.findById(job.taskId)
