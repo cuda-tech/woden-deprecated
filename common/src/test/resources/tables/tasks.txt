@@ -1,4 +1,4 @@
-id	mirror_id	group_id	name	owners	args	is_soft_fail	period	format	queue	priority	pending_timeout	running_timeout	parent	children	reties	retry_delay	is_valid	is_remove	create_time	update_time
+id	mirror_id	team_id	name	owners	args	is_soft_fail	period	format	queue	priority	pending_timeout	running_timeout	parent	children	reties	retry_delay	is_valid	is_remove	create_time	update_time
 1	243	12	dmejagfg	[135,127]	{}	0	WEEK	{"year": null, "month": null, "day": null, "weekday": 7, "hour": 4, "minute": 36}	hwibbnux	MIDDLE	35	13	{}	[]	0	5	1	1	2040-03-08 15:36:57	2040-03-16 19:24:14
 2	187	3	bvwtkgil	[154]	{}	0	HOUR	{"year": null, "month": null, "day": null, "weekday": null, "hour": null, "minute": 1}	niikmbea	HIGH	12	54	{}	[]	2	42	0	1	2015-11-18 08:25:39	2018-04-12 14:27:03
 3	143	28	zsaqjcux	[15]	{}	0	MONTH	{"year": null, "month": null, "day": 13, "weekday": null, "hour": 0, "minute": 37}	fzgmmnqh	MIDDLE	47	52	{"4":{"offset":false,"offsetDay":0,"weakDependency":false,"dependencyWaitTimeout":2147483647}}	[5]	3	55	1	0	2044-11-23 16:37:40	2046-12-26 23:24:40

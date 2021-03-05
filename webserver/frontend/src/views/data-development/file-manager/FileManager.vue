@@ -75,7 +75,7 @@
 <template>
     <div class="file-manager" style="background-color: #3C3F41; color: #BABABA;">
         <div style="border-bottom: solid 1px #323232; border-right: solid 1px #323232;">
-            <GroupSelection v-model="selectedGroupId" style="width: 120px;"/>
+            <TeamSelection v-model="selectedTeamId" style="width: 120px;"/>
             <FileManagerToolBar style="float: right"/>
         </div>
         <Modal v-model="createFileModal.visible" @on-ok="createFile" @on-cancel="createFileModal.visible = false">
@@ -125,7 +125,7 @@
 </template>
 
 <script>
-    import GroupSelection from "../../../components/selections/GroupSelection";
+    import TeamSelection from "../../../components/selections/TeamSelection";
     import FileManagerToolBar from "./FileManagerToolBar";
     import FileItem from "./FileItem";
     import '../../../assets/icons/iconfont.css'
@@ -134,7 +134,7 @@
     export default {
 
         components: {
-            GroupSelection: GroupSelection,
+            TeamSelection: TeamSelection,
             FileManagerToolBar: FileManagerToolBar,
             FileItem: FileItem
         },
@@ -151,7 +151,7 @@
             return {
                 height: 600,
                 files: [],
-                selectedGroupId: null,
+                selectedTeamId: null,
                 createFileModal: {
                     visible: false,
                     parentId: null,
@@ -183,7 +183,7 @@
             getRoot() {
                 this.axios.get('/file/root', {
                     params: {
-                        groupId: 1 //todo
+                        teamId: 1 //todo
                     }
                 }).then(data => {
                     let rootDir = data.file;
@@ -296,7 +296,7 @@
 
             createFile() {
                 let params = new FormData();
-                params.set("groupId", '1');
+                params.set("teamId", '1');
                 params.set("parentId", this.createFileModal.parentId);
                 params.set("name", this.createFileModal.name);
                 params.set("type", this.createFileModal.type);

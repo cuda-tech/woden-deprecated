@@ -9,7 +9,7 @@ describe('文件接口', () => {
             expect(files).toEqual([
                 {
                     id: 4,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 26,
                     name: 'zwgjydgn',
                     type: 'DIR',
@@ -19,7 +19,7 @@ describe('文件接口', () => {
                 },
                 {
                     id: 43,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 140,
                     name: 'kniovyqn',
                     type: 'SQL',
@@ -29,7 +29,7 @@ describe('文件接口', () => {
                 },
                 {
                     id: 6,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 167,
                     name: 'ladlehnr',
                     type: 'SQL',
@@ -39,7 +39,7 @@ describe('文件接口', () => {
                 },
                 {
                     id: 2,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 10,
                     name: 'jldwzlys',
                     type: 'SPARK',
@@ -58,7 +58,7 @@ describe('文件接口', () => {
             expect(files).toEqual([
                 {
                     id: 7,
-                    groupId: 7,
+                    teamId: 7,
                     ownerId: 36,
                     name: 'bamvjrno',
                     type: 'SQL',
@@ -68,7 +68,7 @@ describe('文件接口', () => {
                 },
                 {
                     id: 18,
-                    groupId: 16,
+                    teamId: 16,
                     ownerId: 48,
                     name: 'bcmawkte',
                     type: 'SQL',
@@ -78,7 +78,7 @@ describe('文件接口', () => {
                 },
                 {
                     id: 60,
-                    groupId: 5,
+                    teamId: 5,
                     ownerId: 48,
                     name: 'lwbaccod',
                     type: 'SQL',
@@ -95,7 +95,7 @@ describe('文件接口', () => {
         fileApi.findRoot(1, file => {
             expect(file).toEqual({
                 id: 1,
-                groupId: 1,
+                teamId: 1,
                 ownerId: 1,
                 name: 'root_project',
                 type: 'DIR',
@@ -113,7 +113,7 @@ describe('文件接口', () => {
             expect(files).toEqual([
                 {
                     id: 1,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 1,
                     name: 'root_project',
                     type: 'DIR',
@@ -134,10 +134,10 @@ describe('文件接口', () => {
     });
 
     test('创建文件节点', done => {
-        fileApi.create({groupId: 1, name: 'testCreate', parentId: 1}, file => {
+        fileApi.create({teamId: 1, name: 'testCreate', parentId: 1}, file => {
             expect(file).toEqual({
                 id: 70,
-                groupId: 1,
+                teamId: 1,
                 ownerId: 1,
                 name: 'testCreate',
                 type: 'SQL',
@@ -153,7 +153,7 @@ describe('文件接口', () => {
         fileApi.update(4, {ownerId: 26, name: 'testUpdate'}, file => {
             expect(file).toEqual({
                 id: 4,
-                groupId: 1,
+                teamId: 1,
                 ownerId: 26,
                 name: 'testUpdate',
                 type: 'DIR',

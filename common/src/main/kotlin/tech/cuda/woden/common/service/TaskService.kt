@@ -19,8 +19,6 @@ import me.liuwj.ktorm.global.add
 import me.liuwj.ktorm.global.findList
 import me.liuwj.ktorm.global.global
 import tech.cuda.woden.common.i18n.I18N
-import tech.cuda.woden.common.service.dao.InstanceDAO
-import tech.cuda.woden.common.service.dao.JobDAO
 import tech.cuda.woden.common.service.dao.TaskDAO
 import tech.cuda.woden.common.service.dto.TaskDTO
 import tech.cuda.woden.common.service.dto.toTaskDTO
@@ -28,8 +26,6 @@ import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.exception.PermissionException
 import tech.cuda.woden.common.service.mysql.function.contains
-import tech.cuda.woden.common.service.po.InstancePO
-import tech.cuda.woden.common.service.po.JobPO
 import tech.cuda.woden.common.service.po.TaskPO
 import tech.cuda.woden.common.service.po.dtype.ScheduleDependencyInfo
 import tech.cuda.woden.common.service.po.dtype.ScheduleFormat
@@ -47,7 +43,7 @@ object TaskService : Service(TaskDAO) {
      * 分页查询任务列表
      * 如果提供了[nameLike]，则对任务名进行模糊查询
      * 如果提供了[ownerId]，并且该用户存在且未被删除，则过滤出指定用户负责的任务，否则抛出 NotFoundException
-     * 如果提供了[groupId]，并且该项目组存在且未被删除，则过滤出指定项目组的任务，否则抛出 NotFoundException
+     * 如果提供了[teamId]，并且该项目组存在且未被删除，则过滤出指定项目组的任务，否则抛出 NotFoundException
      * 如果提供了[period]，则过滤出指定调度周期的任务
      * 如果提供了[queue]，则过滤出指定调度队列的任务
      * 如果提供了[isValid]，则过滤出调度生效/不生效的任务
@@ -59,7 +55,7 @@ object TaskService : Service(TaskDAO) {
         ownerId: Int? = null,
         period: SchedulePeriod? = null,
         queue: String? = null,
-        groupId: Int? = null,
+        teamId: Int? = null,
         isValid: Boolean? = null
     ): Pair<List<TaskDTO>, Int> {
         val conditions = mutableListOf(TaskDAO.isRemove eq false)
@@ -69,10 +65,10 @@ object TaskService : Service(TaskDAO) {
         }
         period?.let { conditions.add(TaskDAO.period eq period) }
         queue?.let { conditions.add(TaskDAO.queue eq queue) }
-        groupId?.let {
-            GroupService.findById(groupId)
-                ?: throw NotFoundException(I18N.group, groupId, I18N.notExistsOrHasBeenRemove)
-            conditions.add(TaskDAO.groupId eq groupId)
+        teamId?.let {
+            TeamService.findById(teamId)
+                ?: throw NotFoundException(I18N.team, teamId, I18N.notExistsOrHasBeenRemove)
+            conditions.add(TaskDAO.teamId eq teamId)
         }
         isValid?.let { conditions.add(TaskDAO.isValid eq isValid) }
         val (tasks, count) = batch<TaskPO>(
@@ -145,7 +141,7 @@ object TaskService : Service(TaskDAO) {
             ?: throw NotFoundException(I18N.fileMirror, mirrorId, I18N.notExistsOrHasBeenRemove)
         val file = FileService.findById(mirror.fileId)
             ?: throw NotFoundException(I18N.file, mirror.fileId, I18N.notExistsOrHasBeenRemove)
-        val groupId = file.groupId
+        val teamId = file.teamId
 
         // 检查调度时间格式是否合法
         if (!format.isValid(period)) throw OperationNotAllowException(I18N.scheduleFormat, I18N.illegal)
@@ -153,7 +149,7 @@ object TaskService : Service(TaskDAO) {
         // 检查用户权限
         ownerIds.forEach {
             val user = UserService.findById(it) ?: throw NotFoundException(I18N.user, it, I18N.notExistsOrHasBeenRemove)
-            if (!user.groups.contains(groupId)) throw PermissionException(I18N.user, it, I18N.notBelongTo, I18N.group, groupId)
+            if (!user.teams.contains(teamId)) throw PermissionException(I18N.user, it, I18N.notBelongTo, I18N.team, teamId)
         }
 
         // 校验依赖的父任务
@@ -168,7 +164,7 @@ object TaskService : Service(TaskDAO) {
 
         val task = TaskPO {
             this.mirrorId = mirrorId
-            this.groupId = groupId
+            this.teamId = teamId
             this.name = name
             this.owners = ownerIds
             this.args = args
@@ -245,7 +241,7 @@ object TaskService : Service(TaskDAO) {
             it.forEach { userId ->
                 val user = UserService.findById(userId)
                     ?: throw NotFoundException(I18N.user, userId, I18N.notExistsOrHasBeenRemove)
-                if (!user.groups.contains(task.groupId)) throw PermissionException(I18N.user, userId, I18N.notBelongTo, I18N.group, task.groupId)
+                if (!user.teams.contains(task.teamId)) throw PermissionException(I18N.user, userId, I18N.notBelongTo, I18N.team, task.teamId)
             }
             task.owners = ownerIds
         }

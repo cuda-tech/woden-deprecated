@@ -33,7 +33,7 @@ internal object UserDAO : Table<UserPO>("users") {
 
     @JSON
     @COMMENT("归属项目组 ID 列表")
-    val groups = json("groups", typeRef<Set<Int>>()).bindTo { it.groups }
+    val teams = json("teams", typeRef<Set<Int>>()).bindTo { it.teams }
 
     @VARCHAR(256)
     @COMMENT("用户名")

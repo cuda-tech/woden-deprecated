@@ -30,7 +30,7 @@ internal interface TaskPO : Entity<TaskPO> {
 
     val id: Int
     var mirrorId: Int
-    var groupId: Int
+    var teamId: Int
     var name: String
     var owners: Set<Int>
     var args: Map<String, Any>

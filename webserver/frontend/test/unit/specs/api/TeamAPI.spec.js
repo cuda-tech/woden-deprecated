@@ -1,11 +1,11 @@
 import '../axios-mocker'
-import groupApi from '@/api/GroupAPI'
+import teamApi from '@/api/TeamAPI'
 
 describe('项目组接口', () => {
 
     test('通过 ID 查找项目组', done => {
-        groupApi.find(2, group => {
-            expect(group).toEqual({
+        teamApi.find(2, team => {
+            expect(team).toEqual({
                 id: 2,
                 name: 'testUpdate',
                 createTime: '2029-05-26 23:17:01',
@@ -16,8 +16,8 @@ describe('项目组接口', () => {
     });
 
     test('创建项目组', done => {
-        groupApi.create('testCreate', group => {
-            expect(group).toEqual({
+        teamApi.create('testCreate', team => {
+            expect(team).toEqual({
                 id: 40,
                 name: 'testCreate',
                 createTime: '2020-05-23 12:36:52',
@@ -28,13 +28,13 @@ describe('项目组接口', () => {
     });
 
     test('删除项目组', done => {
-        groupApi.delete(1, done)
+        teamApi.delete(1, done)
     });
 
     test('项目组分页查询', done => {
-        groupApi.listing({pageId: 1, pageSize: 3}, (count, groups) => {
+        teamApi.listing({pageId: 1, pageSize: 3}, (count, teams) => {
             expect(count).toBe(32);
-            expect(groups).toEqual([
+            expect(teams).toEqual([
                 {
                     id: 2,
                     name: 'testUpdate',
@@ -59,8 +59,8 @@ describe('项目组接口', () => {
     });
 
     test('更新项目组', done => {
-        groupApi.update(2, {name: 'testUpdate'}, group => {
-            expect(group).toEqual({
+        teamApi.update(2, {name: 'testUpdate'}, team => {
+            expect(team).toEqual({
                 id: 2,
                 name: 'testUpdate',
                 createTime: '2029-05-26 23:17:01',

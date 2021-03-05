@@ -37,7 +37,7 @@ internal object FileDAO : Table<FilePO>("files") {
     @UNSIGNED
     @NOT_NULL
     @COMMENT("项目组 ID")
-    val groupId = int("group_id").bindTo { it.groupId }
+    val teamId = int("team_id").bindTo { it.teamId }
 
     @INT
     @UNSIGNED

@@ -40,7 +40,7 @@ internal object TaskDAO : Table<TaskPO>("tasks") {
 
     @BIGINT
     @COMMENT("项目组 ID")
-    val groupId = int("group_id").bindTo { it.groupId }
+    val teamId = int("team_id").bindTo { it.teamId }
 
     @VARCHAR(512)
     @COMMENT("任务名")

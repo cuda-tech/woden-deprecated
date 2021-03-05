@@ -1,4 +1,4 @@
-id	group_ids	name	email	password	is_remove	create_time	update_time
+id	team_ids	name	email	password	is_remove	create_time	update_time
 1	[1]	root	root@woden.com	63a9f0ea7bb98050796b649e85481845	0	2048-08-14 06:10:35	2051-03-13 21:06:23
 2	[6,8,1,9,7,5,2]	guest	guest@woden.com	084e0343a0486ff05530df6c705c8bb4	0	2041-02-10 19:37:55	2042-03-23 08:54:17
 3	[4,3,8,2,6]	OHzXwnDAAd	OHzXwnDAAd@189.com	FFmlN0LW2zSpYk7sy9Qmr38fZG1GecNJ	0	2041-11-20 12:44:46	2044-05-12 14:09:07

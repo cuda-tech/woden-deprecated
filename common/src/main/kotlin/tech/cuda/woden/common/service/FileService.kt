@@ -124,13 +124,13 @@ object FileService : Service(FileDAO) {
     fun findById(id: Int) = find<FilePO>(FileDAO.isRemove eq false and (FileDAO.id eq id))?.toFileDTO()
 
     /**
-     * 查找给定项目组[groupId]的文件夹根目录
+     * 查找给定项目组[teamId]的文件夹根目录
      * 如果不存在或已被删除，则抛出 NotFoundException
      */
-    fun findRootByGroupId(groupId: Int): FileDTO {
+    fun findRootByTeamId(teamId: Int): FileDTO {
         val root = find<FilePO>(
-            where = (FileDAO.isRemove eq false) and (FileDAO.groupId eq groupId) and (FileDAO.parentId.isNull())
-        ) ?: throw NotFoundException(I18N.group, groupId, I18N.rootDir, I18N.notExistsOrHasBeenRemove)
+            where = (FileDAO.isRemove eq false) and (FileDAO.teamId eq teamId) and (FileDAO.parentId.isNull())
+        ) ?: throw NotFoundException(I18N.team, teamId, I18N.rootDir, I18N.notExistsOrHasBeenRemove)
         return root.toFileDTO()
     }
 
@@ -150,9 +150,9 @@ object FileService : Service(FileDAO) {
     /**
      * 创建项目组的根目录
      */
-    internal fun createRoot(groupId: Int, ownerId: Int): FilePO = Database.global.useTransaction {
+    internal fun createRoot(teamId: Int, ownerId: Int): FilePO = Database.global.useTransaction {
         val file = FilePO {
-            this.groupId = groupId
+            this.teamId = teamId
             this.ownerId = ownerId
             this.name = I18N.businessSolution
             this.type = FileType.DIR
@@ -172,17 +172,17 @@ object FileService : Service(FileDAO) {
      * 如果父节点[parentId]不存在或已被删除，则抛出 NotFoundException
      * 如果父节点[parentId]不是文件夹，则抛出 OperationNotAllowException
      * 如果父节点[parentId]下已存在类型为[type]的同名[name]文件，则抛出 DuplicateException
-     * 如果项目组[groupId]不存在或已被删除，则抛出 NotFoundException
+     * 如果项目组[teamId]不存在或已被删除，则抛出 NotFoundException
      * 如果用户[user]不存在或已被删除，则抛出 NotFoundException
-     * 如果用户[user]不归属[groupId]项目组，则抛出 PermissionException
+     * 如果用户[user]不归属[teamId]项目组，则抛出 PermissionException
      */
-    fun create(groupId: Int, user: UserDTO, name: String, type: FileType, parentId: Int): FileDTO = Database.global.useTransaction {
+    fun create(teamId: Int, user: UserDTO, name: String, type: FileType, parentId: Int): FileDTO = Database.global.useTransaction {
         val parent = findById(parentId)
             ?: throw NotFoundException(I18N.parentNode, parentId, I18N.notExistsOrHasBeenRemove)
         if (parent.type != FileType.DIR) throw OperationNotAllowException(I18N.parentNode, parentId, I18N.isNot, I18N.dir)
-        GroupService.findById(groupId) ?: throw NotFoundException(I18N.group, groupId, I18N.notExistsOrHasBeenRemove)
+        TeamService.findById(teamId) ?: throw NotFoundException(I18N.team, teamId, I18N.notExistsOrHasBeenRemove)
         UserService.findById(user.id) ?: throw NotFoundException(I18N.user, user.id, I18N.notExistsOrHasBeenRemove)
-        if (!user.groups.contains(groupId)) throw PermissionException(I18N.user, user.id, I18N.notBelongTo, I18N.group, groupId)
+        if (!user.teams.contains(teamId)) throw PermissionException(I18N.user, user.id, I18N.notBelongTo, I18N.team, teamId)
         find<FilePO>(
             where = FileDAO.isRemove eq false
                 and (FileDAO.parentId eq parentId)
@@ -190,7 +190,7 @@ object FileService : Service(FileDAO) {
                 and (FileDAO.type eq type)
         )?.let { throw DuplicateException(I18N.dir, parentId, I18N.exists, I18N.fileType, type, I18N.file, name) }
         val file = FilePO {
-            this.groupId = groupId
+            this.teamId = teamId
             this.ownerId = user.id
             this.name = name
             this.type = type
@@ -229,7 +229,7 @@ object FileService : Service(FileDAO) {
         ownerId?.let {
             val user = UserService.findById(ownerId)
                 ?: throw NotFoundException(I18N.user, ownerId, I18N.notExistsOrHasBeenRemove)
-            if (!user.groups.contains(file.groupId)) throw PermissionException(I18N.user, ownerId, I18N.notBelongTo, I18N.group, file.groupId)
+            if (!user.teams.contains(file.teamId)) throw PermissionException(I18N.user, ownerId, I18N.notBelongTo, I18N.team, file.teamId)
             file.ownerId = ownerId
         }
         name?.let {
@@ -249,7 +249,7 @@ object FileService : Service(FileDAO) {
             val parent = findById(parentId)
                 ?: throw NotFoundException(I18N.parentNode, parentId, I18N.notExistsOrHasBeenRemove)
             if (parent.type != FileType.DIR) throw OperationNotAllowException(I18N.parentNode, parentId, I18N.isNot, I18N.dir)
-            if (parent.groupId != file.groupId) throw PermissionException(I18N.parentNode, parent.id, I18N.notBelongTo, I18N.group, file.groupId)
+            if (parent.teamId != file.teamId) throw PermissionException(I18N.parentNode, parent.id, I18N.notBelongTo, I18N.team, file.teamId)
             file.parentId = parentId
         }
         anyNotNull(ownerId, name, content, parentId)?.let {

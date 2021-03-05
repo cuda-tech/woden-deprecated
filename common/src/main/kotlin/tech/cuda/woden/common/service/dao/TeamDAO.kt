@@ -15,14 +15,14 @@ package tech.cuda.woden.common.service.dao
 
 import me.liuwj.ktorm.schema.*
 import tech.cuda.woden.annotation.mysql.*
-import tech.cuda.woden.common.service.po.GroupPO
+import tech.cuda.woden.common.service.po.TeamPO
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object GroupDAO : Table<GroupPO>("groups") {
+internal object TeamDAO : Table<TeamPO>("teams") {
 
     @BIGINT
     @UNSIGNED

@@ -5,9 +5,9 @@ export default [
         component: resolve => require(['../views/manager-center/UserManager.vue'], resolve)
     },
     {
-        path: '/manager_center/group',
-        name: 'GroupManager',
-        component: resolve => require(['../views/manager-center/GroupManager.vue'], resolve)
+        path: '/manager_center/team',
+        name: 'TeamManager',
+        component: resolve => require(['../views/manager-center/TeamManager.vue'], resolve)
     },
     {
         path: '/manager_center/container',

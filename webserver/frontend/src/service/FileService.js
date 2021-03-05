@@ -22,11 +22,11 @@ export default {
 
     /**
      * 查找指定项目组的根目录
-     * @param groupId: 项目组 ID
+     * @param teamId: 项目组 ID
      * @param callback(file): 回调函数，返回项目组根目录
      */
-    findRoot(groupId, callback) {
-        FileAPI.findRoot(groupId, callback);
+    findRoot(teamId, callback) {
+        FileAPI.findRoot(teamId, callback);
     },
 
     /**
@@ -49,14 +49,14 @@ export default {
 
     /**
      * 创建文件节点
-     * @param groupId: 项目组 ID
+     * @param teamId: 项目组 ID
      * @param name: 节点名称
      * @param type: 节点类型
      * @param parentId: 父节点 ID
      * @param callback(file): 回调函数, 返回创建后的文件节点
      */
-    create({groupId, name, type, parentId}, callback) {
-        FileAPI.create({groupId, name, type, parentId}, callback);
+    create({teamId, name, type, parentId}, callback) {
+        FileAPI.create({teamId, name, type, parentId}, callback);
     },
 
     /**

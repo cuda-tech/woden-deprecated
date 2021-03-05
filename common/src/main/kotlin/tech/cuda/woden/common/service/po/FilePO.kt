@@ -26,7 +26,7 @@ internal interface FilePO : Entity<FilePO> {
     companion object : Entity.Factory<FilePO>()
 
     val id: Int
-    var groupId: Int
+    var teamId: Int
     var ownerId: Int
     var name: String
     var type: FileType

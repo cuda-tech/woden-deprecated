@@ -38,8 +38,8 @@ class ShiroRealm : AuthorizingRealm() {
 
     override fun doGetAuthorizationInfo(token: PrincipalCollection?): AuthorizationInfo {
         val user = UserService.getUserByToken(token.toString())
-        val isRootGroup = user?.groups?.contains(1) ?: false
-        return if (isRootGroup) {
+        val isRootTeam = user?.teams?.contains(1) ?: false
+        return if (isRootTeam) {
             SimpleAuthorizationInfo().also {
                 it.roles = setOf("root")
                 it.stringPermissions = setOf("root")

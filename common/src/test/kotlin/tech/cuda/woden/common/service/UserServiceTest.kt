@@ -31,7 +31,7 @@ class UserServiceTest : TestWithMaria({
         with(UserService.findByName("WjWUMovObM")) {
             this shouldNotBe null
             this!!
-            groups shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
+            teams shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
             name shouldBe "WjWUMovObM"
             email shouldBe "WjWUMovObM@139.com"
             createTime shouldBe "2042-06-02 09:25:38".toLocalDateTime()
@@ -45,7 +45,7 @@ class UserServiceTest : TestWithMaria({
         with(UserService.findById(66)) {
             this shouldNotBe null
             this!!
-            groups shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
+            teams shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
             name shouldBe "WjWUMovObM"
             email shouldBe "WjWUMovObM@139.com"
             createTime shouldBe "2042-06-02 09:25:38".toLocalDateTime()
@@ -164,13 +164,13 @@ class UserServiceTest : TestWithMaria({
         val nextUserId = 180
         val name = "test_create"
         val password = "test_password"
-        val groupIds = setOf(131, 127)
+        val teamIds = setOf(131, 127)
         val email = "test_create@woden.com"
 
-        val newUser = UserService.create(name, password, groupIds, email)
+        val newUser = UserService.create(name, password, teamIds, email)
         newUser.id shouldBe nextUserId
         newUser.name shouldBe name
-        newUser.groups shouldContainExactlyInAnyOrder groupIds
+        newUser.teams shouldContainExactlyInAnyOrder teamIds
         newUser.email shouldBe email
         newUser.createTime shouldNotBe null
         newUser.updateTime shouldNotBe null
@@ -246,13 +246,13 @@ class UserServiceTest : TestWithMaria({
 
     "更新权限组 & 邮箱" {
         val newEmail = "new_email@woden.com"
-        val newGroupIds = setOf(137, 149)
-        UserService.update(id = 1, email = newEmail, groups = newGroupIds)
+        val newTeamIds = setOf(137, 149)
+        UserService.update(id = 1, email = newEmail, teams = newTeamIds)
         val user = UserService.findById(1)
         user shouldNotBe null
         user!!
         user.email shouldBe newEmail
-        user.groups shouldContainExactlyInAnyOrder newGroupIds
+        user.teams shouldContainExactlyInAnyOrder newTeamIds
         user.updateTime shouldNotBe "2051-03-13 21:06:23".toLocalDateTime()
     }
 

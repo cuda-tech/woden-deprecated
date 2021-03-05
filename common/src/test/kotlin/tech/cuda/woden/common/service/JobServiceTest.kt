@@ -168,7 +168,7 @@ class JobServiceTest : TestWithMaria({
 
         shouldThrow<OperationNotAllowException> {
             JobService.create(TaskDTO(
-                id = 1, mirrorId = 1, groupId = 1, name = "", owners = setOf(), args = mapOf(), isSoftFail = false,
+                id = 1, mirrorId = 1, teamId = 1, name = "", owners = setOf(), args = mapOf(), isSoftFail = false,
                 period = SchedulePeriod.DAY, format = ScheduleFormat(year = 2020),  // 非法的格式
                 queue = "", priority = SchedulePriority.HIGH, pendingTimeout = 0, runningTimeout = 0, parent = mapOf(),
                 children = setOf(), retries = 0, retryDelay = 0, isValid = true, createTime = LocalDateTime.now(),

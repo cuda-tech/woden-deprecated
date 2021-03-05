@@ -23,7 +23,7 @@ import io.kotest.matchers.shouldNotBe
 import tech.cuda.woden.common.service.dto.UserDTO
 import tech.cuda.woden.common.service.exception.DuplicateException
 import tech.cuda.woden.common.service.dao.FileDAO
-import tech.cuda.woden.common.service.dao.GroupDAO
+import tech.cuda.woden.common.service.dao.TeamDAO
 import tech.cuda.woden.common.service.dao.UserDAO
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
@@ -144,19 +144,19 @@ class FileServiceTest : TestWithMaria({
     }
 
     "查找项目组的根节点" {
-        val root = FileService.findRootByGroupId(6)
+        val root = FileService.findRootByTeamId(6)
         root.name shouldBe "hhkjnqwc"
         root.ownerId shouldBe 124
         root.type shouldBe FileType.DIR
-        root.groupId shouldBe 6
+        root.teamId shouldBe 6
         root.parentId shouldBe null
 
         shouldThrow<NotFoundException> {
-            FileService.findRootByGroupId(7)
+            FileService.findRootByTeamId(7)
         }.message shouldBe "项目组 7 根目录 不存在或已被删除"
 
         shouldThrow<NotFoundException> {
-            FileService.findRootByGroupId(40)
+            FileService.findRootByTeamId(40)
         }.message shouldBe "项目组 40 根目录 不存在或已被删除"
     }
 
@@ -181,7 +181,7 @@ class FileServiceTest : TestWithMaria({
 
     "新建文件节点" {
         val sqlFile = FileService.create(
-            groupId = 1,
+            teamId = 1,
             user = UserService.findById(1)!!,
             name = "test create",
             type = FileType.SPARK_SQL,
@@ -195,7 +195,7 @@ class FileServiceTest : TestWithMaria({
 
         // 创建同目录下同名但不同类型的文件
         val sparkFile = FileService.create(
-            groupId = 1,
+            teamId = 1,
             user = UserService.findById(2)!!,
             name = "test create",
             type = FileType.SPARK_SHELL,
@@ -210,7 +210,7 @@ class FileServiceTest : TestWithMaria({
         // 父节点不存在
         shouldThrow<NotFoundException> {
             FileService.create(
-                groupId = 1,
+                teamId = 1,
                 user = UserService.findById(1)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
@@ -221,7 +221,7 @@ class FileServiceTest : TestWithMaria({
         // 父节点不是文件夹
         shouldThrow<OperationNotAllowException> {
             FileService.create(
-                groupId = 1,
+                teamId = 1,
                 user = UserService.findById(1)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
@@ -232,7 +232,7 @@ class FileServiceTest : TestWithMaria({
         // 项目组不存在
         shouldThrow<NotFoundException> {
             FileService.create(
-                groupId = 7,
+                teamId = 7,
                 user = UserService.findById(1)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
@@ -243,10 +243,10 @@ class FileServiceTest : TestWithMaria({
         // 归属用户已被删除
         shouldThrow<NotFoundException> {
             FileService.create(
-                groupId = 1,
+                teamId = 1,
                 user = UserDTO(
                     id = 4,
-                    groups = setOf(3, 6, 5, 4, 7, 2),
+                    teams = setOf(3, 6, 5, 4, 7, 2),
                     name = "NCiUmXrvkC",
                     email = "NCiUmXrvkC@sina.cn",
                     createTime = LocalDateTime.now(),
@@ -261,7 +261,7 @@ class FileServiceTest : TestWithMaria({
         // 归属用户没权限
         shouldThrow<PermissionException> {
             FileService.create(
-                groupId = 1,
+                teamId = 1,
                 user = UserService.findById(3)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
@@ -272,7 +272,7 @@ class FileServiceTest : TestWithMaria({
         // 同目录下的同类型同名文件
         shouldThrow<DuplicateException> {
             FileService.create(
-                groupId = 1,
+                teamId = 1,
                 user = UserService.findById(1)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
@@ -382,4 +382,4 @@ class FileServiceTest : TestWithMaria({
         }.message shouldBe "根目录 禁止删除"
     }
 
-}, FileDAO, GroupDAO, UserDAO)
+}, FileDAO, TeamDAO, UserDAO)

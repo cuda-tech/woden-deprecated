@@ -131,11 +131,11 @@ object UserService : Service(UserDAO) {
      * 创建用户
      * 如果已存在用户名为[name]的用户，则抛出 DuplicateException
      */
-    fun create(name: String, password: String, groups: Set<Int>, email: String): UserDTO = Database.global.useTransaction {
+    fun create(name: String, password: String, teams: Set<Int>, email: String): UserDTO = Database.global.useTransaction {
         findByName(name)?.let { throw DuplicateException(I18N.user, name, I18N.existsAlready) }
         val user = UserPO {
             this.name = name
-            this.groups = groups
+            this.teams = teams
             this.password = Encoder.md5(password)
             this.email = email
             this.isRemove = false
@@ -151,7 +151,7 @@ object UserService : Service(UserDAO) {
      * 如果给定的用户[id]不存在或已被删除，则抛出 NotFoundException
      * 如果试图更新[name], 且已存在用户名为[name]的用户，则抛出 DuplicateException
      */
-    fun update(id: Int, name: String? = null, password: String? = null, groups: Set<Int>? = null, email: String? = null): UserDTO {
+    fun update(id: Int, name: String? = null, password: String? = null, teams: Set<Int>? = null, email: String? = null): UserDTO {
         val user = find<UserPO>(
             where = (UserDAO.isRemove eq false) and (UserDAO.id eq id),
             exclude = UserDAO.password
@@ -161,9 +161,9 @@ object UserService : Service(UserDAO) {
             user.name = name
         }
         password?.let { user.password = Encoder.md5(password) }
-        groups?.let { user.groups = groups }
+        teams?.let { user.teams = teams }
         email?.let { user.email = email }
-        anyNotNull(name, password, groups, email)?.let {
+        anyNotNull(name, password, teams, email)?.let {
             user.updateTime = LocalDateTime.now()
             user.flushChanges()
         }

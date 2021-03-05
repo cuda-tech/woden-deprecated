@@ -194,8 +194,8 @@
                                     用户管理
                                 </div>
                             </MenuItem>
-                            <MenuItem name="GroupManager">
-                                <div @click="$router.push({name: 'GroupManager'})">
+                            <MenuItem name="TeamManager">
+                                <div @click="$router.push({name: 'TeamManager'})">
                                     项目组管理
                                 </div>
                             </MenuItem>

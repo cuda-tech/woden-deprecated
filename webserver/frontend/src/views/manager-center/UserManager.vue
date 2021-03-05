@@ -27,7 +27,7 @@
                             <Input v-model="createUserModal.email" :maxlength="256" show-word-limit/>
                         </FormItem>
                         <FormItem label="项目组">
-                            <GroupSelection v-model="createUserModal.groupIds" :multiple="true"/>
+                            <TeamSelection v-model="createUserModal.teamIds" :multiple="true"/>
                         </FormItem>
                     </Form>
                 </Modal>
@@ -51,7 +51,7 @@
                         <Input v-model="updateUserModal.email" :maxlength="256" show-word-limit/>
                     </FormItem>
                     <FormItem label="项目组">
-                        <GroupSelection v-model="updateUserModal.groupIds" :multiple="true"/>
+                        <TeamSelection v-model="updateUserModal.teamIds" :multiple="true"/>
                     </FormItem>
                 </Form>
             </Modal>
@@ -79,13 +79,13 @@
      * 超级管理员：增删改查所有组的用户
      */
     import '../../assets/icons/iconfont.css'
-    import GroupSelection from "../../components/selections/GroupSelection";
+    import TeamSelection from "../../components/selections/TeamSelection";
     import UserAPI from "../../api/UserAPI";
 
     export default {
         name: "UserManager",
         components: {
-            GroupSelection: GroupSelection
+            TeamSelection: TeamSelection
         },
         beforeMount() {
             this.changePage(1);
@@ -101,7 +101,7 @@
                     },
                     {
                         title: '用户组',
-                        key: 'groupIds',
+                        key: 'teamIds',
                         align: 'center',
                     },
                     {
@@ -141,7 +141,7 @@
                                             this.updateUserModal.id = row.id;
                                             this.updateUserModal.name = row.name;
                                             this.updateUserModal.email = row.email;
-                                            this.updateUserModal.groupIds = row.groupIds;
+                                            this.updateUserModal.teamIds = row.teamIds;
                                             this.updateUserModal.password = null;
                                             this.updateUserModal.rowIndex = index;
                                             this.updateUserModal.visible = true;
@@ -192,7 +192,7 @@
                     name: null,
                     password: null,
                     email: null,
-                    groupIds: [],
+                    teamIds: [],
                 },
                 updateUserModal: {
                     visible: false,
@@ -201,7 +201,7 @@
                     name: null,
                     password: null,
                     email: null,
-                    groupIds: null,
+                    teamIds: null,
                 }
             }
         },
@@ -227,7 +227,7 @@
                         name: null,
                         password: null,
                         email: null,
-                        groupId: null,
+                        teamId: null,
                     }
                 });
             },
@@ -242,7 +242,7 @@
                         name: null,
                         password: null,
                         email: null,
-                        groupIds: null,
+                        teamIds: null,
                     }
                 });
             },

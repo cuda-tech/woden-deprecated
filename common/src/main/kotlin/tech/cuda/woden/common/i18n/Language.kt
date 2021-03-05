@@ -19,7 +19,7 @@ package tech.cuda.woden.common.i18n
  */
 interface Language {
     val user: String
-    val group: String
+    val team: String
     val container: String
     val file: String
     val parentNode: String

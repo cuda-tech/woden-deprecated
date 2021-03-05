@@ -25,7 +25,7 @@ internal interface UserPO : Entity<UserPO> {
     companion object : Entity.Factory<UserPO>()
 
     val id: Int
-    var groups: Set<Int>
+    var teams: Set<Int>
     var name: String
     var email: String
     var password: String

@@ -15,7 +15,7 @@ package tech.cuda.woden.webserver.controller
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import tech.cuda.woden.common.service.dto.GroupDTO
+import tech.cuda.woden.common.service.dto.TeamDTO
 import tech.cuda.woden.common.service.toLocalDateTime
 import tech.cuda.woden.webserver.RestfulTestToolbox
 
@@ -23,15 +23,15 @@ import tech.cuda.woden.webserver.RestfulTestToolbox
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-open class GroupControllerTest : RestfulTestToolbox("users", "groups") {
+open class TeamControllerTest : RestfulTestToolbox("users", "teams") {
 
     @Test
     fun listing() {
         val validCount = 32
-        with(postman.get("/api/group").shouldSuccess) {
-            val groups = this.getList<GroupDTO>("groups")
+        with(postman.get("/api/team").shouldSuccess) {
+            val teams = this.getList<TeamDTO>("teams")
             val count = this.get<Int>("count")
-            groups.size shouldBe validCount
+            teams.size shouldBe validCount
             count shouldBe validCount
         }
 
@@ -39,10 +39,10 @@ open class GroupControllerTest : RestfulTestToolbox("users", "groups") {
         val queryTimes = validCount / pageSize + 1
         val lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize)).shouldSuccess) {
-                val groups = this.getList<GroupDTO>("groups")
+            with(postman.get("/api/team", mapOf("page" to page, "pageSize" to pageSize)).shouldSuccess) {
+                val teams = this.getList<TeamDTO>("teams")
                 val count = this.get<Int>("count")
-                groups.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                teams.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
         }
@@ -56,17 +56,17 @@ open class GroupControllerTest : RestfulTestToolbox("users", "groups") {
         var queryTimes = validCount / pageSize + 1
         var lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess) {
-                val groups = this.getList<GroupDTO>("groups")
+            with(postman.get("/api/team", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess) {
+                val teams = this.getList<TeamDTO>("teams")
                 val count = this.get<Int>("count")
-                groups.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                teams.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
 
-            with(postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize, "like" to "null")).shouldSuccess) {
-                val groups = this.getList<GroupDTO>("groups")
+            with(postman.get("/api/team", mapOf("page" to page, "pageSize" to pageSize, "like" to "null")).shouldSuccess) {
+                val teams = this.getList<TeamDTO>("teams")
                 val count = this.get<Int>("count")
-                groups.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                teams.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
         }
@@ -77,10 +77,10 @@ open class GroupControllerTest : RestfulTestToolbox("users", "groups") {
         queryTimes = validCount / pageSize + 1
         lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize, "like" to " f")).shouldSuccess) {
-                val groups = this.getList<GroupDTO>("groups")
+            with(postman.get("/api/team", mapOf("page" to page, "pageSize" to pageSize, "like" to " f")).shouldSuccess) {
+                val teams = this.getList<TeamDTO>("teams")
                 val count = this.get<Int>("count")
-                groups.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                teams.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
         }
@@ -91,10 +91,10 @@ open class GroupControllerTest : RestfulTestToolbox("users", "groups") {
         queryTimes = validCount / pageSize + 1
         lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize, "like" to " f r ")).shouldSuccess) {
-                val groups = this.getList<GroupDTO>("groups")
+            with(postman.get("/api/team", mapOf("page" to page, "pageSize" to pageSize, "like" to " f r ")).shouldSuccess) {
+                val teams = this.getList<TeamDTO>("teams")
                 val count = this.get<Int>("count")
-                groups.size shouldBe if (page == queryTimes) lastPageCount else pageSize
+                teams.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
         }
@@ -102,26 +102,26 @@ open class GroupControllerTest : RestfulTestToolbox("users", "groups") {
 
     @Test
     fun find() {
-        postman.get("/api/group/23").shouldSuccess.get<GroupDTO>("group").withExpect {
+        postman.get("/api/team/23").shouldSuccess.get<TeamDTO>("team").withExpect {
             it.name shouldBe "kcwhynhd"
             it.createTime shouldBe "2044-11-11 15:27:26".toLocalDateTime()
             it.updateTime shouldBe "2047-07-02 20:28:57".toLocalDateTime()
         }
-        postman.get("/api/group/39").shouldFailed.withError("项目组 39 不存在或已被删除")
-        postman.get("/api/group/40").shouldFailed.withError("项目组 40 不存在或已被删除")
+        postman.get("/api/team/39").shouldFailed.withError("项目组 39 不存在或已被删除")
+        postman.get("/api/team/40").shouldFailed.withError("项目组 40 不存在或已被删除")
     }
 
     @Test
     fun create() {
         postman.login("guest", "guest")
-        val nextGroupId = 40
+        val nextTeamId = 40
         val name = "test_create"
-        postman.post("/api/group", mapOf("name" to name)).shouldSuccess.get<GroupDTO>("group").withExpect {
-            it.id shouldBe nextGroupId
+        postman.post("/api/team", mapOf("name" to name)).shouldSuccess.get<TeamDTO>("team").withExpect {
+            it.id shouldBe nextTeamId
             it.name shouldBe name
         }
-        postman.get("/api/group/$nextGroupId").shouldSuccess.get<GroupDTO>("group").withExpect {
-            it.id shouldBe nextGroupId
+        postman.get("/api/team/$nextTeamId").shouldSuccess.get<TeamDTO>("team").withExpect {
+            it.id shouldBe nextTeamId
             it.name shouldBe name
         }
     }
@@ -129,11 +129,11 @@ open class GroupControllerTest : RestfulTestToolbox("users", "groups") {
     @Test
     fun update() {
         val newName = "new_name"
-        postman.put("/api/group/25", mapOf("name" to newName)).shouldSuccess.get<GroupDTO>("group").withExpect {
+        postman.put("/api/team/25", mapOf("name" to newName)).shouldSuccess.get<TeamDTO>("team").withExpect {
             it.name shouldBe newName
             it.updateTime shouldNotBe "2051-07-10 20:16:48".toLocalDateTime()
         }
-        postman.get("/api/group/25").shouldSuccess.get<GroupDTO>("group").withExpect {
+        postman.get("/api/team/25").shouldSuccess.get<TeamDTO>("team").withExpect {
             it.name shouldBe newName
             it.updateTime shouldNotBe "2051-07-10 20:16:48".toLocalDateTime()
         }
@@ -141,13 +141,13 @@ open class GroupControllerTest : RestfulTestToolbox("users", "groups") {
 
     @Test
     fun remove() {
-        postman.get("/api/group/15").shouldSuccess
-        postman.delete("/api/group/15").shouldSuccess.withMessage("项目组 15 已被删除")
-        postman.get("/api/group/15").shouldFailed.withError("项目组 15 不存在或已被删除")
+        postman.get("/api/team/15").shouldSuccess
+        postman.delete("/api/team/15").shouldSuccess.withMessage("项目组 15 已被删除")
+        postman.get("/api/team/15").shouldFailed.withError("项目组 15 不存在或已被删除")
 
-        postman.delete("/api/group/18").shouldFailed.withError("项目组 18 不存在或已被删除")
+        postman.delete("/api/team/18").shouldFailed.withError("项目组 18 不存在或已被删除")
 
-        postman.delete("/api/group/40").shouldFailed.withError("项目组 40 不存在或已被删除")
+        postman.delete("/api/team/40").shouldFailed.withError("项目组 40 不存在或已被删除")
 
     }
 }

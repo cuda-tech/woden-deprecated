@@ -43,7 +43,7 @@ class UserController {
      * @apiParam {Number} [pageSize = 9999] 分页大小
      * @apiParam {String} like 用户名模糊匹配，多个词用空格分隔，null 字符串会被忽略
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"count":144,"users":[{"id":1,"groups":[1],"name":"root","email":"root@woden.com","createTime":"2048-08-14 06:10:35","updateTime":"2051-03-13 21:06:23"},{"id":2,"groups":[1,2,5,6,7,8,9],"name":"guest","email":"guest@woden.com","createTime":"2041-02-10 19:37:55","updateTime":"2042-03-23 08:54:17"},{"id":3,"groups":[2,3,4,6,8],"name":"OHzXwnDAAd","email":"OHzXwnDAAd@189.com","createTime":"2041-11-20 12:44:46","updateTime":"2044-05-12 14:09:07"}]}}
+     * {"status":"success","data":{"count":144,"users":[{"id":1,"teams":[1],"name":"root","email":"root@woden.com","createTime":"2048-08-14 06:10:35","updateTime":"2051-03-13 21:06:23"},{"id":2,"teams":[1,2,5,6,7,8,9],"name":"guest","email":"guest@woden.com","createTime":"2041-02-10 19:37:55","updateTime":"2042-03-23 08:54:17"},{"id":3,"teams":[2,3,4,6,8],"name":"OHzXwnDAAd","email":"OHzXwnDAAd@189.com","createTime":"2041-11-20 12:44:46","updateTime":"2044-05-12 14:09:07"}]}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
@@ -61,7 +61,7 @@ class UserController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"user":{"id":1,"groups":[1],"name":"root","email":"root@woden.com","createTime":"2048-08-14 06:10:35","updateTime":"2051-03-13 21:06:23"}}}
+     * {"status":"success","data":{"user":{"id":1,"teams":[1],"name":"root","email":"root@woden.com","createTime":"2048-08-14 06:10:35","updateTime":"2051-03-13 21:06:23"}}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"错误信息"}
      */
@@ -81,7 +81,7 @@ class UserController {
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"user":{"id":10,"groups":[1,3,4,5,6,8,9],"name":"IinOzxLtGL","email":"IinOzxLtGL@139.com","createTime":"2018-03-21 03:59:24","updateTime":"2019-02-28 12:26:06"}}}
+     * {"status":"success","data":{"user":{"id":10,"teams":[1,3,4,5,6,8,9],"name":"IinOzxLtGL","email":"IinOzxLtGL@139.com","createTime":"2018-03-21 03:59:24","updateTime":"2019-02-28 12:26:06"}}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"用户 11 不存在或已被删除"}
      */
@@ -104,19 +104,19 @@ class UserController {
      * @apiHeader {String} token 用户授权 token
      * @apiParam {String} name 用户登录名
      * @apiParam {String} password 用户登录密码
-     * @apiParam {Array} groupIds 用户归属项目组 ID
+     * @apiParam {Array} teamIds 用户归属项目组 ID
      * @apiParam {String} email 用户邮箱
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"user":{"id":180,"groups":[1,2,3],"name":"testName","email":"testEmail","createTime":"2020-05-22 01:43:10","updateTime":"2020-05-22 01:43:10"}}}
+     * {"status":"success","data":{"user":{"id":180,"teams":[1,2,3],"name":"testName","email":"testEmail","createTime":"2020-05-22 01:43:10","updateTime":"2020-05-22 01:43:10"}}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"用户 testName 已存在"}
      */
     @PostMapping
     fun create(@RequestParam(required = true) name: String,
                @RequestParam(required = true) password: String,
-               @RequestParam(required = true) groupIds: ArrayList<Int>,
+               @RequestParam(required = true) teamIds: ArrayList<Int>,
                @RequestParam(required = true) email: String) = try {
-        Response.Success.data("user" to UserService.create(name, password, groupIds.toSet(), email))
+        Response.Success.data("user" to UserService.create(name, password, teamIds.toSet(), email))
     } catch (e: DuplicateException) {
         Response.Failed.WithError(e.message ?: "系统异常")
     }
@@ -129,10 +129,10 @@ class UserController {
      * @apiHeader {String} token 用户授权 token
      * @apiParam {String} [name = null] 用户登录名，不指定则不更新
      * @apiParam {String} [password = null] 用户登录密码，不指定则不更新
-     * @apiParam {Array} [groupIds = null] 用户归属项目组，不指定则不更新
+     * @apiParam {Array} [teamIds = null] 用户归属项目组，不指定则不更新
      * @apiParam {String} [email = null] 用户邮箱，不指定则不更新
      * @apiSuccessExample 请求成功
-     * {"status":"success","data":{"user":{"id":180,"groups":[1,2,3],"name":"testName","email":"testEmail","createTime":"2020-05-22 01:43:11","updateTime":"2020-05-22 01:49:55"}}}
+     * {"status":"success","data":{"user":{"id":180,"teams":[1,2,3],"name":"testName","email":"testEmail","createTime":"2020-05-22 01:43:11","updateTime":"2020-05-22 01:49:55"}}}
      * @apiSuccessExample 请求失败
      * {"status":"failed","error":"用户 root 已存在"}
      */
@@ -140,9 +140,9 @@ class UserController {
     fun update(@PathVariable id: Int,
                @RequestParam(required = false) name: String?,
                @RequestParam(required = false) password: String?,
-               @RequestParam(required = false) groupIds: ArrayList<Int>?,
+               @RequestParam(required = false) teamIds: ArrayList<Int>?,
                @RequestParam(required = false) email: String?) = try {
-        Response.Success.data("user" to UserService.update(id, name, password, groupIds?.toSet(), email))
+        Response.Success.data("user" to UserService.update(id, name, password, teamIds?.toSet(), email))
     } catch (e: Exception) {
         Response.Failed.WithError(e.message ?: "系统异常")
     }

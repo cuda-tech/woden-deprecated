@@ -4,7 +4,7 @@ export default {
             files: [
                 {
                     id: 4,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 26,
                     name: 'zwgjydgn',
                     type: 'DIR',
@@ -14,7 +14,7 @@ export default {
                 },
                 {
                     id: 43,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 140,
                     name: 'kniovyqn',
                     type: 'SQL',
@@ -24,7 +24,7 @@ export default {
                 },
                 {
                     id: 6,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 167,
                     name: 'ladlehnr',
                     type: 'SQL',
@@ -34,7 +34,7 @@ export default {
                 },
                 {
                     id: 2,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 10,
                     name: 'jldwzlys',
                     type: 'SPARK',
@@ -49,7 +49,7 @@ export default {
             files: [
                 {
                     id: 7,
-                    groupId: 7,
+                    teamId: 7,
                     ownerId: 36,
                     name: 'bamvjrno',
                     type: 'SQL',
@@ -59,7 +59,7 @@ export default {
                 },
                 {
                     id: 18,
-                    groupId: 16,
+                    teamId: 16,
                     ownerId: 48,
                     name: 'bcmawkte',
                     type: 'SQL',
@@ -69,7 +69,7 @@ export default {
                 },
                 {
                     id: 60,
-                    groupId: 5,
+                    teamId: 5,
                     ownerId: 48,
                     name: 'lwbaccod',
                     type: 'SQL',
@@ -83,7 +83,7 @@ export default {
         '/file/root': {
             file: {
                 id: 1,
-                groupId: 1,
+                teamId: 1,
                 ownerId: 1,
                 name: 'root_project',
                 type: 'DIR',
@@ -96,7 +96,7 @@ export default {
             files: [
                 {
                     id: 1,
-                    groupId: 1,
+                    teamId: 1,
                     ownerId: 1,
                     name: 'root_project',
                     type: 'DIR',
@@ -117,7 +117,7 @@ export default {
         '/file': {
             file: {
                 id: 70,
-                groupId: 1,
+                teamId: 1,
                 ownerId: 1,
                 name: 'testCreate',
                 type: 'SQL',
@@ -131,7 +131,7 @@ export default {
         '/file/4': {
             file: {
                 id: 4,
-                groupId: 1,
+                teamId: 1,
                 ownerId: 26,
                 name: 'testUpdate',
                 type: 'DIR',

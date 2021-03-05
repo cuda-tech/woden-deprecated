@@ -19,7 +19,7 @@ package tech.cuda.woden.common.i18n
  */
 data class Chinese(
     override val user: String = "用户",
-    override val group: String = "项目组",
+    override val team: String = "项目组",
     override val notExistsOrHasBeenRemove: String = "不存在或已被删除",
     override val container: String = "调度容器",
     override val file: String = "文件节点",

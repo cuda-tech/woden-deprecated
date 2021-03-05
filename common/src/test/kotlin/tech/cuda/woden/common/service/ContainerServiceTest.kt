@@ -61,21 +61,21 @@ class ContainerServiceTest : TestWithMaria({
         var validContainerCount = 188
         var pageSize = 13
         var queryTimes = validContainerCount / pageSize + 1
-        var lastPageGroupCount = validContainerCount % pageSize
+        var lastPageContainerCount = validContainerCount % pageSize
         for (page in 1..queryTimes) {
             with(ContainerService.listing(page, pageSize, null)) {
                 val (containers, count) = this
-                containers.size shouldBe if (page == queryTimes) lastPageGroupCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageContainerCount else pageSize
                 count shouldBe validContainerCount
             }
             with(ContainerService.listing(page, pageSize, " NULL")) {
                 val (containers, count) = this
-                containers.size shouldBe if (page == queryTimes) lastPageGroupCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageContainerCount else pageSize
                 count shouldBe validContainerCount
             }
             with(ContainerService.listing(page, pageSize, " ")) {
                 val (containers, count) = this
-                containers.size shouldBe if (page == queryTimes) lastPageGroupCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageContainerCount else pageSize
                 count shouldBe validContainerCount
             }
         }
@@ -84,21 +84,21 @@ class ContainerServiceTest : TestWithMaria({
         validContainerCount = 58
         pageSize = 5
         queryTimes = validContainerCount / pageSize + 1
-        lastPageGroupCount = validContainerCount % pageSize
+        lastPageContainerCount = validContainerCount % pageSize
         for (page in 1..queryTimes) {
             with(ContainerService.listing(page, pageSize, " a ")) {
                 val (containers, count) = this
-                containers.size shouldBe if (page == queryTimes) lastPageGroupCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageContainerCount else pageSize
                 count shouldBe validContainerCount
             }
             with(ContainerService.listing(page, pageSize, " a NULL")) {
                 val (containers, count) = this
-                containers.size shouldBe if (page == queryTimes) lastPageGroupCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageContainerCount else pageSize
                 count shouldBe validContainerCount
             }
             with(ContainerService.listing(page, pageSize, " null a")) {
                 val (containers, count) = this
-                containers.size shouldBe if (page == queryTimes) lastPageGroupCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageContainerCount else pageSize
                 count shouldBe validContainerCount
             }
         }
@@ -107,21 +107,21 @@ class ContainerServiceTest : TestWithMaria({
         validContainerCount = 15
         pageSize = 2
         queryTimes = validContainerCount / pageSize + 1
-        lastPageGroupCount = validContainerCount % pageSize
+        lastPageContainerCount = validContainerCount % pageSize
         for (page in 1..queryTimes) {
             with(ContainerService.listing(page, pageSize, " a b")) {
                 val (containers, count) = this
-                containers.size shouldBe if (page == queryTimes) lastPageGroupCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageContainerCount else pageSize
                 count shouldBe validContainerCount
             }
             with(ContainerService.listing(page, pageSize, " b a NULL")) {
                 val (containers, count) = this
-                containers.size shouldBe if (page == queryTimes) lastPageGroupCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageContainerCount else pageSize
                 count shouldBe validContainerCount
             }
             with(ContainerService.listing(page, pageSize, "a null b")) {
                 val (containers, count) = this
-                containers.size shouldBe if (page == queryTimes) lastPageGroupCount else pageSize
+                containers.size shouldBe if (page == queryTimes) lastPageContainerCount else pageSize
                 count shouldBe validContainerCount
             }
         }

@@ -1,4 +1,4 @@
-id	group_id	owner_id	name	type	parent_id	content	is_remove	create_time	update_time
+id	team_id	owner_id	name	type	parent_id	content	is_remove	create_time	update_time
 1	1	1	root_project	DIR	NULL	NULL	0	2037-05-20 14:58:39	2040-02-04 21:46:36
 2	1	10	jldwzlys	SPARK_SHELL	1	xwuocwyldfswbdwbnkpizvuhokfhhbwrmykqlgtpqkrzuatixnavciilmbkyxnuw	0	2048-12-27 13:12:08	2049-01-24 17:09:09
 3	1	33	yoglnkyc	SPARK_SQL	1	jfoarywksxudqwimajgenwlvebjrjdfbiumogupwebatcyvmjhryscbjwkeshont	0	2035-04-17 03:52:30	2036-06-21 01:56:57

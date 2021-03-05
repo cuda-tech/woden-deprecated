@@ -11,25 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.woden.common.service.po
+package tech.cuda.woden.common.service.dto
 
-import me.liuwj.ktorm.entity.Entity
+import tech.cuda.woden.annotation.pojo.DTO
+import tech.cuda.woden.common.service.po.TeamPO
 import java.time.LocalDateTime
 
 /**
- * 项目组，一个用户可以归属多个项目组，一个文件只能归属一个项目组
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-internal interface GroupPO : Entity<GroupPO> {
-    companion object : Entity.Factory<GroupPO>()
-
-    val id: Int
-    var name: String
-    var isRemove: Boolean
-    var createTime: LocalDateTime
-    var updateTime: LocalDateTime
-}
-
-
-
+@DTO(TeamPO::class)
+data class TeamDTO(
+    val id: Int,
+    val name: String,
+    val createTime: LocalDateTime,
+    val updateTime: LocalDateTime
+)

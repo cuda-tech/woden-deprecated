@@ -5,7 +5,7 @@ export default {
             users: [
                 {
                     id: 1,
-                    groups: [1],
+                    teams: [1],
                     name: 'root',
                     email: 'root@woden.com',
                     createTime: '2048-08-14 06:10:35',
@@ -13,7 +13,7 @@ export default {
                 },
                 {
                     id: 2,
-                    groups: [1, 2, 5, 6, 7, 8, 9],
+                    teams: [1, 2, 5, 6, 7, 8, 9],
                     name: 'guest',
                     email: 'guest@woden.com',
                     createTime: '2041-02-10 19:37:55',
@@ -21,7 +21,7 @@ export default {
                 },
                 {
                     id: 3,
-                    groups: [2, 3, 4, 6, 8],
+                    teams: [2, 3, 4, 6, 8],
                     name: 'OHzXwnDAAd',
                     email: 'OHzXwnDAAd@189.com',
                     createTime: '2041-11-20 12:44:46',
@@ -32,7 +32,7 @@ export default {
         '/user/current': {
             user: {
                 id: 1,
-                groups: [1],
+                teams: [1],
                 name: 'root',
                 email: 'root@woden.com',
                 createTime: '2048-08-14 06:10:35',
@@ -42,7 +42,7 @@ export default {
         '/user/10': {
             user: {
                 id: 10,
-                groups: [1, 3, 4, 5, 6, 8, 9],
+                teams: [1, 3, 4, 5, 6, 8, 9],
                 name: 'IinOzxLtGL',
                 email: 'IinOzxLtGL@139.com',
                 createTime: '2018-03-21 03:59:24',
@@ -55,7 +55,7 @@ export default {
         '/user': {
             user: {
                 id: 180,
-                groups: [1, 2, 3],
+                teams: [1, 2, 3],
                 name: 'testName',
                 email: 'testEmail',
                 createTime: '2020-05-22 01:43:10',
@@ -67,7 +67,7 @@ export default {
         '/user/180': {
             user: {
                 id: 180,
-                groups: [1, 2, 3],
+                teams: [1, 2, 3],
                 name: 'testName',
                 email: 'testEmail',
                 createTime: '2020-05-22 01:43:11',

@@ -105,7 +105,7 @@ open class UserControllerTest : RestfulTestToolbox("users") {
     fun currentUser() {
         postman.login("root", "root")
         postman.get("/api/user/current").shouldSuccess.get<UserDTO>("user").withExpect {
-            it.groups shouldContainExactlyInAnyOrder setOf(1)
+            it.teams shouldContainExactlyInAnyOrder setOf(1)
             it.name shouldBe "root"
             it.email shouldBe "root@woden.com"
             it.createTime shouldBe "2048-08-14 06:10:35".toLocalDateTime()
@@ -114,7 +114,7 @@ open class UserControllerTest : RestfulTestToolbox("users") {
 
         postman.login("guest", "guest")
         postman.get("/api/user/current").shouldSuccess.get<UserDTO>("user").withExpect {
-            it.groups shouldContainExactlyInAnyOrder setOf(6, 8, 1, 9, 7, 5, 2)
+            it.teams shouldContainExactlyInAnyOrder setOf(6, 8, 1, 9, 7, 5, 2)
             it.name shouldBe "guest"
             it.email shouldBe "guest@woden.com"
             it.createTime shouldBe "2041-02-10 19:37:55".toLocalDateTime()
@@ -125,7 +125,7 @@ open class UserControllerTest : RestfulTestToolbox("users") {
     @Test
     fun find() {
         postman.get("/api/user/66").shouldSuccess.get<UserDTO>("user").withExpect {
-            it.groups shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
+            it.teams shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
             it.name shouldBe "WjWUMovObM"
             it.email shouldBe "WjWUMovObM@139.com"
             it.createTime shouldBe "2042-06-02 09:25:38".toLocalDateTime()
@@ -138,25 +138,25 @@ open class UserControllerTest : RestfulTestToolbox("users") {
     @Test
     fun create() {
         // 禁止创建重名用户
-        postman.post("/api/user", mapOf("name" to "root", "password" to "", "groupIds" to listOf(1), "email" to ""))
+        postman.post("/api/user", mapOf("name" to "root", "password" to "", "teamIds" to listOf(1), "email" to ""))
             .shouldFailed.withError("用户 root 已存在")
 
         val nextUserId = 180
         val name = "test_create"
         val password = "test_password"
-        val groupIds = setOf(131, 127)
+        val teamIds = setOf(131, 127)
         val email = "test_create@woden.com"
 
-        postman.post("/api/user", mapOf("name" to name, "password" to password, "groupIds" to groupIds, "email" to email))
+        postman.post("/api/user", mapOf("name" to name, "password" to password, "teamIds" to teamIds, "email" to email))
             .shouldSuccess.get<UserDTO>("user").withExpect {
             it.id shouldBe nextUserId
             it.name shouldBe name
             it.email shouldBe email
-            it.groups shouldContainExactlyInAnyOrder groupIds
+            it.teams shouldContainExactlyInAnyOrder teamIds
         }
 
         postman.get("/api/user/$nextUserId").shouldSuccess.get<UserDTO>("user").withExpect {
-            it.groups shouldContainExactlyInAnyOrder groupIds
+            it.teams shouldContainExactlyInAnyOrder teamIds
             it.name shouldBe name
             it.email shouldBe email
         }
@@ -211,13 +211,13 @@ open class UserControllerTest : RestfulTestToolbox("users") {
     }
 
     @Test
-    fun updateGroupIds() {
-        val newGroupIds = setOf(137, 149)
-        postman.put("/api/user/2", mapOf("groupIds" to newGroupIds)).shouldSuccess.get<UserDTO>("user").withExpect {
-            it.groups shouldContainExactlyInAnyOrder newGroupIds
+    fun updateteamIds() {
+        val newteamIds = setOf(137, 149)
+        postman.put("/api/user/2", mapOf("teamIds" to newteamIds)).shouldSuccess.get<UserDTO>("user").withExpect {
+            it.teams shouldContainExactlyInAnyOrder newteamIds
         }
         postman.get("/api/user/2").shouldSuccess.get<UserDTO>("user").withExpect {
-            it.groups shouldContainExactlyInAnyOrder newGroupIds
+            it.teams shouldContainExactlyInAnyOrder newteamIds
             it.updateTime shouldNotBe "2042-03-23 08:54:17".toLocalDateTime()
         }
     }
@@ -227,12 +227,12 @@ open class UserControllerTest : RestfulTestToolbox("users") {
         val newName = "new_name"
         val newPassword = "new_password"
         val newEmail = "new_email@woden.com"
-        val newGroupIds = setOf(137, 149)
-        postman.put("/api/user/2", mapOf("name" to newName, "password" to newPassword, "email" to newEmail, "groupIds" to newGroupIds))
+        val newteamIds = setOf(137, 149)
+        postman.put("/api/user/2", mapOf("name" to newName, "password" to newPassword, "email" to newEmail, "teamIds" to newteamIds))
             .shouldSuccess.get<UserDTO>("user").withExpect {
             it.name shouldBe newName
             it.email shouldBe newEmail
-            it.groups shouldContainExactlyInAnyOrder newGroupIds
+            it.teams shouldContainExactlyInAnyOrder newteamIds
         }
 
         val token = postman.post("/api/login", mapOf("username" to newName, "password" to newPassword))
@@ -240,7 +240,7 @@ open class UserControllerTest : RestfulTestToolbox("users") {
         UserService.getUserByToken(token)?.name shouldBe newName
 
         postman.get("/api/user/2").shouldSuccess.get<UserDTO>("user").withExpect {
-            it.groups shouldContainExactlyInAnyOrder newGroupIds
+            it.teams shouldContainExactlyInAnyOrder newteamIds
             it.email shouldBe newEmail
             it.updateTime shouldNotBe "2042-03-23 08:54:17".toLocalDateTime()
         }

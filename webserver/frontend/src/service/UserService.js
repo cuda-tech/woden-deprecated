@@ -24,12 +24,12 @@ export default {
      * 创建用户
      * @param name: 用户名
      * @param password: 登录密码
-     * @param groupIds: 归属项目组
+     * @param teamIds: 归属项目组
      * @param email: 邮箱
      * @param callback(user): 回调函数, 请求成功后返回创建的 user
      */
-    create({name, password, groupIds, email}, callback) {
-        UserAPI.create({name, password, groupIds, email}, callback);
+    create({name, password, teamIds, email}, callback) {
+        UserAPI.create({name, password, teamIds, email}, callback);
     },
 
     /**
@@ -37,12 +37,12 @@ export default {
      * @param id: 用户 ID
      * @param name: 用户名
      * @param password: 登录密码
-     * @param groupIds: 归属项目组
+     * @param teamIds: 归属项目组
      * @param email: 登录邮箱
      * @param callback(user): 回调函数，请求成功后返回更新后的用户
      */
-    update(id, {name = null, password = null, groupIds = null, email = null}, callback) {
-        UserAPI.update(id, {name, password, groupIds, email}, callback);
+    update(id, {name = null, password = null, teamIds = null, email = null}, callback) {
+        UserAPI.update(id, {name, password, teamIds, email}, callback);
     },
 
     /**

@@ -5,32 +5,32 @@
 <template>
     <Card style="margin: 30px;">
         <Row>
-            <Button type="primary" @click="createGroupModal.visible=true">
+            <Button type="primary" @click="createTeamModal.visible=true">
                 新建
-                <Modal v-model="createGroupModal.visible" @on-ok="createGroup"
-                       @on-cancel="createGroupModal.visible = false">
+                <Modal v-model="createTeamModal.visible" @on-ok="createTeam"
+                       @on-cancel="createTeamModal.visible = false">
                     <div>
                         <Icon type="md-alert" style="font-size: x-large; color: #2db7f5"/>
                         <span style="font-size: large; margin-left: 5px"> 新建项目组 </span>
                     </div>
                     <Form :label-width="100" style="margin-top: 30px">
                         <FormItem label="项目组名称">
-                            <Input v-model="createGroupModal.name" :maxlength="256" show-word-limit/>
+                            <Input v-model="createTeamModal.name" :maxlength="256" show-word-limit/>
                         </FormItem>
                     </Form>
                 </Modal>
             </Button>
 
 
-            <Modal v-model="updateGroupModal.visible" @on-ok="updateGroup"
-                   @on-cancel="updateGroupModal.visible = false">
+            <Modal v-model="updateTeamModal.visible" @on-ok="updateTeam"
+                   @on-cancel="updateTeamModal.visible = false">
                 <div>
                     <Icon type="md-alert" style="font-size: x-large; color: #2db7f5"/>
                     <span style="font-size: large; margin-left: 5px"> 更新项目组信息 </span>
                 </div>
                 <Form :label-width="60" style="margin-top: 30px">
                     <FormItem label="项目组名称">
-                        <Input v-model="updateGroupModal.name" :maxlength="256" show-word-limit/>
+                        <Input v-model="updateTeamModal.name" :maxlength="256" show-word-limit/>
                     </FormItem>
                 </Form>
             </Modal>
@@ -40,10 +40,10 @@
             </Col>
         </Row>
 
-        <Table :columns="columns" :data="groups" :loading="loading" style="margin-top: 30px;"/>
+        <Table :columns="columns" :data="teams" :loading="loading" style="margin-top: 30px;"/>
 
         <div style="text-align: right; margin-top: 20px">
-            <Page :total="this.groupCount" :current="pageId" show-sizer show-total
+            <Page :total="this.teamCount" :current="pageId" show-sizer show-total
                   @on-change="changePage"
                   @on-page-size-change="changePageSize"/>
         </div>
@@ -52,7 +52,7 @@
 </template>
 
 <script>
-    import GroupAPI from "../../api/GroupAPI";
+    import TeamAPI from "../../api/TeamAPI";
 
     /**
      * 项目组管理
@@ -60,7 +60,7 @@
      * 超级管理员：增删改查项目组
      */
     export default {
-        name: "GroupManager",
+        name: "TeamManager",
         beforeMount() {
             this.changePage(1);
         },
@@ -104,10 +104,10 @@
                                     },
                                     on: {
                                         'click': () => {
-                                            this.updateGroupModal.id = row.id;
-                                            this.updateGroupModal.name = row.name;
-                                            this.updateGroupModal.rowIndex = index;
-                                            this.updateGroupModal.visible = true;
+                                            this.updateTeamModal.id = row.id;
+                                            this.updateTeamModal.name = row.name;
+                                            this.updateTeamModal.rowIndex = index;
+                                            this.updateTeamModal.visible = true;
                                         }
                                     }
                                 }),
@@ -119,8 +119,8 @@
                                         },
                                         on: {
                                             'on-ok': () => {
-                                                this.axios.delete(`/group/${row.id}`).then(data => {
-                                                    this.groups.splice(index, 1);
+                                                this.axios.delete(`/team/${row.id}`).then(data => {
+                                                    this.teams.splice(index, 1);
                                                     //todo: 向下补全
                                                 });
                                             }
@@ -145,15 +145,15 @@
                 search: {
                     key: null
                 },
-                groups: [],
-                groupCount: 0,
+                teams: [],
+                teamCount: 0,
                 pageSize: 10,
                 pageId: 1,
-                createGroupModal: {
+                createTeamModal: {
                     name: null,
                     visible: false
                 },
-                updateGroupModal: {
+                updateTeamModal: {
                     id: null,
                     name: null,
                     rowIndex: null,
@@ -162,28 +162,28 @@
             }
         },
         methods: {
-            createGroup() {
+            createTeam() {
                 let params = new FormData();
-                params.set("name", this.createGroupModal.name);
-                this.axios.post("/group", params).then(data => {
-                    this.groupCount += 1;
-                    if (this.groups.length < this.pageSize) {
-                        this.groups.push(data.group)
+                params.set("name", this.createTeamModal.name);
+                this.axios.post("/team", params).then(data => {
+                    this.teamCount += 1;
+                    if (this.teams.length < this.pageSize) {
+                        this.teams.push(data.team)
                     }
-                    this.createGroupModal = {
+                    this.createTeamModal = {
                         name: null,
                         visible: false
                     }
                 });
             },
 
-            updateGroup() {
+            updateTeam() {
                 let params = new FormData();
-                params.set("id", this.updateGroupModal.id);
-                params.set("name", this.updateGroupModal.name);
-                this.axios.put(`/group/${this.updateGroupModal.id}`, params).then(data => {
-                    this.$set(this.groups, this.updateGroupModal.rowIndex, data.group);
-                    this.updateGroupModal = {
+                params.set("id", this.updateTeamModal.id);
+                params.set("name", this.updateTeamModal.name);
+                this.axios.put(`/team/${this.updateTeamModal.id}`, params).then(data => {
+                    this.$set(this.teams, this.updateTeamModal.rowIndex, data.team);
+                    this.updateTeamModal = {
                         id: null,
                         name: null,
                         rowIndex: null,
@@ -201,9 +201,9 @@
                 if (this.search.key !== null && this.search.key.trim() !== '') {
                     params.like = this.search.key;
                 }
-                this.axios.get("/group", {params: params}).then(data => {
-                    this.groupCount = data.count;
-                    this.groups = data.groups;
+                this.axios.get("/team", {params: params}).then(data => {
+                    this.teamCount = data.count;
+                    this.teams = data.teams;
                     this.pageId = pageId;
                     this.loading = false;
                 }).catch(err => {

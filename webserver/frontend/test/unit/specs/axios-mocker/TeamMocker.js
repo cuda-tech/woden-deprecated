@@ -1,7 +1,7 @@
 export default {
     get: {
-        '/group': {
-            groups: [
+        '/team': {
+            teams: [
                 {
                     id: 2,
                     name: 'testUpdate',
@@ -23,8 +23,8 @@ export default {
             ],
             count: 32
         },
-        '/group/2': {
-            group: {
+        '/team/2': {
+            team: {
                 id: 2,
                 name: 'testUpdate',
                 createTime: '2029-05-26 23:17:01',
@@ -33,8 +33,8 @@ export default {
         }
     },
     post: {
-        '/group': {
-            group: {
+        '/team': {
+            team: {
                 id: 40,
                 name: 'testCreate',
                 createTime: '2020-05-23 12:36:52',
@@ -43,8 +43,8 @@ export default {
         }
     },
     put: {
-        '/group/2':{
-            group: {
+        '/team/2':{
+            team: {
                 id: 2,
                 name: 'testUpdate',
                 createTime: '2029-05-26 23:17:01',
@@ -53,6 +53,6 @@ export default {
         }
     },
     delete: {
-        '/group/1': {}
+        '/team/1': {}
     }
 }

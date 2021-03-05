@@ -24,7 +24,7 @@ import java.time.LocalDateTime
 @DTO(UserPO::class)
 data class UserDTO(
     val id: Int,
-    val groups: Set<Int>,
+    val teams: Set<Int>,
     val name: String,
     val email: String,
     val createTime: LocalDateTime,

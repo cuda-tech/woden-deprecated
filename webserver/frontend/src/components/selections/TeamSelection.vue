@@ -5,14 +5,14 @@
 <template>
     <Select :value="value" :multiple="multiple" @on-change="val => this.$emit('input', val)" placeholder="项目组">
         <Icon custom="iconfont icon-project" slot="prefix"/>
-        <Option v-for="group in groups" :value="group.id" :key="group.id">
-            {{ group.name }}
+        <Option v-for="team in teams" :value="team.id" :key="team.id">
+            {{ team.name }}
         </Option>
     </Select>
 </template>
 
 <script>
-    import GroupService from "@/service/GroupService";
+    import TeamService from "@/service/TeamService";
 
     /**
      * 项目组选择菜单
@@ -20,7 +20,7 @@
      * @since 0.1.0
      */
     export default {
-        name: 'GroupSelection',
+        name: 'TeamSelection',
         props: {
             /**
              * @model
@@ -40,13 +40,13 @@
             }
         },
         beforeMount() {
-            GroupService.listing({pageId: 1, pageSize: 999999}, (count, groups) => {
-                this.groups = groups;
+            TeamService.listing({pageId: 1, pageSize: 999999}, (count, teams) => {
+                this.teams = teams;
             });
         },
         data() {
             return {
-                groups: []
+                teams: []
             }
         }
     }

@@ -4,7 +4,7 @@
 import axios from 'axios';
 import FileMocker from "./FileMocker";
 import FileMirrorMocker from "./FileMirrorMocker";
-import GroupMocker from "./GroupMocker";
+import TeamMocker from "./TeamMocker";
 import ContainerMocker from "./ContainerMocker";
 import UserMocker from "./UserMocker";
 
@@ -14,28 +14,28 @@ jest.mock('axios');
 let getMapping = {
     ...FileMocker.get,
     ...FileMirrorMocker.get,
-    ...GroupMocker.get,
+    ...TeamMocker.get,
     ...ContainerMocker.get,
     ...UserMocker.get
 };
 let postMapping = {
     ...FileMocker.post,
     ...FileMirrorMocker.post,
-    ...GroupMocker.post,
+    ...TeamMocker.post,
     ...ContainerMocker.post,
     ...UserMocker.post
 };
 let putMapping = {
     ...FileMocker.put,
     ...FileMirrorMocker.put,
-    ...GroupMocker.put,
+    ...TeamMocker.put,
     ...ContainerMocker.put,
     ...UserMocker.put
 };
 let deleteMapping = {
     ...FileMocker.delete,
     ...FileMirrorMocker.delete,
-    ...GroupMocker.delete,
+    ...TeamMocker.delete,
     ...ContainerMocker.delete,
     ...UserMocker.delete
 };

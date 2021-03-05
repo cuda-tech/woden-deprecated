@@ -25,7 +25,7 @@ import java.time.LocalDateTime
 @DTO(FilePO::class)
 data class FileDTO(
     val id: Int,
-    val groupId: Int,
+    val teamId: Int,
     val ownerId: Int,
     val name: String,
     val type: FileType,

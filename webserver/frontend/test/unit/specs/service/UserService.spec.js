@@ -18,12 +18,12 @@ describe('用户服务', () => {
         UserService.create({
                 name: 'testName',
                 password: 'testPassword',
-                groupIds: [1, 2, 3],
+                teamIds: [1, 2, 3],
                 email: 'testEmail'
             }, user => {
                 expect(user).toEqual({
                     id: 180,
-                    groups: [1, 2, 3],
+                    teams: [1, 2, 3],
                     name: 'testName',
                     email: 'testEmail',
                     createTime: '2020-05-22 01:43:10',
@@ -37,12 +37,12 @@ describe('用户服务', () => {
     test('更新用户测试', done => {
         UserService.update(180, {
                 password: 'testPassword',
-                groupIds: [1, 2, 3],
+                teamIds: [1, 2, 3],
                 email: 'testEmail'
             }, user => {
                 expect(user).toEqual({
                     id: 180,
-                    groups: [1, 2, 3],
+                    teams: [1, 2, 3],
                     name: 'testName',
                     email: 'testEmail',
                     createTime: '2020-05-22 01:43:11',
@@ -59,7 +59,7 @@ describe('用户服务', () => {
             expect(user).toEqual([
                 {
                     id: 1,
-                    groups: [1],
+                    teams: [1],
                     name: 'root',
                     email: 'root@woden.com',
                     createTime: '2048-08-14 06:10:35',
@@ -67,7 +67,7 @@ describe('用户服务', () => {
                 },
                 {
                     id: 2,
-                    groups: [1, 2, 5, 6, 7, 8, 9],
+                    teams: [1, 2, 5, 6, 7, 8, 9],
                     name: 'guest',
                     email: 'guest@woden.com',
                     createTime: '2041-02-10 19:37:55',
@@ -75,7 +75,7 @@ describe('用户服务', () => {
                 },
                 {
                     id: 3,
-                    groups: [2, 3, 4, 6, 8],
+                    teams: [2, 3, 4, 6, 8],
                     name: 'OHzXwnDAAd',
                     email: 'OHzXwnDAAd@189.com',
                     createTime: '2041-11-20 12:44:46',
@@ -90,7 +90,7 @@ describe('用户服务', () => {
         UserService.currentUser(user => {
             expect(user).toEqual({
                 id: 1,
-                groups: [1],
+                teams: [1],
                 name: 'root',
                 email: 'root@woden.com',
                 createTime: '2048-08-14 06:10:35',
@@ -104,7 +104,7 @@ describe('用户服务', () => {
         UserService.find(10, user => {
             expect(user).toEqual({
                 id: 10,
-                groups: [1, 3, 4, 5, 6, 8, 9],
+                teams: [1, 3, 4, 5, 6, 8, 9],
                 name: 'IinOzxLtGL',
                 email: 'IinOzxLtGL@139.com',
                 createTime: '2018-03-21 03:59:24',

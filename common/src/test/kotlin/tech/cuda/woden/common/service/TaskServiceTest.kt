@@ -38,7 +38,7 @@ class TaskServiceTest : TestWithMaria({
         task shouldNotBe null
         task!!
         task.mirrorId shouldBe 38
-        task.groupId shouldBe 31
+        task.teamId shouldBe 31
         task.name shouldBe "aniudyqv"
         task.owners shouldContainExactlyInAnyOrder setOf(131, 163, 98, 108)
         task.period shouldBe SchedulePeriod.MONTH
@@ -142,13 +142,13 @@ class TaskServiceTest : TestWithMaria({
         val queryTimes = validCount / pageSize + 1
         val lastPageUserCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            val (tasks, count) = TaskService.listing(page, pageSize, groupId = 10)
+            val (tasks, count) = TaskService.listing(page, pageSize, teamId = 10)
             count shouldBe validCount
             tasks.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
         }
 
         shouldThrow<NotFoundException> {
-            TaskService.listing(1, 100, groupId = 7)
+            TaskService.listing(1, 100, teamId = 7)
         }.message shouldBe "项目组 7 不存在或已被删除"
     }
 
@@ -210,7 +210,7 @@ class TaskServiceTest : TestWithMaria({
             page = 1,
             pageSize = 2,
             isValid = true,
-            groupId = 3,
+            teamId = 3,
             period = SchedulePeriod.DAY
         )
         tasks.size shouldBe 2
@@ -246,7 +246,7 @@ class TaskServiceTest : TestWithMaria({
             )
         )
         task.id shouldBe nextId
-        task.groupId shouldBe 3
+        task.teamId shouldBe 3
         task.name shouldBe "test create"
         task.owners shouldContainExactlyInAnyOrder setOf(3, 12, 15)
         task.period shouldBe SchedulePeriod.DAY
@@ -675,4 +675,4 @@ class TaskServiceTest : TestWithMaria({
         }.message shouldBe "子任务 未失效 , 禁止删除"
     }
 
-}, TaskDAO, JobDAO, InstanceDAO, GroupDAO, UserDAO, FileMirrorDAO, FileDAO)
+}, TaskDAO, JobDAO, InstanceDAO, TeamDAO, UserDAO, FileMirrorDAO, FileDAO)

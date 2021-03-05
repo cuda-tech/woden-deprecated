@@ -27,7 +27,7 @@ import tech.cuda.woden.webserver.RestfulTestToolbox
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
+open class FileControllerTest : RestfulTestToolbox("users", "teams", "files") {
 
     @Test
     fun listing() {
@@ -40,7 +40,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
             files.map { it.type } shouldContainExactly listOf(FileType.DIR, FileType.SPARK_SQL, FileType.SPARK_SQL, FileType.SPARK_SQL, FileType.SPARK_SHELL)
             files.map { it.name } shouldContainExactly listOf("zwgjydgn", "kniovyqn", "ladlehnr", "yoglnkyc", "jldwzlys")
             files.forEach {
-                it.groupId shouldBe 1
+                it.teamId shouldBe 1
                 it.parentId shouldBe 1
             }
         }
@@ -54,7 +54,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
             files.map { it.type } shouldContainExactly listOf(FileType.DIR, FileType.SPARK_SQL, FileType.SPARK_SHELL)
             files.map { it.name } shouldContainExactly listOf("zvdjsdhz", "yijlstlq", "yzhamcqc")
             files.forEach {
-                it.groupId shouldBe 1
+                it.teamId shouldBe 1
                 it.parentId shouldBe 4
             }
         }
@@ -62,16 +62,16 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
 
     @Test
     fun findRootDir() {
-        postman.get("/api/file/root", mapOf("groupId" to 6)).shouldSuccess.get<FileDTO>("file").withExpect {
+        postman.get("/api/file/root", mapOf("teamId" to 6)).shouldSuccess.get<FileDTO>("file").withExpect {
             it.name shouldBe "hhkjnqwc"
             it.ownerId shouldBe 124
         }
 
         // 已删除的项目组
-        postman.get("/api/file/root", mapOf("groupId" to 7)).shouldFailed.withError("项目组 7 根目录 不存在或已被删除")
+        postman.get("/api/file/root", mapOf("teamId" to 7)).shouldFailed.withError("项目组 7 根目录 不存在或已被删除")
 
         // 不存在的项目组
-        postman.get("/api/file/root", mapOf("groupId" to 40)).shouldFailed.withError("项目组 40 根目录 不存在或已被删除")
+        postman.get("/api/file/root", mapOf("teamId" to 40)).shouldFailed.withError("项目组 40 根目录 不存在或已被删除")
     }
 
     @Test
@@ -156,13 +156,13 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
         postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.get<Int>("count") shouldBe 3
 
         postman.post("/api/file", mapOf(
-            "groupId" to 1,
+            "teamId" to 1,
             "name" to "test create",
             "type" to "DIR",
             "parentId" to 4)
         ).shouldSuccess.get<FileDTO>("file").withExpect {
             it.id shouldBe 70
-            it.groupId shouldBe 1
+            it.teamId shouldBe 1
             it.ownerId shouldBe 1
             it.name shouldBe "test create"
             it.type shouldBe FileType.DIR
@@ -176,7 +176,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
             files.size shouldBe 1
             files.first().withExpect {
                 it.id shouldBe 70
-                it.groupId shouldBe 1
+                it.teamId shouldBe 1
                 it.ownerId shouldBe 1
                 it.name shouldBe "test create"
                 it.type shouldBe FileType.DIR
@@ -188,7 +188,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
 
         // 创建同名文件夹
         postman.post("/api/file", mapOf(
-            "groupId" to 1,
+            "teamId" to 1,
             "name" to "test create",
             "type" to "DIR",
             "parentId" to 4)
@@ -200,13 +200,13 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
         postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.get<Int>("count") shouldBe 3
 
         postman.post("/api/file", mapOf(
-            "groupId" to 1,
+            "teamId" to 1,
             "name" to "test create",
             "type" to "SPARK_SQL",
             "parentId" to 4)
         ).shouldSuccess.get<FileDTO>("file").withExpect {
             it.id shouldBe 70
-            it.groupId shouldBe 1
+            it.teamId shouldBe 1
             it.ownerId shouldBe 1
             it.name shouldBe "test create"
             it.type shouldBe FileType.SPARK_SQL
@@ -223,7 +223,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
             files.size shouldBe 1
             files.first().withExpect {
                 it.id shouldBe 70
-                it.groupId shouldBe 1
+                it.teamId shouldBe 1
                 it.ownerId shouldBe 1
                 it.name shouldBe "test create"
                 it.type shouldBe FileType.SPARK_SQL
@@ -232,7 +232,7 @@ open class FileControllerTest : RestfulTestToolbox("users", "groups", "files") {
         }
 
         postman.post("/api/file", mapOf(
-            "groupId" to 1,
+            "teamId" to 1,
             "name" to "test create",
             "type" to "SPARK_SQL",
             "parentId" to 4)

@@ -27,15 +27,15 @@ export default {
      * 创建用户
      * @param name: 用户名
      * @param password: 登录密码
-     * @param groupIds: 归属项目组
+     * @param teamIds: 归属项目组
      * @param email: 邮箱
      * @param callback(user): 回调函数, 请求成功后返回创建的 user
      */
-    create({name, password, groupIds, email}, callback) {
+    create({name, password, teamIds, email}, callback) {
         let params = new FormData();
         params.set('name', name);
         params.set('password', password);
-        params.set('groupIds', groupIds);
+        params.set('teamIds', teamIds);
         params.set('email', email);
 
         axios.post('/user', params).then(data => callback(data.user));
@@ -46,15 +46,15 @@ export default {
      * @param id: 用户 ID
      * @param name: 用户名
      * @param password: 登录密码
-     * @param groupIds: 归属项目组
+     * @param teamIds: 归属项目组
      * @param email: 登录邮箱
      * @param callback(user): 回调函数，请求成功后返回更新后的用户
      */
-    update(id, {name = null, password = null, groupIds = null, email = null}, callback) {
+    update(id, {name = null, password = null, teamIds = null, email = null}, callback) {
         let params = new FormData();
         params.set('name', name);
         params.set('password', password);
-        params.set('groupIds', groupIds);
+        params.set('teamIds', teamIds);
         params.set('email', email);
         axios.put(`/user/${id}`, params).then(data => callback(data.user));
     },

@@ -1,13 +1,13 @@
 import '../../axios-mocker'
 import ViewUI from 'view-design';
 import {mount, createLocalVue} from '@vue/test-utils';
-import GroupSelection from '@/components/selections/GroupSelection.vue';
+import TeamSelection from '@/components/selections/TeamSelection.vue';
 
 const localVue = createLocalVue();
 localVue.use(ViewUI);
 
 const factory = (props = {}) => {
-    return mount(GroupSelection, {
+    return mount(TeamSelection, {
         localVue: localVue,
         propsData: {
             ...props

@@ -29,7 +29,7 @@ import java.time.LocalDateTime
 data class TaskDTO(
     val id: Int,
     val mirrorId: Int,
-    val groupId: Int,
+    val teamId: Int,
     val name: String,
     val owners: Set<Int>,
     val args: Map<String, Any>,
