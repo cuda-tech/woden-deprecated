@@ -22,29 +22,29 @@ import io.kotest.matchers.string.shouldNotContain
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class SparkShellAdhocTest : AnnotationSpec() {
+class SparkShellRunnerTest : AnnotationSpec() {
 
     @Test
     fun testSparkContextInited() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkShellAdhoc(code = """println("sc = " + sc.toString())""")
+        val job = SparkShellRunner(code = """println("sc = " + sc.toString())""")
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldContain "sc = org.apache.spark.SparkContext@"
         job.close()
     }
 
     @Test
     fun testWrongStatement() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkShellAdhoc(code = "println(notExistsVariable)")
+        val job = SparkShellRunner(code = "println(notExistsVariable)")
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.FAILED
+        job.status shouldBe RunnerStatus.FAILED
         job.output shouldContain "error: not found: value notExistsVariable"
         job.close()
     }
 
     @Test
     fun testWordCount() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkShellAdhoc(code = """
+        val job = SparkShellRunner(code = """
             val wordCount = sc.parallelize(Array(
                 "apple apple facebook microsoft apple microsoft google apple google google",
                 "alibaba tencent alibaba alibaba"
@@ -56,26 +56,26 @@ class SparkShellAdhocTest : AnnotationSpec() {
             println("word count = " + wordCount)
         """.trimIndent())
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldContain "word count = 14"
         job.close()
     }
 
     @Test
     fun testKillJob() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkShellAdhoc(code = """
+        val job = SparkShellRunner(code = """
             Thread.sleep(30000)
             println("now, wake up")
         """.trimIndent())
         job.start()
-        while (job.status != AdhocStatus.RUNNING) {
+        while (job.status != RunnerStatus.RUNNING) {
             Thread.sleep(1000)
         }
         Thread.sleep(3000).also { job.kill() }
         do {
             Thread.sleep(1000)
-        } while (job.status == AdhocStatus.RUNNING)
-        job.status shouldBe AdhocStatus.KILLED
+        } while (job.status == RunnerStatus.RUNNING)
+        job.status shouldBe RunnerStatus.KILLED
         job.output shouldNotContain "now, wake up"
         job.close()
     }

@@ -22,23 +22,23 @@ import io.kotest.matchers.string.shouldNotContain
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class AnacondaAdhocTest : AnnotationSpec() {
+class AnacondaRunnerTest : AnnotationSpec() {
 
     @Test
     fun testSuccessJob() {
-        val job = AnacondaAdhoc("""
+        val job = AnacondaRunner("""
             import time
             print("hello")
             time.sleep(5)
             print("world")
         """.trimIndent())
-        job.status shouldBe AdhocStatus.NOT_START
+        job.status shouldBe RunnerStatus.NOT_START
         job.start()
         do {
             Thread.sleep(100)
-        } while (job.status == AdhocStatus.NOT_START)
+        } while (job.status == RunnerStatus.NOT_START)
         var hasBufferOutput = false
-        while (job.status == AdhocStatus.RUNNING) {
+        while (job.status == RunnerStatus.RUNNING) {
             if (job.output != "") {
                 job.output shouldBe "hello\n"
                 hasBufferOutput = true
@@ -48,38 +48,38 @@ class AnacondaAdhocTest : AnnotationSpec() {
         }
         hasBufferOutput shouldBe true
         job.join()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldBe "hello\nworld\n"
     }
 
     @Test
     fun testWrongStatement() {
-        val job = AnacondaAdhoc("print(notExists)")
-        job.status shouldBe AdhocStatus.NOT_START
+        val job = AnacondaRunner("print(notExists)")
+        job.status shouldBe RunnerStatus.NOT_START
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.FAILED
+        job.status shouldBe RunnerStatus.FAILED
         job.output shouldContain "NameError: name 'notExists' is not defined"
     }
 
     @Test
     fun testWrongIndent() {
-        val job = AnacondaAdhoc("  print(1234)")
-        job.status shouldBe AdhocStatus.NOT_START
+        val job = AnacondaRunner("  print(1234)")
+        job.status shouldBe RunnerStatus.NOT_START
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.FAILED
+        job.status shouldBe RunnerStatus.FAILED
         job.output shouldContain "IndentationError: unexpected indent"
     }
 
     @Test
     fun testRaiseException() {
-        val job = AnacondaAdhoc("""
+        val job = AnacondaRunner("""
             print("hello")
             raise Exception("stop here")
             print("world")
         """.trimIndent())
-        job.status shouldBe AdhocStatus.NOT_START
+        job.status shouldBe RunnerStatus.NOT_START
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.FAILED
+        job.status shouldBe RunnerStatus.FAILED
         job.output shouldContain "hello\n"
         job.output shouldContain "Exception: stop here"
         job.output shouldNotContain "world"
@@ -87,20 +87,20 @@ class AnacondaAdhocTest : AnnotationSpec() {
 
     @Test
     fun testKill() {
-        val job = AnacondaAdhoc("""
+        val job = AnacondaRunner("""
             import time
             print("hello")
             time.sleep(10)
             print("world")
         """.trimIndent())
-        job.status shouldBe AdhocStatus.NOT_START
+        job.status shouldBe RunnerStatus.NOT_START
         job.start()
         while (job.output != "hello\n") {
             Thread.sleep(123)
         }
         job.kill()
         job.join()
-        job.status shouldBe AdhocStatus.KILLED
+        job.status shouldBe RunnerStatus.KILLED
         job.output shouldContain "hello\n"
         job.output shouldContain "Process exited with an error"
         job.output shouldNotContain "world"
@@ -108,7 +108,7 @@ class AnacondaAdhocTest : AnnotationSpec() {
 
     @Test
     fun testUserDefineArgument() {
-        val job = AnacondaAdhoc(
+        val job = AnacondaRunner(
             code = """
                 import sys
                 print(sys.argv[1])
@@ -116,15 +116,15 @@ class AnacondaAdhocTest : AnnotationSpec() {
             """.trimIndent(),
             arguments = listOf("hello", "world!")
         )
-        job.status shouldBe AdhocStatus.NOT_START
+        job.status shouldBe RunnerStatus.NOT_START
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldBe "hello\nworld!\n"
     }
 
     @Test
     fun testUserDefineKvArgument() {
-        val job = AnacondaAdhoc(
+        val job = AnacondaRunner(
             code = """
                 import argparse
                 parser = argparse.ArgumentParser()
@@ -136,9 +136,9 @@ class AnacondaAdhocTest : AnnotationSpec() {
             """.trimIndent(),
             kvArguments = mapOf("-f" to "1", "--second" to "2")
         )
-        job.status shouldBe AdhocStatus.NOT_START
+        job.status shouldBe RunnerStatus.NOT_START
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldBe "first = 1\nsecond = 2\n"
     }
 }

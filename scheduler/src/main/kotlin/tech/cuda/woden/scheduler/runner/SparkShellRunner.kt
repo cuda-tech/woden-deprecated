@@ -20,10 +20,10 @@ import java.io.File
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class SparkShellAdhoc(
+class SparkShellRunner(
     code: String,
     override val sparkConf: Map<String, String> = mapOf()
-) : AbstractSparkAdhoc() {
+) : AbstractSparkRunner() {
     override val mainClass = "org.apache.spark.repl.Main"
 
     private val tempFile = File.createTempFile("__adhoc__", ".scala").also {

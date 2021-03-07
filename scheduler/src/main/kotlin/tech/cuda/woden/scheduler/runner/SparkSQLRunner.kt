@@ -13,15 +13,27 @@
  */
 package tech.cuda.woden.scheduler.runner
 
-import tech.cuda.woden.common.configuration.Woden
-
+import java.io.File
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class BashAdhoc(
+class SparkSQLRunner(
     code: String,
-    arguments: List<String> = listOf(),
-    kvArguments: Map<String, String> = mapOf()
-) : AbstractBashAdhoc(Woden.scheduler.bashPath, code, arguments, kvArguments)
+    override val sparkConf: Map<String, String> = mapOf()
+) : AbstractSparkRunner() {
+
+    private val tempFile = File.createTempFile("__adhoc__", ".sql").also {
+        it.writeText(code, Charsets.UTF_8)
+        it.deleteOnExit()
+    }
+
+    override val mainClass = "org.apache.spark.sql.hive.thriftserver.SparkSQLCLIDriver"
+
+    override val appArgs = listOf(
+        "--conf", "spark.hadoop.hive.cli.print.header=true",
+        "-f", tempFile.path
+    )
+
+}

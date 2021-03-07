@@ -13,24 +13,26 @@
  */
 package tech.cuda.woden.scheduler.runner
 
-import tech.cuda.woden.common.configuration.Woden
-
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class AnacondaAdhoc(
-    code: String,
-    arguments: List<String> = listOf(),
-    kvArguments: Map<String, String> = mapOf()
-) : AbstractBashAdhoc(
-    executorPath = Woden.scheduler.anacondaPath,
-    code = """
-        import sys, io
-        from functools import partial
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, newline='\n') # 避免在 Windows 下换行符自动转为 \r\n
-        print = partial(print, flush = True) # 为了将 print 实时地输出到 std
-    """.trimIndent() + "\n" + code,
-    arguments = arguments,
-    kvArguments = kvArguments
-)
+enum class RunnerStatus {
+    NOT_START {
+        override val isFinish = false
+    },
+    RUNNING {
+        override val isFinish = false
+    },
+    SUCCESS {
+        override val isFinish = true
+    },
+    FAILED {
+        override val isFinish = true
+    },
+    KILLED {
+        override val isFinish = true
+    };
+
+    abstract val isFinish: Boolean
+}

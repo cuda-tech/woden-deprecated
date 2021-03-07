@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-abstract class AbstractSparkAdhoc : Adhoc {
+abstract class AbstractSparkRunner : Runner {
 
     abstract val mainClass: String
     open val jar: String = "${Woden.scheduler.sparkHome}${File.separator}jars${File.separator}spark-sql*.jar"
@@ -39,15 +39,15 @@ abstract class AbstractSparkAdhoc : Adhoc {
             return Resources.readLines(logFile.toURI().toURL(), Charsets.UTF_8).joinToString("\n")
         }
 
-    override val status: AdhocStatus
+    override val status: RunnerStatus
         get() = if (!this::handler.isInitialized) {
-            AdhocStatus.NOT_START
+            RunnerStatus.NOT_START
         } else {
             when (handler.state!!) {
-                SparkAppHandle.State.UNKNOWN -> AdhocStatus.NOT_START
-                SparkAppHandle.State.CONNECTED -> AdhocStatus.NOT_START
-                SparkAppHandle.State.SUBMITTED -> AdhocStatus.NOT_START
-                SparkAppHandle.State.RUNNING -> AdhocStatus.RUNNING
+                SparkAppHandle.State.UNKNOWN -> RunnerStatus.NOT_START
+                SparkAppHandle.State.CONNECTED -> RunnerStatus.NOT_START
+                SparkAppHandle.State.SUBMITTED -> RunnerStatus.NOT_START
+                SparkAppHandle.State.RUNNING -> RunnerStatus.RUNNING
                 SparkAppHandle.State.FINISHED -> {
                     // FINISHED 仅代表 Spark Context 正确地启动 & 停止，并不代表作业成功
                     // 因此需要判断一下子线程的返回值，由于子线程是 private 的，因此需要反射设置 accessible 后读取
@@ -57,13 +57,13 @@ abstract class AbstractSparkAdhoc : Adhoc {
                     val exit = proc.waitFor(60, TimeUnit.SECONDS)
                     when {
                         !exit -> throw Exception()
-                        proc.exitValue() == 0 -> AdhocStatus.SUCCESS
-                        else -> AdhocStatus.FAILED
+                        proc.exitValue() == 0 -> RunnerStatus.SUCCESS
+                        else -> RunnerStatus.FAILED
                     }
                 }
-                SparkAppHandle.State.FAILED -> AdhocStatus.FAILED
-                SparkAppHandle.State.KILLED -> AdhocStatus.KILLED
-                SparkAppHandle.State.LOST -> AdhocStatus.FAILED
+                SparkAppHandle.State.FAILED -> RunnerStatus.FAILED
+                SparkAppHandle.State.KILLED -> RunnerStatus.KILLED
+                SparkAppHandle.State.LOST -> RunnerStatus.FAILED
             }
         }
 

@@ -27,7 +27,7 @@ import javax.mail.internet.MimeMessage
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class MailAdhoc(private val to: List<String>, private val title: String, private val content: String) : Adhoc {
+class MailRunner(private val to: List<String>, private val title: String, private val content: String) : Runner {
 
     private var hasException = false
     private lateinit var job: Deferred<Unit>
@@ -35,12 +35,12 @@ class MailAdhoc(private val to: List<String>, private val title: String, private
     override val output: String
         get() = ""
 
-    override val status: AdhocStatus
+    override val status: RunnerStatus
         get() = when {
-            !this::job.isInitialized -> AdhocStatus.NOT_START
-            !this.job.isCompleted -> AdhocStatus.RUNNING
-            job.isCompleted -> if (hasException) AdhocStatus.FAILED else AdhocStatus.SUCCESS
-            else -> AdhocStatus.FAILED
+            !this::job.isInitialized -> RunnerStatus.NOT_START
+            !this.job.isCompleted -> RunnerStatus.RUNNING
+            job.isCompleted -> if (hasException) RunnerStatus.FAILED else RunnerStatus.SUCCESS
+            else -> RunnerStatus.FAILED
         }
 
     override fun start() {
@@ -61,7 +61,7 @@ class MailAdhoc(private val to: List<String>, private val title: String, private
 
     override fun join() {
         runBlocking {
-            if (this@MailAdhoc::job.isInitialized) {
+            if (this@MailRunner::job.isInitialized) {
                 job.await()
             }
         }

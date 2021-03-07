@@ -34,7 +34,7 @@ class InstanceTracker(
 ) : Tracker() {
 
     // 需要使用线程安全的容器，避免 forEach 的时候因 remove 而产生 ConcurrentModificationException
-    private val adhocQueue = ConcurrentHashMap<Int, Adhoc>() // (InstanceId, (JobId, Adhoc))
+    private val runnerQueue = ConcurrentHashMap<Int, Runner>() // (InstanceId, (JobId, runner))
 
     // JobTracker 更新 Job 状态可能会存在延迟，因此在 InstanceTracker 维护一个执行中作业的 Map(InstanceId, JobId)
     private val runningJob = mutableMapOf<Int, Int>()
@@ -63,16 +63,16 @@ class InstanceTracker(
                         .logIfNull("file ${mirror.fileId} defined in mirror ${mirror.id}, task ${task.id} and job ${job.id} does not exists")
                         ?: return@forEach
 
-                    val adhoc = when (file.type) {
-                        FileType.SPARK_SQL -> SparkSQLAdhoc(code = mirror.content)
-                        FileType.ANACONDA -> AnacondaAdhoc(code = mirror.content)
-                        FileType.PY_SPARK -> PySparkAdhoc(code = mirror.content)
-                        FileType.BASH -> BashAdhoc(code = mirror.content)
+                    val runner = when (file.type) {
+                        FileType.SPARK_SQL -> SparkSQLRunner(code = mirror.content)
+                        FileType.ANACONDA -> AnacondaRunner(code = mirror.content)
+                        FileType.PY_SPARK -> PySparkRunner(code = mirror.content)
+                        FileType.BASH -> BashRunner(code = mirror.content)
                         else -> throw OperationNotAllowException()
                     }
-                    adhoc.start()
+                    runner.start()
                     val instance = InstanceService.create(job)
-                    adhocQueue[instance.id] = adhoc
+                    runnerQueue[instance.id] = runner
                     runningJob[instance.id] = job.id
                 }
             jobs.size over total
@@ -80,24 +80,24 @@ class InstanceTracker(
     }
 
     private fun checkStatusForRunningInstance() {
-        adhocQueue.forEach { (instanceId, adhoc) ->
-            val adhocStatus = adhoc.status
+        runnerQueue.forEach { (instanceId, runner) ->
+            val runnerStatus = runner.status
 
-            if (adhocStatus.isFinish) {
+            if (runnerStatus.isFinish) {
                 InstanceService.update(
                     id = instanceId,
-                    status = when (adhocStatus) {
-                        AdhocStatus.FAILED -> InstanceStatus.FAILED
-                        AdhocStatus.KILLED -> InstanceStatus.KILLED
-                        AdhocStatus.SUCCESS -> InstanceStatus.SUCCESS
-                        else -> throw Exception("Wrong adhoc status $adhocStatus, expect isFinish = true") // 这个分支逻辑上不可达
+                    status = when (runnerStatus) {
+                        RunnerStatus.FAILED -> InstanceStatus.FAILED
+                        RunnerStatus.KILLED -> InstanceStatus.KILLED
+                        RunnerStatus.SUCCESS -> InstanceStatus.SUCCESS
+                        else -> throw Exception("Wrong runner status $runnerStatus, expect isFinish = true") // 这个分支逻辑上不可达
                     },
-                    log = adhoc.output
+                    log = runner.output
                 )
-                adhocQueue.remove(instanceId)
+                runnerQueue.remove(instanceId)
                 runningJob.remove(instanceId)
             } else {
-                InstanceService.update(id = instanceId, log = adhoc.output)
+                InstanceService.update(id = instanceId, log = runner.output)
             }
         }
     }
@@ -108,8 +108,8 @@ class InstanceTracker(
     }
 
     override fun onDestroyed() {
-        adhocQueue.values.forEach { adhoc ->
-            adhoc.join()
+        runnerQueue.values.forEach { runner ->
+            runner.join()
         }
         checkStatusForRunningInstance()
     }

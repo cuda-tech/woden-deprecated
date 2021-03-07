@@ -40,19 +40,19 @@ object EnvSetter {
             "spark.driver.extraJavaOptions" to "-Dderby.system.home=$derbyHome",
             "spark.sql.crossJoin.enabled" to "true"
         )
-        mockkConstructor(PySparkAdhoc::class)
-        mockkConstructor(SparkShellAdhoc::class)
-        mockkConstructor(SparkSQLAdhoc::class)
+        mockkConstructor(PySparkRunner::class)
+        mockkConstructor(SparkShellRunner::class)
+        mockkConstructor(SparkSQLRunner::class)
 
-        every { anyConstructed<PySparkAdhoc>().sparkConf } returns sparkConf
-        every { anyConstructed<SparkShellAdhoc>().sparkConf } returns sparkConf
-        every { anyConstructed<SparkSQLAdhoc>().sparkConf } returns sparkConf
+        every { anyConstructed<PySparkRunner>().sparkConf } returns sparkConf
+        every { anyConstructed<SparkShellRunner>().sparkConf } returns sparkConf
+        every { anyConstructed<SparkSQLRunner>().sparkConf } returns sparkConf
 
         block()
 
-        unmockkConstructor(PySparkAdhoc::class)
-        unmockkConstructor(SparkShellAdhoc::class)
-        unmockkConstructor(SparkSQLAdhoc::class)
+        unmockkConstructor(PySparkRunner::class)
+        unmockkConstructor(SparkShellRunner::class)
+        unmockkConstructor(SparkSQLRunner::class)
 
         tempDerbyDir.deleteRecursively()
         tempLocalDir.deleteRecursively()

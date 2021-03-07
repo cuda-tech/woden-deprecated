@@ -17,22 +17,48 @@ package tech.cuda.woden.scheduler.runner
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-enum class AdhocStatus {
-    NOT_START {
-        override val isFinish = false
-    },
-    RUNNING {
-        override val isFinish = false
-    },
-    SUCCESS {
-        override val isFinish = true
-    },
-    FAILED {
-        override val isFinish = true
-    },
-    KILLED {
-        override val isFinish = true
-    };
+interface Runner {
 
-    abstract val isFinish: Boolean
+    val output: String
+
+    val status: RunnerStatus
+
+    /**
+     * 异步地执行作业
+     */
+    fun start()
+
+    fun beforeStart() {}
+    fun afterStart() {}
+
+    /**
+     * 作业完成后的回调，常用于环境清理
+     */
+    fun close()
+
+    fun beforeClose() {}
+    fun afterClose() {}
+
+    /**
+     * 等待作业执行完毕，一般只用于单测
+     */
+    fun join()
+
+    fun beforeJoin() {}
+    fun afterJoin() {}
+
+    /**
+     * 中止执行中的作业
+     */
+    fun kill()
+
+    fun beforeKill() {}
+    fun afterKill() {}
+
+    fun startAndJoin() {
+        start()
+        join()
+    }
 }
+
+

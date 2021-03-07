@@ -13,27 +13,24 @@
  */
 package tech.cuda.woden.scheduler.runner
 
-import java.io.File
+import tech.cuda.woden.common.configuration.Woden
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class SparkSQLAdhoc(
+class AnacondaRunner(
     code: String,
-    override val sparkConf: Map<String, String> = mapOf()
-) : AbstractSparkAdhoc() {
-
-    private val tempFile = File.createTempFile("__adhoc__", ".sql").also {
-        it.writeText(code, Charsets.UTF_8)
-        it.deleteOnExit()
-    }
-
-    override val mainClass = "org.apache.spark.sql.hive.thriftserver.SparkSQLCLIDriver"
-
-    override val appArgs = listOf(
-        "--conf", "spark.hadoop.hive.cli.print.header=true",
-        "-f", tempFile.path
-    )
-
-}
+    arguments: List<String> = listOf(),
+    kvArguments: Map<String, String> = mapOf()
+) : AbstractBashRunner(
+    executorPath = Woden.scheduler.anacondaPath,
+    code = """
+        import sys, io
+        from functools import partial
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, newline='\n') # 避免在 Windows 下换行符自动转为 \r\n
+        print = partial(print, flush = True) # 为了将 print 实时地输出到 std
+    """.trimIndent() + "\n" + code,
+    arguments = arguments,
+    kvArguments = kvArguments
+)

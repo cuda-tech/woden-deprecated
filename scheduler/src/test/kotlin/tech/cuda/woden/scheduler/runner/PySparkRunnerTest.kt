@@ -22,18 +22,18 @@ import io.kotest.matchers.string.shouldNotContain
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class PySparkAdhocTest : AnnotationSpec() {
+class PySparkRunnerTest : AnnotationSpec() {
 
     @Test
     fun testContextInited() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = PySparkAdhoc(code = """
+        val job = PySparkRunner(code = """
             print("sc =", sc)
             print("sql =", sql)
             print("sqlContext =", sqlContext)
             print("sqlCtx =", sqlCtx)
         """.trimIndent())
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldContain "sc = <SparkContext master="
         job.output shouldContain "sql = <bound method SparkSession.sql of <pyspark.sql.session.SparkSession object at "
         job.output shouldContain "sqlContext = <pyspark.sql.context.SQLContext object at "
@@ -43,16 +43,16 @@ class PySparkAdhocTest : AnnotationSpec() {
 
     @Test
     fun testWrongStatement() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = PySparkAdhoc(code = "print(notExistsVariable)")
+        val job = PySparkRunner(code = "print(notExistsVariable)")
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.FAILED
+        job.status shouldBe RunnerStatus.FAILED
         job.output shouldContain "NameError: name 'notExistsVariable' is not defined"
         job.close()
     }
 
     @Test
     fun testWordCount() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = PySparkAdhoc(code = """
+        val job = PySparkRunner(code = """
             word_count = sc.parallelize([
                 'apple apple facebook microsoft apple microsoft google apple google google',
                 'alibaba tencent alibaba alibaba'
@@ -64,27 +64,27 @@ class PySparkAdhocTest : AnnotationSpec() {
             print("word count =", word_count)
         """.trimIndent())
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldContain "word count = 14"
         job.close()
     }
 
     @Test
     fun testKillJob() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = PySparkAdhoc(code = """
+        val job = PySparkRunner(code = """
             import time
             time.sleep(30)
             print("now, wake up")
         """.trimIndent())
         job.start()
-        while (job.status != AdhocStatus.RUNNING) {
+        while (job.status != RunnerStatus.RUNNING) {
             Thread.sleep(1000)
         }
         Thread.sleep(3000).also { job.kill() }
         do {
             Thread.sleep(1000)
-        } while (job.status == AdhocStatus.RUNNING)
-        job.status shouldBe AdhocStatus.KILLED
+        } while (job.status == RunnerStatus.RUNNING)
+        job.status shouldBe RunnerStatus.KILLED
         job.output shouldNotContain "now, wake up"
         job.close()
     }

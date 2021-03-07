@@ -27,7 +27,7 @@ import io.kotest.matchers.shouldBe
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class MailAdhocTest : AnnotationSpec() {
+class MailRunnerTest : AnnotationSpec() {
 
     private val greenMail: GreenMail = GreenMail(ServerSetupTest.SMTPS)
 
@@ -45,10 +45,10 @@ class MailAdhocTest : AnnotationSpec() {
     @Test
     fun testSend() {
         val receivers = listOf("user1@test1", "user2@test2", "user3@test3")
-        val job = MailAdhoc(to = receivers, title = "test email", content = "this is a test email")
-        job.status shouldBe AdhocStatus.NOT_START
+        val job = MailRunner(to = receivers, title = "test email", content = "this is a test email")
+        job.status shouldBe RunnerStatus.NOT_START
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         val mails = greenMail.receivedMessages
         mails.size shouldBe 3
         mails.forEach {

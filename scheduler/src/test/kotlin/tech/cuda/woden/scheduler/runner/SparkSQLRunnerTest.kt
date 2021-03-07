@@ -21,29 +21,29 @@ import io.kotest.matchers.string.shouldContain
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class SparkSQLAdhocTest : AnnotationSpec() {
+class SparkSQLRunnerTest : AnnotationSpec() {
 
     @Test
     fun testErrorStatement() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkSQLAdhoc(code = "select not_exists_column")
+        val job = SparkSQLRunner(code = "select not_exists_column")
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.FAILED
+        job.status shouldBe RunnerStatus.FAILED
         job.output shouldContain "Error in query: cannot resolve '`not_exists_column`' given input columns: []; line 1 pos 7;"
         job.close()
     }
 
     @Test
     fun testNotExistsTableStatement() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkSQLAdhoc(code = "select 1 from not_exists_table")
+        val job = SparkSQLRunner(code = "select 1 from not_exists_table")
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.FAILED
+        job.status shouldBe RunnerStatus.FAILED
         job.output shouldContain "Error in query: Table or view not found: not_exists_table; line 1 pos 14"
         job.close()
     }
 
     @Test
     fun testSelectStatement() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkSQLAdhoc("""
+        val job = SparkSQLRunner("""
             select
                 1 as int_column,
                 1.234 as double_col,
@@ -54,7 +54,7 @@ class SparkSQLAdhocTest : AnnotationSpec() {
                 named_struct("c", 3, "d", 4) as struct_col
         """.trimIndent())
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldContain """
             int_column	double_col	datetime_col	string_col	list_col	map_col	struct_col
             1	1.234	2020-09-27 01:38:00	hello world	[1,2,3]	{"a":1,"b":2}	{"c":3,"d":4}
@@ -64,7 +64,7 @@ class SparkSQLAdhocTest : AnnotationSpec() {
 
     @Test
     fun testUnionAllStatement() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkSQLAdhoc("""
+        val job = SparkSQLRunner("""
             set spark.sql.crossJoin.enabled = true;
             select
                 1 as int_column,
@@ -85,7 +85,7 @@ class SparkSQLAdhocTest : AnnotationSpec() {
                 named_struct("c", 7, "d", 8) as struct_col
         """.trimIndent())
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldContain """
             int_column	double_col	datetime_col	string_col	list_col	map_col	struct_col
             1	1.234	2020-09-27 01:38:00	hello world	[1,2,3]	{"a":1,"b":2}	{"c":3,"d":4}
@@ -96,7 +96,7 @@ class SparkSQLAdhocTest : AnnotationSpec() {
 
     @Test
     fun testGroupByStatement() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkSQLAdhoc("""
+        val job = SparkSQLRunner("""
             select
                 int_column,
                 sum(double_col) as sum_double_col,
@@ -133,7 +133,7 @@ class SparkSQLAdhocTest : AnnotationSpec() {
             order by int_column
         """.trimIndent())
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldContain """
             int_column	sum_double_col	col_cnt
             1	1.234	1
@@ -144,7 +144,7 @@ class SparkSQLAdhocTest : AnnotationSpec() {
 
     @Test
     fun testInnerJoinStatement() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkSQLAdhoc("""
+        val job = SparkSQLRunner("""
             select
                 t1.int_column,
                 t1.string_col as t1_string,
@@ -164,7 +164,7 @@ class SparkSQLAdhocTest : AnnotationSpec() {
             ) as t2 on t1.int_column = t2.int_column
         """.trimIndent())
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldContain """
             int_column	t1_string	t2_string
             1	hello world	hello world!
@@ -174,7 +174,7 @@ class SparkSQLAdhocTest : AnnotationSpec() {
 
     @Test
     fun testLeftJoinStatement() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkSQLAdhoc("""
+        val job = SparkSQLRunner("""
             select
                 t1.int_column,
                 t1.string_col as t1_string,
@@ -195,7 +195,7 @@ class SparkSQLAdhocTest : AnnotationSpec() {
             order by int_column
         """.trimIndent())
         job.startAndJoin()
-        job.status shouldBe AdhocStatus.SUCCESS
+        job.status shouldBe RunnerStatus.SUCCESS
         job.output shouldContain """
             int_column	t1_string	t2_string
             1	hello world	hello world!
@@ -206,16 +206,16 @@ class SparkSQLAdhocTest : AnnotationSpec() {
 
     @Test
     fun testKillJob() = EnvSetter.autoSetLocalAndDerbyDir {
-        val job = SparkSQLAdhoc("select reflect('java.lang.Thread', 'sleep', bigint(30000))")
+        val job = SparkSQLRunner("select reflect('java.lang.Thread', 'sleep', bigint(30000))")
         job.start()
-        while (job.status != AdhocStatus.RUNNING) {
+        while (job.status != RunnerStatus.RUNNING) {
             Thread.sleep(1000)
         }
         Thread.sleep(3000).also { job.kill() }
         do {
             Thread.sleep(1000)
-        } while (job.status == AdhocStatus.RUNNING)
-        job.status shouldBe AdhocStatus.KILLED
+        } while (job.status == RunnerStatus.RUNNING)
+        job.status shouldBe RunnerStatus.KILLED
         job.close()
     }
 
