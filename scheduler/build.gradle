@@ -8,12 +8,13 @@ dependencies {
     implementation "com.github.oshi:oshi-core:$oshi_version"
     implementation "javax.mail:mail:$java_mail_version"
 
-    implementation "org.apache.spark:spark-sql_$scala_version:$spark_version"
-    implementation "org.apache.spark:spark-core_$scala_version:$spark_version"
-    implementation "org.apache.spark:spark-hive_$scala_version:$spark_version"
-    implementation "org.apache.spark:spark-streaming_$scala_version:$spark_version"
+    // 暂时先移除 spark, hadoop 的无关依赖，避免 kotest 依赖的 classgraph 在扫描 jar 时产生 OOM
+    // implementation "org.apache.spark:spark-sql_$scala_version:$spark_version"
+    // implementation "org.apache.spark:spark-core_$scala_version:$spark_version"
+    // implementation "org.apache.spark:spark-hive_$scala_version:$spark_version"
+    // implementation "org.apache.spark:spark-streaming_$scala_version:$spark_version"
+    // implementation "org.apache.commons:commons-exec:$commons_exec_version"
     implementation "org.apache.spark:spark-launcher_$scala_version:$spark_version"
-    implementation "org.apache.commons:commons-exec:$commons_exec_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
 
     testImplementation "com.icegreen:greenmail:$green_mail_version"

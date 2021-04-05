@@ -84,7 +84,9 @@ class DDLProcessor : AbstractProcessor() {
     }
 
     private fun String.columnName(varName: Name): String {
-        val name = varName.toString().replace("\$annotations", "")
+        val name = varName.toString()
+            .replace("\$annotations", "")
+            .let { if(it.startsWith("get")) it.substring(3).decapitalize() else it }
         val pattern = listOf("val", name, "=", ".*", "\\(", "\"(.*?)\"", ".*", "\\)", ".*", "\\.bindTo").joinToString("\\s*", "\\s*", "\\s*")
         return Regex(pattern).find(this)?.groupValues?.lastOrNull() ?: throw Exception("无法解析 $name 列名")
     }

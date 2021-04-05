@@ -19,7 +19,6 @@ import com.icegreen.greenmail.util.ServerSetupTest
 import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
-import io.kotest.fp.Tuple2
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
 
@@ -37,8 +36,8 @@ class MailRunnerTest : AnnotationSpec() {
         greenMail.setUser("root@host.com", "root@host.com", "root")
     }
 
-    override fun afterTest(f: suspend (Tuple2<TestCase, TestResult>) -> Unit) {
-        super.afterTest(f)
+    override fun afterTest(testCase: TestCase, result: TestResult) {
+        super.afterTest(testCase, result)
         greenMail.stop()
     }
 

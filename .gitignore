@@ -3,11 +3,12 @@
 **target
 .tmp
 **build
+**out
 .gradle
+**node_modules
 
 /frontend/test/unit/coverage/
 /frontend/test/e2e/reports/
-/frontend/node_modules/
 /frontend/dist/
 /frontend/npm-debug.log*
 /frontend/yarn-debug.log*
