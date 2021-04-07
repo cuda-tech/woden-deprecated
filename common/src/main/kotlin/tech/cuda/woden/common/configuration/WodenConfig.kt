@@ -13,14 +13,12 @@
  */
 package tech.cuda.woden.common.configuration
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonRootName
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.google.common.io.Resources
+import com.typesafe.config.ConfigFactory
 import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.pool.HikariPool
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.hocon.Hocon
 import tech.cuda.woden.common.configuration.datasource.DataSourceConfig
 import tech.cuda.woden.common.configuration.email.EmailConfig
 import tech.cuda.woden.common.configuration.scheduler.SchedulerConfig
@@ -31,10 +29,9 @@ import javax.sql.DataSource
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-@JsonRootName("woden")
+@Serializable
 data class WodenConfig(
-    @JsonProperty("datasource")
-    private val datasourceConfig: DataSourceConfig,
+    @SerialName("datasource") private val datasourceConfig: DataSourceConfig,
     val email: EmailConfig,
     val scheduler: SchedulerConfig
 ) {
@@ -58,6 +55,7 @@ data class WodenConfig(
     }
 }
 
-private val mapper = XmlMapper().registerKotlinModule()
-val Woden = mapper.readValue<WodenConfig>(Resources.getResource("woden.xml"))
-
+val Woden = Hocon.decodeFromConfig(
+    WodenConfig.serializer(),
+    ConfigFactory.parseResources("woden.conf")
+)

@@ -13,8 +13,10 @@
  */
 package tech.cuda.woden.common.configuration.email
 
-import com.fasterxml.jackson.annotation.JsonRootName
 import com.sun.mail.util.MailSSLSocketFactory
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.util.*
 import javax.mail.Authenticator
 import javax.mail.PasswordAuthentication
@@ -23,7 +25,8 @@ import javax.mail.PasswordAuthentication
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-@JsonRootName("email")
+@Serializable
+@SerialName("email")
 data class EmailConfig(
     val host: String, // e.g smtp.163.com
     val sender: String, // e.g someone@163.com
@@ -31,12 +34,14 @@ data class EmailConfig(
     val port: Int = 465
 ) {
 
+    @Transient
     val auth: Authenticator = object : Authenticator() {
         override fun getPasswordAuthentication(): PasswordAuthentication {
             return PasswordAuthentication(sender, password)
         }
     }
 
+    @Transient
     val properties: Properties = Properties().also {
         it["mail.transport.protocol"] = "SMTP"
         it["mail.smtp.host"] = host

@@ -13,35 +13,34 @@
  */
 package tech.cuda.woden.common.configuration.scheduler
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonRootName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-@JsonRootName("scheduler")
+@Serializable
+@SerialName("scheduler")
 data class SchedulerConfig(
     val role: String,
-
-    @JsonProperty("spark.home")
-    private val _sparkHome: String?,
-
-    @JsonProperty("anaconda.path")
-    private val _anacondaPath: String?,
-
-    @JsonProperty("bash.path")
-    private val _bashPath: String?
+    @SerialName("spark.home") private val _sparkHome: String?,
+    @SerialName("anaconda.path") private val _anacondaPath: String?,
+    @SerialName("bash.path") private val _bashPath: String?
 ) {
+    @Transient
     val sparkHome: String = _sparkHome
         ?: System.getenv("SPARK_HOME")
         ?: System.getProperty("SPARK_HOME")
 
+    @Transient
     val anacondaPath: String = _anacondaPath
         ?: System.getenv("ANACONDA_PATH")
         ?: System.getProperty("ANACONDA_PATH")
         ?: "/usr/bin/python3"
 
+    @Transient
     val bashPath: String = _bashPath
         ?: System.getenv("BASH_PATH")
         ?: System.getProperty("BASH_PATH")

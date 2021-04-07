@@ -13,15 +13,17 @@
  */
 package tech.cuda.woden.common.configuration.datasource
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonRootName
 import com.zaxxer.hikari.HikariConfig
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-@JsonRootName("datasource")
+@Serializable
+@SerialName("datasource")
 data class DataSourceConfig(
     val name: String,
     val username: String,
@@ -32,7 +34,7 @@ data class DataSourceConfig(
     val minimumIdle: Int,
     val maximumPoolSize: Int
 ) {
-    @JsonIgnore
+    @Transient
     val hikariConfig = HikariConfig().also {
         it.jdbcUrl = "jdbc:mysql://${host}:${port}/${dbName}?characterEncoding=UTF-8"
         it.poolName = name
