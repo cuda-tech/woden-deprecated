@@ -62,5 +62,8 @@ todo
 ## 贡献者
 [@Jensen Qi](https://github.com/JensenQi)
 
+## 鸣谢
+感谢 [JetBrains 社区支持团队](https://www.jetbrains.com/opensource/) 为本项目提供了 All Products Pack License.
+
 ## License
 [Apache2.0](http://www.apache.org/licenses/LICENSE-2.0)
