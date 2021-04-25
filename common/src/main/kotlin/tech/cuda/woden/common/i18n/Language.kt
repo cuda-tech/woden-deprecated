@@ -18,7 +18,7 @@ package tech.cuda.woden.common.i18n
  * @since 0.1.0
  */
 interface Language {
-    val user: String
+    val person: String
     val team: String
     val container: String
     val file: String

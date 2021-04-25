@@ -14,25 +14,25 @@
 package tech.cuda.woden.webserver.controller
 
 import io.kotest.matchers.shouldBe
-import tech.cuda.woden.common.service.UserService
+import tech.cuda.woden.common.service.PersonService
 import tech.cuda.woden.webserver.RestfulTestToolbox
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-open class LoginControllerTest : RestfulTestToolbox("users") {
+open class LoginControllerTest : RestfulTestToolbox("person") {
 
     @Test
     fun login() {
-        val token = postman.post("/api/login", mapOf("username" to "root", "password" to "root")).shouldSuccess
+        val token = postman.post("/api/login", mapOf("name" to "root", "password" to "root")).shouldSuccess
             .get<String>("token")
-        UserService.getUserByToken(token)?.name shouldBe "root"
+        PersonService.getPersonByToken(token)?.name shouldBe "root"
 
-        postman.post("/api/login", mapOf("username" to "root", "password" to "wrong password"))
+        postman.post("/api/login", mapOf("name" to "root", "password" to "wrong password"))
             .shouldFailed.withError("登录失败")
 
-        postman.post("/api/login", mapOf("username" to "wrong username", "password" to "root"))
+        postman.post("/api/login", mapOf("name" to "wrong username", "password" to "root"))
             .shouldFailed.withError("登录失败")
     }
 }

@@ -20,7 +20,7 @@ import org.apache.shiro.authz.AuthorizationInfo
 import org.apache.shiro.authz.SimpleAuthorizationInfo
 import org.apache.shiro.realm.AuthorizingRealm
 import org.apache.shiro.subject.PrincipalCollection
-import tech.cuda.woden.common.service.UserService
+import tech.cuda.woden.common.service.PersonService
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -29,7 +29,7 @@ import tech.cuda.woden.common.service.UserService
 class ShiroRealm : AuthorizingRealm() {
     override fun doGetAuthenticationInfo(authToken: AuthenticationToken?): SimpleAuthenticationInfo {
         val token = authToken?.credentials.toString()
-        if (UserService.verify(token)) {
+        if (PersonService.verify(token)) {
             return SimpleAuthenticationInfo(token, token, "shiro_realm")
         } else {
             throw AuthenticationException("wrong token")
@@ -37,8 +37,8 @@ class ShiroRealm : AuthorizingRealm() {
     }
 
     override fun doGetAuthorizationInfo(token: PrincipalCollection?): AuthorizationInfo {
-        val user = UserService.getUserByToken(token.toString())
-        val isRootTeam = user?.teams?.contains(1) ?: false
+        val person = PersonService.getPersonByToken(token.toString())
+        val isRootTeam = person?.teams?.contains(1) ?: false
         return if (isRootTeam) {
             SimpleAuthorizationInfo().also {
                 it.roles = setOf("root")

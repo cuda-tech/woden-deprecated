@@ -21,8 +21,8 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-internal interface UserPO : Entity<UserPO> {
-    companion object : Entity.Factory<UserPO>()
+internal interface PersonPO : Entity<PersonPO> {
+    companion object : Entity.Factory<PersonPO>()
 
     val id: Int
     var teams: Set<Int>

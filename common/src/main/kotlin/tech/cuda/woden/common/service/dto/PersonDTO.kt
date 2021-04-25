@@ -14,15 +14,15 @@
 package tech.cuda.woden.common.service.dto
 
 import tech.cuda.woden.annotation.pojo.DTO
-import tech.cuda.woden.common.service.po.UserPO
+import tech.cuda.woden.common.service.po.PersonPO
 import java.time.LocalDateTime
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-@DTO(UserPO::class)
-data class UserDTO(
+@DTO(PersonPO::class)
+data class PersonDTO(
     val id: Int,
     val teams: Set<Int>,
     val name: String,

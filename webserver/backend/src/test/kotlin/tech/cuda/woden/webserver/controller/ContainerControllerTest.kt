@@ -21,7 +21,7 @@ import tech.cuda.woden.webserver.RestfulTestToolbox
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-open class ContainerControllerTest : RestfulTestToolbox("users", "containers") {
+open class ContainerControllerTest : RestfulTestToolbox("person", "containers") {
 
     @Test
     fun listing() {

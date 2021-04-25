@@ -16,14 +16,14 @@ package tech.cuda.woden.common.service.dao
 import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
 import tech.cuda.woden.annotation.mysql.*
-import tech.cuda.woden.common.service.po.UserPO
+import tech.cuda.woden.common.service.po.PersonPO
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object UserDAO : Table<UserPO>("users") {
+internal object PersonDAO : Table<PersonPO>("person") {
 
     @BIGINT
     @COMMENT("用户 ID")

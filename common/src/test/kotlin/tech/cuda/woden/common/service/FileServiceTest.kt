@@ -20,11 +20,11 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import tech.cuda.woden.common.service.dto.UserDTO
+import tech.cuda.woden.common.service.dto.PersonDTO
 import tech.cuda.woden.common.service.exception.DuplicateException
 import tech.cuda.woden.common.service.dao.FileDAO
 import tech.cuda.woden.common.service.dao.TeamDAO
-import tech.cuda.woden.common.service.dao.UserDAO
+import tech.cuda.woden.common.service.dao.PersonDAO
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.exception.PermissionException
@@ -182,7 +182,7 @@ class FileServiceTest : TestWithMaria({
     "新建文件节点" {
         val sqlFile = FileService.create(
             teamId = 1,
-            user = UserService.findById(1)!!,
+            person = PersonService.findById(1)!!,
             name = "test create",
             type = FileType.SPARK_SQL,
             parentId = 1
@@ -196,7 +196,7 @@ class FileServiceTest : TestWithMaria({
         // 创建同目录下同名但不同类型的文件
         val sparkFile = FileService.create(
             teamId = 1,
-            user = UserService.findById(2)!!,
+            person = PersonService.findById(2)!!,
             name = "test create",
             type = FileType.SPARK_SHELL,
             parentId = 1
@@ -211,7 +211,7 @@ class FileServiceTest : TestWithMaria({
         shouldThrow<NotFoundException> {
             FileService.create(
                 teamId = 1,
-                user = UserService.findById(1)!!,
+                person = PersonService.findById(1)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
                 parentId = 21
@@ -222,7 +222,7 @@ class FileServiceTest : TestWithMaria({
         shouldThrow<OperationNotAllowException> {
             FileService.create(
                 teamId = 1,
-                user = UserService.findById(1)!!,
+                person = PersonService.findById(1)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
                 parentId = 2
@@ -233,7 +233,7 @@ class FileServiceTest : TestWithMaria({
         shouldThrow<NotFoundException> {
             FileService.create(
                 teamId = 7,
-                user = UserService.findById(1)!!,
+                person = PersonService.findById(1)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
                 parentId = 1
@@ -244,7 +244,7 @@ class FileServiceTest : TestWithMaria({
         shouldThrow<NotFoundException> {
             FileService.create(
                 teamId = 1,
-                user = UserDTO(
+                person = PersonDTO(
                     id = 4,
                     teams = setOf(3, 6, 5, 4, 7, 2),
                     name = "NCiUmXrvkC",
@@ -262,7 +262,7 @@ class FileServiceTest : TestWithMaria({
         shouldThrow<PermissionException> {
             FileService.create(
                 teamId = 1,
-                user = UserService.findById(3)!!,
+                person = PersonService.findById(3)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
                 parentId = 1
@@ -273,7 +273,7 @@ class FileServiceTest : TestWithMaria({
         shouldThrow<DuplicateException> {
             FileService.create(
                 teamId = 1,
-                user = UserService.findById(1)!!,
+                person = PersonService.findById(1)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
                 parentId = 1
@@ -382,4 +382,4 @@ class FileServiceTest : TestWithMaria({
         }.message shouldBe "根目录 禁止删除"
     }
 
-}, FileDAO, TeamDAO, UserDAO)
+}, FileDAO, TeamDAO, PersonDAO)

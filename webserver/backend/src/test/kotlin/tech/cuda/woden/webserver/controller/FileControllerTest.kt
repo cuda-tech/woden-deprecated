@@ -27,7 +27,7 @@ import tech.cuda.woden.webserver.RestfulTestToolbox
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-open class FileControllerTest : RestfulTestToolbox("users", "teams", "files") {
+open class FileControllerTest : RestfulTestToolbox("person", "teams", "files") {
 
     @Test
     fun listing() {

@@ -76,8 +76,8 @@ open class RestfulTestToolbox(private vararg val tables: String = arrayOf()) : A
         tables.forEach {
             Database.mock(it)
         }
-        if ("users" !in tables) {
-            Database.mock("users")
+        if ("person" !in tables) {
+            Database.mock("person")
         }
         this.postman = Postman(template)
         this.postman.login()

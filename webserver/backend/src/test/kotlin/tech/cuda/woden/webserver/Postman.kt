@@ -70,9 +70,9 @@ class Postman(private val template: TestRestTemplate) {
 
     fun login() = login("root", "root")
 
-    fun login(username: String, password: String) {
+    fun login(name: String, password: String) {
         val response = post("/api/login", mapOf(
-            "username" to username,
+            "name" to name,
             "password" to password
         ))
         val data = response.body!!["data"]

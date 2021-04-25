@@ -60,7 +60,7 @@ object TaskService : Service(TaskDAO) {
     ): Pair<List<TaskDTO>, Int> {
         val conditions = mutableListOf(TaskDAO.isRemove eq false)
         ownerId?.let {
-            UserService.findById(ownerId) ?: throw NotFoundException(I18N.user, ownerId, I18N.notExistsOrHasBeenRemove)
+            PersonService.findById(ownerId) ?: throw NotFoundException(I18N.person, ownerId, I18N.notExistsOrHasBeenRemove)
             conditions.add(TaskDAO.owners.contains(ownerId) eq true)
         }
         period?.let { conditions.add(TaskDAO.period eq period) }
@@ -148,8 +148,8 @@ object TaskService : Service(TaskDAO) {
 
         // 检查用户权限
         ownerIds.forEach {
-            val user = UserService.findById(it) ?: throw NotFoundException(I18N.user, it, I18N.notExistsOrHasBeenRemove)
-            if (!user.teams.contains(teamId)) throw PermissionException(I18N.user, it, I18N.notBelongTo, I18N.team, teamId)
+            val person = PersonService.findById(it) ?: throw NotFoundException(I18N.person, it, I18N.notExistsOrHasBeenRemove)
+            if (!person.teams.contains(teamId)) throw PermissionException(I18N.person, it, I18N.notBelongTo, I18N.team, teamId)
         }
 
         // 校验依赖的父任务
@@ -238,10 +238,10 @@ object TaskService : Service(TaskDAO) {
         }
         name?.let { task.name = name }
         ownerIds?.let {
-            it.forEach { userId ->
-                val user = UserService.findById(userId)
-                    ?: throw NotFoundException(I18N.user, userId, I18N.notExistsOrHasBeenRemove)
-                if (!user.teams.contains(task.teamId)) throw PermissionException(I18N.user, userId, I18N.notBelongTo, I18N.team, task.teamId)
+            it.forEach { personId ->
+                val person = PersonService.findById(personId)
+                    ?: throw NotFoundException(I18N.person, personId, I18N.notExistsOrHasBeenRemove)
+                if (!person.teams.contains(task.teamId)) throw PermissionException(I18N.person, personId, I18N.notBelongTo, I18N.team, task.teamId)
             }
             task.owners = ownerIds
         }

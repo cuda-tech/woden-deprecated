@@ -19,7 +19,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.FileService
-import tech.cuda.woden.common.service.UserService
+import tech.cuda.woden.common.service.PersonService
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.po.dtype.FileType
 import tech.cuda.woden.webserver.Response
@@ -165,8 +165,8 @@ class FileController {
                 name = name,
                 type = type,
                 parentId = parentId,
-                user = UserService.getUserByToken(request.getHeader("TOKEN"))
-                    ?: throw NotFoundException(I18N.user, I18N.notExistsOrHasBeenRemove)
+                person = PersonService.getPersonByToken(request.getHeader("TOKEN"))
+                    ?: throw NotFoundException(I18N.person, I18N.notExistsOrHasBeenRemove)
             )
             Response.Success.data("file" to file)
         } catch (e: Exception) {

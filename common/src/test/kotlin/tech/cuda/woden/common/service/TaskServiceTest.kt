@@ -61,11 +61,11 @@ class TaskServiceTest : TestWithMaria({
         val validCount = 377
         val pageSize = 13
         val queryTimes = validCount / pageSize + 1
-        val lastPageUserCount = validCount % pageSize
+        val lastPagePersonCount = validCount % pageSize
         for (page in 1..queryTimes) {
             val (tasks, count) = TaskService.listing(page, pageSize)
             count shouldBe validCount
-            tasks.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
+            tasks.size shouldBe if (page == queryTimes) lastPagePersonCount else pageSize
             tasks.forEach { it.format.isValid(it.period) }
         }
     }
@@ -140,11 +140,11 @@ class TaskServiceTest : TestWithMaria({
         val validCount = 12
         val pageSize = 3
         val queryTimes = validCount / pageSize + 1
-        val lastPageUserCount = validCount % pageSize
+        val lastPagePersonCount = validCount % pageSize
         for (page in 1..queryTimes) {
             val (tasks, count) = TaskService.listing(page, pageSize, teamId = 10)
             count shouldBe validCount
-            tasks.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
+            tasks.size shouldBe if (page == queryTimes) lastPagePersonCount else pageSize
         }
 
         shouldThrow<NotFoundException> {
@@ -156,11 +156,11 @@ class TaskServiceTest : TestWithMaria({
         val validCount = 5
         val pageSize = 2
         val queryTimes = validCount / pageSize + 1
-        val lastPageUserCount = validCount % pageSize
+        val lastPagePersonCount = validCount % pageSize
         for (page in 1..queryTimes) {
             val (tasks, count) = TaskService.listing(page, pageSize, ownerId = 3)
             count shouldBe validCount
-            tasks.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
+            tasks.size shouldBe if (page == queryTimes) lastPagePersonCount else pageSize
         }
 
         shouldThrow<NotFoundException> {
@@ -173,11 +173,11 @@ class TaskServiceTest : TestWithMaria({
         val validCount = 82
         val pageSize = 13
         val queryTimes = validCount / pageSize + 1
-        val lastPageUserCount = validCount % pageSize
+        val lastPagePersonCount = validCount % pageSize
         for (page in 1..queryTimes) {
             val (tasks, count) = TaskService.listing(page, pageSize, period = SchedulePeriod.DAY)
             count shouldBe validCount
-            tasks.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
+            tasks.size shouldBe if (page == queryTimes) lastPagePersonCount else pageSize
         }
     }
 
@@ -185,11 +185,11 @@ class TaskServiceTest : TestWithMaria({
         val validCount = 15
         val pageSize = 7
         val queryTimes = validCount / pageSize + 1
-        val lastPageUserCount = validCount % pageSize
+        val lastPagePersonCount = validCount % pageSize
         for (page in 1..queryTimes) {
             val (tasks, count) = TaskService.listing(page, pageSize, queue = "bigdata")
             count shouldBe validCount
-            tasks.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
+            tasks.size shouldBe if (page == queryTimes) lastPagePersonCount else pageSize
         }
     }
 
@@ -197,11 +197,11 @@ class TaskServiceTest : TestWithMaria({
         val validCount = 305
         val pageSize = 111
         val queryTimes = validCount / pageSize + 1
-        val lastPageUserCount = validCount % pageSize
+        val lastPagePersonCount = validCount % pageSize
         for (page in 1..queryTimes) {
             val (tasks, count) = TaskService.listing(page, pageSize, isValid = true)
             count shouldBe validCount
-            tasks.size shouldBe if (page == queryTimes) lastPageUserCount else pageSize
+            tasks.size shouldBe if (page == queryTimes) lastPagePersonCount else pageSize
         }
     }
 
@@ -675,4 +675,4 @@ class TaskServiceTest : TestWithMaria({
         }.message shouldBe "子任务 未失效 , 禁止删除"
     }
 
-}, TaskDAO, JobDAO, InstanceDAO, TeamDAO, UserDAO, FileMirrorDAO, FileDAO)
+}, TaskDAO, JobDAO, InstanceDAO, TeamDAO, PersonDAO, FileMirrorDAO, FileDAO)

@@ -18,7 +18,7 @@ package tech.cuda.woden.common.i18n
  * @since 0.1.0
  */
 data class English(
-    override val user: String = "user",
+    override val person: String = "person",
     override val team: String = "team",
     override val notExistsOrHasBeenRemove: String = "does not exists or has been remove",
     override val container: String = "scheduler container",

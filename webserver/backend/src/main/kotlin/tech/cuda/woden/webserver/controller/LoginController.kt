@@ -15,7 +15,7 @@ package tech.cuda.woden.webserver.controller
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
-import tech.cuda.woden.common.service.UserService
+import tech.cuda.woden.common.service.PersonService
 import tech.cuda.woden.webserver.Response
 import javax.validation.constraints.NotBlank
 
@@ -34,7 +34,7 @@ class LoginController {
      * @apiGroup Login
      * @apiVersion 0.1.0
      * @apiHeader {String} token 用户授权 token
-     * @apiParam {String} username 登录名
+     * @apiParam {String} name 登录名
      * @apiParam {String} password 登录密码
      * @apiSuccessExample 请求成功
      * {"status":"success","data":{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1ODM2ODI0MTQsInVzZXJuYW1lIjoicm9vdCJ9.LQuBenBb9UymkBfmzYkxCvrq5ecVL2YGqAyAtSU2IjY"}}
@@ -42,10 +42,10 @@ class LoginController {
      * {"status":"failed","error":"登录失败"}
      */
     @PostMapping
-    fun login(@NotBlank(message = "{required}") username: String,
+    fun login(@NotBlank(message = "{required}") name: String,
               @NotBlank(message = "{required}") password: String): Map<String, Any> {
         return try {
-            val token = UserService.sign(username, password)
+            val token = PersonService.sign(name, password)
             if (token != null) {
                 Response.Success.data("token" to token)
             } else {
