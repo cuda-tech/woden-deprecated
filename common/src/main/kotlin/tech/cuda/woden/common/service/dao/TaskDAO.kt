@@ -27,7 +27,7 @@ import tech.cuda.woden.common.service.po.dtype.SchedulePriority
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object TaskDAO : Table<TaskPO>("tasks") {
+internal object TaskDAO : Table<TaskPO>("task") {
     @BIGINT
     @COMMENT("任务 ID")
     @PRIMARY_KEY

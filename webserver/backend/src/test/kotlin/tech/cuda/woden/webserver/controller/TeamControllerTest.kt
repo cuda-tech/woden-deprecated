@@ -23,7 +23,7 @@ import tech.cuda.woden.webserver.RestfulTestToolbox
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-open class TeamControllerTest : RestfulTestToolbox("person", "teams") {
+open class TeamControllerTest : RestfulTestToolbox("person", "team") {
 
     @Test
     fun listing() {

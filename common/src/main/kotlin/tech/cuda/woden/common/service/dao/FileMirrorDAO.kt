@@ -22,7 +22,7 @@ import tech.cuda.woden.common.service.po.FileMirrorPO
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object FileMirrorDAO : Table<FileMirrorPO>("file_mirrors") {
+internal object FileMirrorDAO : Table<FileMirrorPO>("file_mirror") {
 
     @BIGINT
     @UNSIGNED

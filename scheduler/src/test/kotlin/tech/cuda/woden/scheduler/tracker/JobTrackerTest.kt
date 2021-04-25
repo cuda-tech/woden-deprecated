@@ -23,7 +23,7 @@ import java.time.LocalDateTime
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class JobTrackerTest : TestWithDistribution("jobs", "tasks", "containers") {
+class JobTrackerTest : TestWithDistribution("job", "task", "container") {
 
     /**
      * 各调度格式的任务数

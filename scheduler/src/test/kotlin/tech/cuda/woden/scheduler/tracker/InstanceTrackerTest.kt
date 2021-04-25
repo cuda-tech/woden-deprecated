@@ -24,7 +24,7 @@ import tech.cuda.woden.scheduler.runner.EnvSetter
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class InstanceTrackerTest : TestWithDistribution("containers", "jobs", "tasks", "files", "file_mirrors") {
+class InstanceTrackerTest : TestWithDistribution("container", "job", "task", "file", "file_mirror") {
 
     @Test
     fun testCreateInstanceForReadyBashJob() = supposeImContainer(1) {

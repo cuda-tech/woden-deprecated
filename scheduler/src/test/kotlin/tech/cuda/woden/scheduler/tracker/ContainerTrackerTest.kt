@@ -27,7 +27,7 @@ import tech.cuda.woden.scheduler.util.ContainerUtil
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class ContainerTrackerTest : TestWithDistribution("containers") {
+class ContainerTrackerTest : TestWithDistribution("container") {
 
     @Test
     fun testStart() {

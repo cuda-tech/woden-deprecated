@@ -23,7 +23,7 @@ import tech.cuda.woden.common.service.po.dtype.ContainerRole
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class ClusterTrackerTest : TestWithDistribution("containers") {
+class ClusterTrackerTest : TestWithDistribution("container") {
 
     @Test
     fun testEnsureOnlyOneMaster() {

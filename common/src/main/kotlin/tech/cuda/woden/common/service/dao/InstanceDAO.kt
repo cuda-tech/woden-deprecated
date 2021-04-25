@@ -24,7 +24,7 @@ import tech.cuda.woden.common.service.po.dtype.InstanceStatus
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object InstanceDAO : Table<InstancePO>("instances") {
+internal object InstanceDAO : Table<InstancePO>("instance") {
 
     @BIGINT
     @UNSIGNED

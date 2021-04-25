@@ -22,7 +22,7 @@ import tech.cuda.woden.common.service.po.TeamPO
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object TeamDAO : Table<TeamPO>("teams") {
+internal object TeamDAO : Table<TeamPO>("team") {
 
     @BIGINT
     @UNSIGNED

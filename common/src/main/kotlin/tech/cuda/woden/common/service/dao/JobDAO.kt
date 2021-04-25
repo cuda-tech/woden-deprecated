@@ -23,7 +23,7 @@ import tech.cuda.woden.common.service.po.dtype.JobStatus
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object JobDAO : Table<JobPO>("jobs") {
+internal object JobDAO : Table<JobPO>("job") {
     @BIGINT
     @UNSIGNED
     @AUTO_INCREMENT

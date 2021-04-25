@@ -23,7 +23,7 @@ import tech.cuda.woden.common.service.po.dtype.ContainerRole
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object ContainerDAO : Table<ContainerPO>("containers") {
+internal object ContainerDAO : Table<ContainerPO>("container") {
     @BIGINT
     @UNSIGNED
     @AUTO_INCREMENT

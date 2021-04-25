@@ -23,7 +23,7 @@ import tech.cuda.woden.common.service.po.dtype.FileType
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object FileDAO : Table<FilePO>("files") {
+internal object FileDAO : Table<FilePO>("file") {
     @BIGINT
     @UNSIGNED
     @AUTO_INCREMENT
