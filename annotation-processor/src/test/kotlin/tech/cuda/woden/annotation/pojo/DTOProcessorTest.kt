@@ -25,26 +25,35 @@ import tech.cuda.woden.annotation.NoisyLog
  * @since 0.1.0
  */
 class DTOProcessorTest : AnnotationSpec() {
+    private val poSource = SourceFile.kotlin(
+        "Example.kt", """
+            package tech.cuda.woden.common.service.po
+                        
+            import java.time.LocalDateTime
+                        
+            interface Example {
+                val id: Int
+                val column1: Int
+                val column2: String
+                val column3: Set<Int>
+                val column4: Map<String, Any>
+                val column5: List<Int>?
+                val isRemove: Boolean
+                val createTime: LocalDateTime
+                val updateTime: LocalDateTime
+            }
+        """.trimIndent()
+    )
 
     @Test
-    fun testDTOProcess() = NoisyLog.shutUp {
-        val source = SourceFile.kotlin("ExampleDTO.kt", """
+    fun testDTOProcessForFullField() = NoisyLog.shutUp {
+        val dtoSource = SourceFile.kotlin(
+            "ExampleDTO.kt", """
             package tech.cuda.woden.common.service.dto
             
             import tech.cuda.woden.annotation.pojo.DTO
+            import tech.cuda.woden.common.service.po.Example
             import java.time.LocalDateTime
-            
-            data class Example(
-                val id: Int,
-                val column1: Int,
-                val column2: String,
-                val column3: Set<Int>,
-                val column4: Map<String, Any>,
-                val column5: List<Int>?,
-                val isRemove: Boolean,
-                val createTime: LocalDateTime,
-                val updateTime: LocalDateTime
-            )
             
             @DTO(Example::class)
             data class ExampleDTO(
@@ -57,19 +66,21 @@ class DTOProcessorTest : AnnotationSpec() {
                 val createTime: LocalDateTime,
                 val updateTime: LocalDateTime
              )
-        """.trimIndent())
+        """.trimIndent()
+        )
         val result = KotlinCompilation().apply {
             workingDir = Files.createTempDir().also { it.deleteOnExit() }
-            sources = listOf(source)
+            sources = listOf(poSource, dtoSource)
             annotationProcessors = listOf(DTOProcessor())
             inheritClassPath = true
             verbose = false
             suppressWarnings = true
         }.compile()
         result.messages.replace("\r\n", "\n") shouldContain """
-           |  import tech.cuda.woden.common.service.dto.Example
+           |  import tech.cuda.woden.common.service.po.Example
            |  import tech.cuda.woden.common.service.dto.ExampleDTO
-           |  internal fun tech.cuda.woden.common.service.dto.Example.toExampleDTO() = ExampleDTO(
+           |  
+           |  internal fun tech.cuda.woden.common.service.po.Example.toExampleDTO() = ExampleDTO(
            |      id = this.id,
            |      column1 = this.column1,
            |      column2 = this.column2,
@@ -78,6 +89,80 @@ class DTOProcessorTest : AnnotationSpec() {
            |      column5 = this.column5,
            |      createTime = this.createTime,
            |      updateTime = this.updateTime
+           |  )
+        """.trimMargin()
+    }
+
+    @Test
+    fun testDTOProcessForPartialField() = NoisyLog.shutUp {
+        val dtoSource = SourceFile.kotlin(
+            "ExampleDTO.kt", """
+            package tech.cuda.woden.common.service.dto
+            
+            import tech.cuda.woden.annotation.pojo.DTO
+            import tech.cuda.woden.common.service.po.Example
+            import java.time.LocalDateTime
+            
+            @DTO(Example::class)
+            data class ExampleDTO(
+                val id: Int,
+                val column1: Int
+             )
+        """.trimIndent()
+        )
+        val result = KotlinCompilation().apply {
+            workingDir = Files.createTempDir().also { it.deleteOnExit() }
+            sources = listOf(poSource, dtoSource)
+            annotationProcessors = listOf(DTOProcessor())
+            inheritClassPath = true
+            verbose = false
+            suppressWarnings = true
+        }.compile()
+        result.messages.replace("\r\n", "\n") shouldContain """
+           |  import tech.cuda.woden.common.service.po.Example
+           |  import tech.cuda.woden.common.service.dto.ExampleDTO
+           |  
+           |  internal fun tech.cuda.woden.common.service.po.Example.toExampleDTO() = ExampleDTO(
+           |      id = this.id,
+           |      column1 = this.column1
+           |  )
+        """.trimMargin()
+    }
+
+    @Test
+    fun testDTOProcessWithExtendedField() = NoisyLog.shutUp {
+        val dtoSource = SourceFile.kotlin(
+            "ExampleDTO.kt", """
+            package tech.cuda.woden.common.service.dto
+            
+            import tech.cuda.woden.annotation.pojo.DTO
+            import tech.cuda.woden.common.service.po.Example
+            import java.time.LocalDateTime
+            
+            @DTO(Example::class)
+            data class ExampleDTO(
+                val id: Int,
+                val column1: Int,
+                val column100: Set<Int>
+             )
+        """.trimIndent()
+        )
+        val result = KotlinCompilation().apply {
+            workingDir = Files.createTempDir().also { it.deleteOnExit() }
+            sources = listOf(poSource, dtoSource)
+            annotationProcessors = listOf(DTOProcessor())
+            inheritClassPath = true
+            verbose = false
+            suppressWarnings = true
+        }.compile()
+        result.messages.replace("\r\n", "\n") shouldContain """
+           |  import tech.cuda.woden.common.service.po.Example
+           |  import tech.cuda.woden.common.service.dto.ExampleDTO
+           |  
+           |  internal fun tech.cuda.woden.common.service.po.Example.toExampleDTOWith(column100: Set<java.lang.Integer>) = ExampleDTO(
+           |      id = this.id,
+           |      column1 = this.column1,
+           |      column100 = column100
            |  )
         """.trimMargin()
     }
