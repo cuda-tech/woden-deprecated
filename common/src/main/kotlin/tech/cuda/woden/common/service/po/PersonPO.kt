@@ -25,7 +25,6 @@ internal interface PersonPO : Entity<PersonPO> {
     companion object : Entity.Factory<PersonPO>()
 
     val id: Int
-    var teams: Set<Int>
     var name: String
     var email: String
     var password: String

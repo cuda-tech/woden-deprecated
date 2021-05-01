@@ -25,7 +25,7 @@ import tech.cuda.woden.webserver.RestfulTestToolbox
  * @author Jensen Qi
  * @since 0.1.0
  */
-open class PersonControllerTest : RestfulTestToolbox("person") {
+open class PersonControllerTest : RestfulTestToolbox("person", "team", "person_team_mapping") {
 
     @Test
     fun listing() {
@@ -58,13 +58,23 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
         var queryTimes = validCount / pageSize + 1
         var lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/person", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess) {
+            with(
+                postman.get(
+                    "/api/person",
+                    mapOf("page" to page, "pageSize" to pageSize, "like" to null)
+                ).shouldSuccess
+            ) {
                 val persons = this.getList<PersonDTO>("persons")
                 val count = this.get<Int>("count")
                 persons.size shouldBe if (page == queryTimes) lastPageCount else pageSize
                 count shouldBe validCount
             }
-            with(postman.get("/api/person", mapOf("page" to page, "pageSize" to pageSize, "like" to "  ")).shouldSuccess) {
+            with(
+                postman.get(
+                    "/api/person",
+                    mapOf("page" to page, "pageSize" to pageSize, "like" to "  ")
+                ).shouldSuccess
+            ) {
                 val persons = this.getList<PersonDTO>("persons")
                 val count = this.get<Int>("count")
                 persons.size shouldBe if (page == queryTimes) lastPageCount else pageSize
@@ -78,7 +88,12 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
         queryTimes = validCount / pageSize + 1
         lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/person", mapOf("page" to page, "pageSize" to pageSize, "like" to " a")).shouldSuccess) {
+            with(
+                postman.get(
+                    "/api/person",
+                    mapOf("page" to page, "pageSize" to pageSize, "like" to " a")
+                ).shouldSuccess
+            ) {
                 val persons = this.getList<PersonDTO>("persons")
                 val count = this.get<Int>("count")
                 persons.size shouldBe if (page == queryTimes) lastPageCount else pageSize
@@ -92,7 +107,12 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
         queryTimes = validCount / pageSize + 1
         lastPageCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            with(postman.get("/api/person", mapOf("page" to page, "pageSize" to pageSize, "like" to " a b")).shouldSuccess) {
+            with(
+                postman.get(
+                    "/api/person",
+                    mapOf("page" to page, "pageSize" to pageSize, "like" to " a b")
+                ).shouldSuccess
+            ) {
                 val persons = this.getList<PersonDTO>("persons")
                 val count = this.get<Int>("count")
                 persons.size shouldBe if (page == queryTimes) lastPageCount else pageSize
@@ -105,7 +125,7 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
     fun currentPerson() {
         postman.login("root", "root")
         postman.get("/api/person/current").shouldSuccess.get<PersonDTO>("person").withExpect {
-            it.teams shouldContainExactlyInAnyOrder setOf(1)
+            it.teams.map { team -> team.id } shouldContainExactlyInAnyOrder setOf(1)
             it.name shouldBe "root"
             it.email shouldBe "root@woden.com"
             it.createTime shouldBe "2048-08-14 06:10:35".toLocalDateTime()
@@ -114,7 +134,7 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
 
         postman.login("guest", "guest")
         postman.get("/api/person/current").shouldSuccess.get<PersonDTO>("person").withExpect {
-            it.teams shouldContainExactlyInAnyOrder setOf(6, 8, 1, 9, 7, 5, 2)
+            it.teams.map { team -> team.id } shouldContainExactlyInAnyOrder setOf(6, 8, 1, 9, 7, 5, 2)
             it.name shouldBe "guest"
             it.email shouldBe "guest@woden.com"
             it.createTime shouldBe "2041-02-10 19:37:55".toLocalDateTime()
@@ -125,7 +145,7 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
     @Test
     fun find() {
         postman.get("/api/person/66").shouldSuccess.get<PersonDTO>("person").withExpect {
-            it.teams shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
+            it.teams.map { it.id } shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
             it.name shouldBe "WjWUMovObM"
             it.email shouldBe "WjWUMovObM@139.com"
             it.createTime shouldBe "2042-06-02 09:25:38".toLocalDateTime()
@@ -144,19 +164,22 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
         val nextPersonId = 180
         val name = "test_create"
         val password = "test_password"
-        val teamIds = setOf(131, 127)
+        val teamIds = setOf(31, 27)
         val email = "test_create@woden.com"
 
-        postman.post("/api/person", mapOf("name" to name, "password" to password, "teamIds" to teamIds, "email" to email))
+        postman.post(
+            "/api/person",
+            mapOf("name" to name, "password" to password, "teamIds" to teamIds, "email" to email)
+        )
             .shouldSuccess.get<PersonDTO>("person").withExpect {
-            it.id shouldBe nextPersonId
-            it.name shouldBe name
-            it.email shouldBe email
-            it.teams shouldContainExactlyInAnyOrder teamIds
-        }
+                it.id shouldBe nextPersonId
+                it.name shouldBe name
+                it.email shouldBe email
+                it.teams.map { team -> team.id } shouldContainExactlyInAnyOrder teamIds
+            }
 
         postman.get("/api/person/$nextPersonId").shouldSuccess.get<PersonDTO>("person").withExpect {
-            it.teams shouldContainExactlyInAnyOrder teamIds
+            it.teams.map { team -> team.id } shouldContainExactlyInAnyOrder teamIds
             it.name shouldBe name
             it.email shouldBe email
         }
@@ -211,14 +234,14 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
     }
 
     @Test
-    fun updateteamIds() {
-        val newteamIds = setOf(137, 149)
+    fun updateTeamIds() {
+        val newteamIds = setOf(37, 38)
         postman.put("/api/person/2", mapOf("teamIds" to newteamIds)).shouldSuccess.get<PersonDTO>("person").withExpect {
-            it.teams shouldContainExactlyInAnyOrder newteamIds
+            it.teams.map { team -> team.id } shouldContainExactlyInAnyOrder newteamIds
         }
         postman.get("/api/person/2").shouldSuccess.get<PersonDTO>("person").withExpect {
-            it.teams shouldContainExactlyInAnyOrder newteamIds
-            it.updateTime shouldNotBe "2042-03-23 08:54:17".toLocalDateTime()
+            it.teams.map { team -> team.id } shouldContainExactlyInAnyOrder newteamIds
+            it.updateTime shouldBe "2042-03-23 08:54:17".toLocalDateTime()
         }
     }
 
@@ -227,20 +250,23 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
         val newName = "new_name"
         val newPassword = "new_password"
         val newEmail = "new_email@woden.com"
-        val newteamIds = setOf(137, 149)
-        postman.put("/api/person/2", mapOf("name" to newName, "password" to newPassword, "email" to newEmail, "teamIds" to newteamIds))
+        val newteamIds = setOf(37, 38)
+        postman.put(
+            "/api/person/2",
+            mapOf("name" to newName, "password" to newPassword, "email" to newEmail, "teamIds" to newteamIds)
+        )
             .shouldSuccess.get<PersonDTO>("person").withExpect {
-            it.name shouldBe newName
-            it.email shouldBe newEmail
-            it.teams shouldContainExactlyInAnyOrder newteamIds
-        }
+                it.name shouldBe newName
+                it.email shouldBe newEmail
+                it.teams.map { team -> team.id } shouldContainExactlyInAnyOrder newteamIds
+            }
 
         val token = postman.post("/api/login", mapOf("name" to newName, "password" to newPassword))
             .shouldSuccess.get<String>("token").toString()
         PersonService.getPersonByToken(token)?.name shouldBe newName
 
         postman.get("/api/person/2").shouldSuccess.get<PersonDTO>("person").withExpect {
-            it.teams shouldContainExactlyInAnyOrder newteamIds
+            it.teams.map { team -> team.id } shouldContainExactlyInAnyOrder newteamIds
             it.email shouldBe newEmail
             it.updateTime shouldNotBe "2042-03-23 08:54:17".toLocalDateTime()
         }
@@ -248,7 +274,10 @@ open class PersonControllerTest : RestfulTestToolbox("person") {
 
     @Test
     fun updateInvalidPerson() {
-        postman.put("/api/person/4", mapOf("name" to "person who has been remove")).shouldFailed.withError("用户 4 不存在或已被删除")
+        postman.put(
+            "/api/person/4",
+            mapOf("name" to "person who has been remove")
+        ).shouldFailed.withError("用户 4 不存在或已被删除")
         postman.put("/api/person/180", mapOf("name" to "person not exists")).shouldFailed.withError("用户 180 不存在或已被删除")
     }
 

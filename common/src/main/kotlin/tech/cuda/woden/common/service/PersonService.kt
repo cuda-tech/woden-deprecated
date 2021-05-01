@@ -18,16 +18,18 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTDecodeException
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.global.add
-import me.liuwj.ktorm.global.global
-import me.liuwj.ktorm.global.select
+import me.liuwj.ktorm.global.*
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.dao.PersonDAO
+import tech.cuda.woden.common.service.dao.PersonTeamMappingDAO
 import tech.cuda.woden.common.service.dto.PersonDTO
-import tech.cuda.woden.common.service.dto.toPersonDTO
+import tech.cuda.woden.common.service.dto.TeamDTO
+import tech.cuda.woden.common.service.dto.toPersonDTOWith
 import tech.cuda.woden.common.service.exception.DuplicateException
 import tech.cuda.woden.common.service.exception.NotFoundException
+import tech.cuda.woden.common.service.exception.PermissionException
 import tech.cuda.woden.common.service.po.PersonPO
+import tech.cuda.woden.common.service.po.PersonTeamMappingPO
 import tech.cuda.woden.common.utils.Encoder
 import java.time.LocalDateTime
 import java.util.*
@@ -106,45 +108,143 @@ object PersonService : Service(PersonDAO) {
             like = PersonDAO.name.match(pattern),
             orderBy = PersonDAO.id.asc()
         )
-        return persons.map { it.toPersonDTO() } to count
+        val teamsMapping = findTeamsByPersonIds(persons.map { it.id })
+        return persons.map { it.toPersonDTOWith(teamsMapping.getOrDefault(it.id, setOf())) } to count
     }
 
     /**
      * 查找用户名为[name]的用户信息
      * 如果不存在或已被删除则返回 null
      */
-    fun findByName(name: String) = find<PersonPO>(
-        where = (PersonDAO.isRemove eq false) and (PersonDAO.name eq name),
-        exclude = PersonDAO.password
-    )?.toPersonDTO()
+    fun findByName(name: String): PersonDTO? {
+        val person = find<PersonPO>(
+            where = (PersonDAO.isRemove eq false) and (PersonDAO.name eq name),
+            exclude = PersonDAO.password
+        ) ?: return null
+        return person.toPersonDTOWith(teams = findTeamByPersonId(personId = person.id))
+    }
 
     /**
      * 通过[id]查找用户信息
      * 如果不存在或已被删除则返回 null
      */
-    fun findById(id: Int) = find<PersonPO>(
-        where = (PersonDAO.isRemove eq false) and (PersonDAO.id eq id),
-        exclude = PersonDAO.password
-    )?.toPersonDTO()
+    fun findById(id: Int): PersonDTO? {
+        val person = find<PersonPO>(
+            where = (PersonDAO.isRemove eq false) and (PersonDAO.id eq id),
+            exclude = PersonDAO.password
+        ) ?: return null
+        return person.toPersonDTOWith(teams = findTeamByPersonId(personId = person.id))
+    }
+
+    /**
+     * 检查 [personIds] 对应的用户是否存在，如果不存在，则抛出 NotFoundException
+     */
+    fun requireExists(personIds: List<Int>): PersonService {
+        val notExists = PersonDAO.select(PersonDAO.id)
+            .where { (PersonDAO.isRemove eq false) and (PersonDAO.id.inList(personIds.toSet().toList()) eq true) }
+            .totalRecords != personIds.toSet().size
+        if (notExists) {
+            throw NotFoundException(I18N.person, personIds.joinToString(","), I18N.notExistsOrHasBeenRemove)
+        } else {
+            return this
+        }
+    }
+
+    /**
+     * 检查 [personId] 对应的用户是否存在，如果不存在，则抛出 NotFoundException
+     */
+    fun requireExists(personId: Int) = requireExists(listOf(personId))
+
+    /**
+     * 检查用户 [personId] 是否归属于项目组 [teamIds]
+     * 如果不归属，则抛出 PermissionException
+     */
+    fun requireTeamMember(personId: Int, teamIds: List<Int>): PersonService {
+        if (teamIds.isEmpty()) {
+            return this
+        }
+        val notMember = PersonTeamMappingDAO.select(PersonTeamMappingDAO.personId)
+            .where {
+                (PersonTeamMappingDAO.personId eq personId) and
+                    (PersonTeamMappingDAO.teamId.inList(teamIds) eq true) and
+                    (PersonTeamMappingDAO.isRemove eq false)
+            }.totalRecords != teamIds.size
+        if (notMember) {
+            throw PermissionException(I18N.person, personId, I18N.notBelongTo, I18N.team, teamIds.joinToString(","))
+        } else {
+            return this
+        }
+    }
+
+    /**
+     * 检查用户 [personId] 是否归属于项目组 [teamId]
+     * 如果不归属，则抛出 PermissionException
+     */
+    fun requireTeamMember(personId: Int, teamId: Int) = requireTeamMember(personId, listOf(teamId))
+
+
+    /**
+     * 通过用户[personIds]查找各自的 teams
+     */
+    private fun findTeamsByPersonIds(personIds: List<Int>): Map<Int, Set<TeamDTO>> {
+        if (personIds.isEmpty()) {
+            return mapOf()
+        }
+        val mapping = PersonTeamMappingDAO.select()
+            .where { (PersonTeamMappingDAO.isRemove eq false) and (PersonTeamMappingDAO.personId.inList(personIds) eq true) }
+            .map { PersonTeamMappingDAO.createEntity(it) }
+        val teams = TeamService.listing(
+            page = 1,
+            pageSize = mapping.size,
+            ids = mapping.map { it.teamId }.toSet().toList()
+        ).first.groupBy { it.id }
+            .mapValues { it.value.first() }
+        return mapping.groupBy { it.personId }
+            .mapValues {
+                it.value.map { t ->
+                    teams[t.teamId] ?: throw NotFoundException(
+                        I18N.team,
+                        t.teamId,
+                        I18N.notExistsOrHasBeenRemove
+                    )
+                }.toSet()
+            }
+    }
+
+    private fun findTeamByPersonId(personId: Int): Set<TeamDTO> =
+        findTeamsByPersonIds(listOf(personId)).getOrDefault(personId, setOf())
+
 
     /**
      * 创建用户
      * 如果已存在用户名为[name]的用户，则抛出 DuplicateException
      */
-    fun create(name: String, password: String, teams: Set<Int>, email: String): PersonDTO =
+    fun create(name: String, password: String, teamIds: Set<Int>, email: String): PersonDTO =
         Database.global.useTransaction {
             findByName(name)?.let { throw DuplicateException(I18N.person, name, I18N.existsAlready) }
+            val teams = TeamService.checkTeamsAllExistsAndReturn(teamIds = teamIds)
+            val now = LocalDateTime.now()
             val person = PersonPO {
                 this.name = name
-                this.teams = teams
                 this.password = Encoder.md5(password)
                 this.email = email
                 this.isRemove = false
-                this.createTime = LocalDateTime.now()
-                this.updateTime = LocalDateTime.now()
+                this.createTime = now
+                this.updateTime = now
             }
             PersonDAO.add(person)
-            return person.toPersonDTO()
+            teamIds.forEach {
+                PersonTeamMappingDAO.add(
+                    PersonTeamMappingPO {
+                        personId = person.id
+                        teamId = it
+                        isRemove = false
+                        createTime = now
+                        updateTime = now
+                    }
+                )
+            }
+            return person.toPersonDTOWith(teams.toSet())
         }
 
     /**
@@ -156,9 +256,9 @@ object PersonService : Service(PersonDAO) {
         id: Int,
         name: String? = null,
         password: String? = null,
-        teams: Set<Int>? = null,
+        teamIds: Set<Int>? = null,
         email: String? = null
-    ): PersonDTO {
+    ): PersonDTO = Database.global.useTransaction {
         val person = find<PersonPO>(
             where = (PersonDAO.isRemove eq false) and (PersonDAO.id eq id),
             exclude = PersonDAO.password
@@ -168,26 +268,59 @@ object PersonService : Service(PersonDAO) {
             person.name = name
         }
         password?.let { person.password = Encoder.md5(password) }
-        teams?.let { person.teams = teams }
+        val now = LocalDateTime.now()
+        val teams = teamIds?.let {
+            val currentTeams = findTeamByPersonId(person.id)
+            val targetTeams = TeamService.checkTeamsAllExistsAndReturn(teamIds)
+            val toBeRemove = currentTeams.map { it.id } - targetTeams.map { it.id }
+            val toBeInsert = targetTeams.map { it.id } - currentTeams.map { it.id }
+            if (toBeRemove.isNotEmpty()) {
+                PersonTeamMappingDAO.update {
+                    it.isRemove to true
+                    it.updateTime to now
+                    where {
+                        (it.personId eq person.id) and (it.teamId.inList(toBeRemove) eq true)
+                    }
+                }
+            }
+            toBeInsert.forEach {
+                PersonTeamMappingDAO.add(
+                    PersonTeamMappingPO {
+                        personId = person.id
+                        teamId = it
+                        isRemove = false
+                        createTime = now
+                        updateTime = now
+                    }
+                )
+            }
+            targetTeams.toSet()
+        } ?: findTeamByPersonId(person.id)
         email?.let { person.email = email }
-        anyNotNull(name, password, teams, email)?.let {
+        anyNotNull(name, password, email)?.let {
             person.updateTime = LocalDateTime.now()
             person.flushChanges()
         }
-        return person.toPersonDTO()
+        return person.toPersonDTOWith(teams = teams)
     }
 
     /**
      * 删除指定用户[id]
      * 如果指定的用户[id]不存在或已被删除，则抛出 NotFoundException
      */
-    fun remove(id: Int) {
+    fun remove(id: Int) = Database.global.useTransaction {
         val person = find<PersonPO>(
             where = (PersonDAO.isRemove eq false) and (PersonDAO.id eq id),
             exclude = PersonDAO.password
         ) ?: throw NotFoundException(I18N.person, id, I18N.notExistsOrHasBeenRemove)
+        val now = LocalDateTime.now()
+        PersonTeamMappingDAO.update {
+            it.isRemove to true
+            it.updateTime to now
+            where { it.personId eq person.id }
+        }
         person.isRemove = true
-        person.updateTime = LocalDateTime.now()
+        person.updateTime = now
         person.flushChanges()
     }
 }

@@ -17,6 +17,7 @@ import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.asc
 import me.liuwj.ktorm.dsl.eq
+import me.liuwj.ktorm.dsl.inList
 import me.liuwj.ktorm.global.add
 import me.liuwj.ktorm.global.global
 import tech.cuda.woden.common.i18n.I18N
@@ -38,11 +39,15 @@ object TeamService : Service(TeamDAO) {
      * 分页查询项目组信息
      * 如果提供了[pattern]，则进行模糊查询
      */
-    fun listing(page: Int, pageSize: Int, pattern: String? = null): Pair<List<TeamDTO>, Int> {
+    fun listing(page: Int, pageSize: Int, pattern: String? = null, ids: List<Int>? = null): Pair<List<TeamDTO>, Int> {
+        val conditions = mutableListOf(TeamDAO.isRemove eq false)
+        if (ids != null && ids.isNotEmpty()) {
+            conditions.add(TeamDAO.id.inList(ids) eq true)
+        }
         val (teams, count) = batch<TeamPO>(
             pageId = page,
             pageSize = pageSize,
-            filter = TeamDAO.isRemove eq false,
+            filter = conditions.reduce { a, b -> a and b },
             like = TeamDAO.name.match(pattern),
             orderBy = TeamDAO.id.asc()
         )
@@ -59,7 +64,8 @@ object TeamService : Service(TeamDAO) {
      * 通过[name]查找项目组信息
      * 如果找不到或已被删除，则返回 null
      */
-    fun findByName(name: String) = find<TeamPO>(where = (TeamDAO.isRemove eq false) and (TeamDAO.name eq name))?.toTeamDTO()
+    fun findByName(name: String) =
+        find<TeamPO>(where = (TeamDAO.isRemove eq false) and (TeamDAO.name eq name))?.toTeamDTO()
 
     /**
      * 创建名称为[name]项目组
@@ -108,6 +114,19 @@ object TeamService : Service(TeamDAO) {
         team.isRemove = true
         team.updateTime = LocalDateTime.now()
         team.flushChanges()
+    }
+
+    /**
+     * 检查[teamIds]对应的项目组是否都存在，如果存在则返回，否则抛出 NotFoundException
+     */
+    fun checkTeamsAllExistsAndReturn(teamIds: Set<Int>): List<TeamDTO> {
+        val teams = listing(page = 1, pageSize = teamIds.size, ids = teamIds.toList()).first
+        if (teamIds.size != teams.size) {
+            val exists = teams.map { it.id }.toSet()
+            val missing = teamIds.filter { !exists.contains(it) }.joinToString(",")
+            throw NotFoundException(I18N.team, missing, I18N.notExistsOrHasBeenRemove)
+        }
+        return teams
     }
 
 }

@@ -60,7 +60,11 @@ object TaskService : Service(TaskDAO) {
     ): Pair<List<TaskDTO>, Int> {
         val conditions = mutableListOf(TaskDAO.isRemove eq false)
         ownerId?.let {
-            PersonService.findById(ownerId) ?: throw NotFoundException(I18N.person, ownerId, I18N.notExistsOrHasBeenRemove)
+            PersonService.findById(ownerId) ?: throw NotFoundException(
+                I18N.person,
+                ownerId,
+                I18N.notExistsOrHasBeenRemove
+            )
             conditions.add(TaskDAO.owners.contains(ownerId) eq true)
         }
         period?.let { conditions.add(TaskDAO.period eq period) }
@@ -148,8 +152,15 @@ object TaskService : Service(TaskDAO) {
 
         // 检查用户权限
         ownerIds.forEach {
-            val person = PersonService.findById(it) ?: throw NotFoundException(I18N.person, it, I18N.notExistsOrHasBeenRemove)
-            if (!person.teams.contains(teamId)) throw PermissionException(I18N.person, it, I18N.notBelongTo, I18N.team, teamId)
+            val person =
+                PersonService.findById(it) ?: throw NotFoundException(I18N.person, it, I18N.notExistsOrHasBeenRemove)
+            if (!person.teams.map { team -> team.id }.contains(teamId)) throw PermissionException(
+                I18N.person,
+                it,
+                I18N.notBelongTo,
+                I18N.team,
+                teamId
+            )
         }
 
         // 校验依赖的父任务
@@ -158,7 +169,13 @@ object TaskService : Service(TaskDAO) {
                 where = TaskDAO.isRemove eq false
                     and (TaskDAO.id eq it)
             ) ?: throw NotFoundException(I18N.parentTask, it, I18N.notExistsOrHasBeenRemove)
-            if (!parentTask.isValid) throw OperationNotAllowException(I18N.parentTask, it, I18N.invalid, ",", I18N.dependencyNotAllow)
+            if (!parentTask.isValid) throw OperationNotAllowException(
+                I18N.parentTask,
+                it,
+                I18N.invalid,
+                ",",
+                I18N.dependencyNotAllow
+            )
             parentTask
         }
 
@@ -241,7 +258,13 @@ object TaskService : Service(TaskDAO) {
             it.forEach { personId ->
                 val person = PersonService.findById(personId)
                     ?: throw NotFoundException(I18N.person, personId, I18N.notExistsOrHasBeenRemove)
-                if (!person.teams.contains(task.teamId)) throw PermissionException(I18N.person, personId, I18N.notBelongTo, I18N.team, task.teamId)
+                if (!person.teams.map { team -> team.id }.contains(task.teamId)) throw PermissionException(
+                    I18N.person,
+                    personId,
+                    I18N.notBelongTo,
+                    I18N.team,
+                    task.teamId
+                )
             }
             task.owners = ownerIds
         }
@@ -274,7 +297,13 @@ object TaskService : Service(TaskDAO) {
                     where = TaskDAO.isRemove eq false
                         and (TaskDAO.id eq it)
                 ) ?: throw NotFoundException(I18N.parentTask, it, I18N.notExistsOrHasBeenRemove)
-                if (!parentTask.isValid) throw OperationNotAllowException(I18N.parentTask, it, I18N.invalid, ",", I18N.dependencyNotAllow)
+                if (!parentTask.isValid) throw OperationNotAllowException(
+                    I18N.parentTask,
+                    it,
+                    I18N.invalid,
+                    ",",
+                    I18N.dependencyNotAllow
+                )
                 parentTask.children = parentTask.children.plus(task.id)
                 parentTask.flushChanges()
             }
@@ -296,14 +325,23 @@ object TaskService : Service(TaskDAO) {
             // 如果失效任务，则需要确保所有的子任务均失效
             if (isValid == false) {
                 task.children.forEach {
-                    if (findById(it)?.isValid == true) throw OperationNotAllowException(I18N.childrenTask, it, I18N.isValid, ",", I18N.parentTask, I18N.invalidNotAllow)
+                    if (findById(it)?.isValid == true) throw OperationNotAllowException(
+                        I18N.childrenTask,
+                        it,
+                        I18N.isValid,
+                        ",",
+                        I18N.parentTask,
+                        I18N.invalidNotAllow
+                    )
                 }
             }
             task.isValid = isValid
         }
-        anyNotNull(mirrorId, name, ownerIds, args, isSoftFail,
+        anyNotNull(
+            mirrorId, name, ownerIds, args, isSoftFail,
             period, queue, priority, pendingTimeout, runningTimeout,
-            parent, retries, retryDelay, isValid)?.let {
+            parent, retries, retryDelay, isValid
+        )?.let {
             task.updateTime = LocalDateTime.now()
             task.flushChanges()
         }
@@ -329,7 +367,12 @@ object TaskService : Service(TaskDAO) {
                     and (TaskDAO.id.inList(task.children) eq true)
                     and (TaskDAO.isValid eq true)
             ).second > 0
-            if (childrenStillValid) throw OperationNotAllowException(I18N.childrenTask, I18N.isValid, ",", I18N.removeNotAllow)
+            if (childrenStillValid) throw OperationNotAllowException(
+                I18N.childrenTask,
+                I18N.isValid,
+                ",",
+                I18N.removeNotAllow
+            )
         }
         val now = LocalDateTime.now()
 

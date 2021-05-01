@@ -148,8 +148,8 @@ class TaskServiceTest : TestWithMaria({
         }
 
         shouldThrow<NotFoundException> {
-            TaskService.listing(1, 100, teamId = 7)
-        }.message shouldBe "项目组 7 不存在或已被删除"
+            TaskService.listing(1, 100, teamId = 13)
+        }.message shouldBe "项目组 13 不存在或已被删除"
     }
 
     "按负责人分页查询" {
@@ -675,4 +675,4 @@ class TaskServiceTest : TestWithMaria({
         }.message shouldBe "子任务 未失效 , 禁止删除"
     }
 
-}, TaskDAO, JobDAO, InstanceDAO, TeamDAO, PersonDAO, FileMirrorDAO, FileDAO)
+}, TaskDAO, JobDAO, InstanceDAO, TeamDAO, PersonDAO, FileMirrorDAO, FileDAO, PersonTeamMappingDAO)

@@ -181,8 +181,7 @@ object FileService : Service(FileDAO) {
             ?: throw NotFoundException(I18N.parentNode, parentId, I18N.notExistsOrHasBeenRemove)
         if (parent.type != FileType.DIR) throw OperationNotAllowException(I18N.parentNode, parentId, I18N.isNot, I18N.dir)
         TeamService.findById(teamId) ?: throw NotFoundException(I18N.team, teamId, I18N.notExistsOrHasBeenRemove)
-        PersonService.findById(person.id) ?: throw NotFoundException(I18N.person, person.id, I18N.notExistsOrHasBeenRemove)
-        if (!person.teams.contains(teamId)) throw PermissionException(I18N.person, person.id, I18N.notBelongTo, I18N.team, teamId)
+        PersonService.requireExists(person.id).requireTeamMember(person.id, teamId)
         find<FilePO>(
             where = FileDAO.isRemove eq false
                 and (FileDAO.parentId eq parentId)
@@ -227,9 +226,7 @@ object FileService : Service(FileDAO) {
             ?: throw NotFoundException(I18N.file, id, I18N.notExistsOrHasBeenRemove)
         if (file.isRootDir()) throw OperationNotAllowException(I18N.rootDir, I18N.updateNotAllow)
         ownerId?.let {
-            val person = PersonService.findById(ownerId)
-                ?: throw NotFoundException(I18N.person, ownerId, I18N.notExistsOrHasBeenRemove)
-            if (!person.teams.contains(file.teamId)) throw PermissionException(I18N.person, ownerId, I18N.notBelongTo, I18N.team, file.teamId)
+            PersonService.requireExists(ownerId).requireTeamMember(ownerId, file.teamId)
             file.ownerId = ownerId
         }
         name?.let {

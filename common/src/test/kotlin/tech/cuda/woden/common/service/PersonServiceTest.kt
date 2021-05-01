@@ -13,13 +13,17 @@
  */
 package tech.cuda.woden.common.service
 
+import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import tech.cuda.woden.common.service.dao.PersonDAO
+import tech.cuda.woden.common.service.dao.PersonTeamMappingDAO
+import tech.cuda.woden.common.service.dao.TeamDAO
 import tech.cuda.woden.common.service.exception.DuplicateException
 import tech.cuda.woden.common.service.exception.NotFoundException
+import tech.cuda.woden.common.service.exception.PermissionException
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -31,7 +35,7 @@ class PersonServiceTest : TestWithMaria({
         with(PersonService.findByName("WjWUMovObM")) {
             this shouldNotBe null
             this!!
-            teams shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
+            teams.map { it.id } shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
             name shouldBe "WjWUMovObM"
             email shouldBe "WjWUMovObM@139.com"
             createTime shouldBe "2042-06-02 09:25:38".toLocalDateTime()
@@ -45,7 +49,7 @@ class PersonServiceTest : TestWithMaria({
         with(PersonService.findById(66)) {
             this shouldNotBe null
             this!!
-            teams shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
+            teams.map { it.id } shouldContainExactlyInAnyOrder setOf(8, 7, 3, 6, 2, 1)
             name shouldBe "WjWUMovObM"
             email shouldBe "WjWUMovObM@139.com"
             createTime shouldBe "2042-06-02 09:25:38".toLocalDateTime()
@@ -53,6 +57,21 @@ class PersonServiceTest : TestWithMaria({
         }
         PersonService.findById(67) shouldBe null
         PersonService.findById(180) shouldBe null
+    }
+
+    "用户检查" {
+        shouldNotThrowAny { PersonService.requireExists(66) }
+        shouldThrow<NotFoundException> { PersonService.requireExists(67) }
+        shouldThrow<NotFoundException> { PersonService.requireExists((180)) }
+
+        shouldNotThrowAny { PersonService.requireExists(listOf(1, 2, 66)) }
+        shouldThrow<NotFoundException> { PersonService.requireExists(listOf(1, 2, 67)) }
+
+        shouldNotThrowAny { PersonService.requireTeamMember(66, 7) }
+        shouldThrow<PermissionException> { PersonService.requireTeamMember(66, 10) }
+
+        shouldNotThrowAny { PersonService.requireTeamMember(66, listOf(8, 7, 3, 6, 2, 1)) }
+        shouldThrow<PermissionException> { PersonService.requireTeamMember(66, listOf(1, 10)) }
     }
 
     "分页查询" {
@@ -164,16 +183,20 @@ class PersonServiceTest : TestWithMaria({
         val nextPersonId = 180
         val name = "test_create"
         val password = "test_password"
-        val teamIds = setOf(131, 127)
+        val teamIds = setOf(31, 27)
         val email = "test_create@woden.com"
 
         val newPerson = PersonService.create(name, password, teamIds, email)
         newPerson.id shouldBe nextPersonId
         newPerson.name shouldBe name
-        newPerson.teams shouldContainExactlyInAnyOrder teamIds
+        newPerson.teams.map { it.id } shouldContainExactlyInAnyOrder teamIds
         newPerson.email shouldBe email
         newPerson.createTime shouldNotBe null
         newPerson.updateTime shouldNotBe null
+
+        shouldThrow<NotFoundException> {
+            PersonService.create("someone", "password", setOf(131, 27), "xxx@xx")
+        }.message shouldBe "项目组 131 不存在或已被删除"
     }
 
     "创建同名用户抛出异常" {
@@ -245,15 +268,25 @@ class PersonServiceTest : TestWithMaria({
     }
 
     "更新权限组 & 邮箱" {
+        val oldPerson = PersonService.findById(1)
+        oldPerson shouldNotBe null
+        oldPerson!!
+        oldPerson.email shouldBe "root@woden.com"
+        oldPerson.teams.map { it.id } shouldContainExactlyInAnyOrder setOf(1)
+
         val newEmail = "new_email@woden.com"
-        val newTeamIds = setOf(137, 149)
-        PersonService.update(id = 1, email = newEmail, teams = newTeamIds)
-        val person = PersonService.findById(1)
-        person shouldNotBe null
-        person!!
-        person.email shouldBe newEmail
-        person.teams shouldContainExactlyInAnyOrder newTeamIds
-        person.updateTime shouldNotBe "2051-03-13 21:06:23".toLocalDateTime()
+        val newTeamIds = setOf(37, 38)
+        PersonService.update(id = 1, email = newEmail, teamIds = newTeamIds)
+        val newPerson = PersonService.findById(1)
+        newPerson shouldNotBe null
+        newPerson!!
+        newPerson.email shouldBe newEmail
+        newPerson.teams.map { it.id } shouldContainExactlyInAnyOrder newTeamIds
+        newPerson.updateTime shouldNotBe "2051-03-13 21:06:23".toLocalDateTime()
+
+        shouldThrow<NotFoundException> {
+            PersonService.update(id = 1, teamIds = setOf(137, 149, 38))
+        }.message shouldBe "项目组 137,149 不存在或已被删除"
     }
 
     "更新不存在或已被删除用户时抛出异常" {
@@ -266,4 +299,4 @@ class PersonServiceTest : TestWithMaria({
         }.message shouldBe "用户 180 不存在或已被删除"
     }
 
-}, PersonDAO)
+}, PersonDAO, TeamDAO, PersonTeamMappingDAO)

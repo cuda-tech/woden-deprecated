@@ -14,6 +14,7 @@
 package tech.cuda.woden.common.service
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import tech.cuda.woden.common.service.dao.TeamDAO
@@ -27,7 +28,7 @@ import tech.cuda.woden.common.service.exception.NotFoundException
 class TeamServiceTest : TestWithMaria({
 
     "分页查询" {
-        val validTeamCount = 32
+        val validTeamCount = 33
         val pageSize = 7
         val queryTimes = validTeamCount / pageSize + 1
         val lastPageTeamCount = validTeamCount % pageSize
@@ -40,7 +41,7 @@ class TeamServiceTest : TestWithMaria({
 
     "模糊查询" {
         // 提供空或 null 的相似词
-        var validTeamCount = 32
+        var validTeamCount = 33
         var pageSize = 5
         var queryTimes = validTeamCount / pageSize + 1
         var lastPageTeamCount = validTeamCount % pageSize
@@ -114,6 +115,25 @@ class TeamServiceTest : TestWithMaria({
         }
     }
 
+    "根据 id list 查找项目组" {
+        TeamService.listing(page = 1, pageSize = 100, ids = listOf(12, 13, 14)).second shouldBe 2
+    }
+
+    "判断 teamIds 对应的项目组是否都存在" {
+
+        TeamService.checkTeamsAllExistsAndReturn(setOf(1, 2, 3, 4, 5))
+            .map { it.id } shouldContainExactlyInAnyOrder setOf(1, 2, 3, 4, 5)
+
+        shouldThrow<NotFoundException> {
+            TeamService.checkTeamsAllExistsAndReturn(setOf(12, 13, 14))
+        }.message shouldBe "项目组 13 不存在或已被删除"
+
+        shouldThrow<NotFoundException> {
+            TeamService.checkTeamsAllExistsAndReturn(setOf(12, 13, 14, 17))
+        }.message shouldBe "项目组 13,17 不存在或已被删除"
+
+    }
+
     "按 id 查找项目组" {
         with(TeamService.findById(2)) {
             this shouldNotBe null
@@ -122,7 +142,7 @@ class TeamServiceTest : TestWithMaria({
             this.createTime shouldBe "2029-05-26 23:17:01".toLocalDateTime()
             this.updateTime shouldBe "2029-08-03 07:16:51".toLocalDateTime()
         }
-        TeamService.findById(7) shouldBe null
+        TeamService.findById(13) shouldBe null
         TeamService.findById(40) shouldBe null
     }
 
@@ -134,7 +154,7 @@ class TeamServiceTest : TestWithMaria({
             this.createTime shouldBe "2029-05-26 23:17:01".toLocalDateTime()
             this.updateTime shouldBe "2029-08-03 07:16:51".toLocalDateTime()
         }
-        TeamService.findByName("uryuohul") shouldBe null
+        TeamService.findByName("zrltenul") shouldBe null
         TeamService.findByName("not exists") shouldBe null
     }
 
@@ -166,8 +186,8 @@ class TeamServiceTest : TestWithMaria({
 
     "更新不存在或已删除的项目组抛异常" {
         shouldThrow<NotFoundException> {
-            TeamService.update(7, name = "failed")
-        }.message shouldBe "项目组 7 不存在或已被删除"
+            TeamService.update(13, name = "failed")
+        }.message shouldBe "项目组 13 不存在或已被删除"
 
         shouldThrow<NotFoundException> {
             TeamService.update(98, name = "failed")
@@ -188,8 +208,8 @@ class TeamServiceTest : TestWithMaria({
 
     "删除不存在或已删除的项目组抛异常" {
         shouldThrow<NotFoundException> {
-            TeamService.remove(7)
-        }.message shouldBe "项目组 7 不存在或已被删除"
+            TeamService.remove(13)
+        }.message shouldBe "项目组 13 不存在或已被删除"
 
         shouldThrow<NotFoundException> {
             TeamService.remove(98)

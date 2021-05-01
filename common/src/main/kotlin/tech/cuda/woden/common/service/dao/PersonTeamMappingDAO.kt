@@ -13,34 +13,27 @@
  */
 package tech.cuda.woden.common.service.dao
 
-import me.liuwj.ktorm.schema.*
+import me.liuwj.ktorm.schema.Table
+import me.liuwj.ktorm.schema.boolean
+import me.liuwj.ktorm.schema.datetime
+import me.liuwj.ktorm.schema.int
 import tech.cuda.woden.annotation.mysql.*
-import tech.cuda.woden.common.service.po.PersonPO
+import tech.cuda.woden.common.service.po.PersonTeamMappingPO
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
 @STORE_IN_MYSQL
-internal object PersonDAO : Table<PersonPO>("person") {
+internal object PersonTeamMappingDAO :Table<PersonTeamMappingPO>("person_team_mapping") {
 
     @BIGINT
     @COMMENT("用户 ID")
-    @PRIMARY_KEY
-    @AUTO_INCREMENT
-    val id = int("id").primaryKey().bindTo { it.id }
+    val personId = int("person_id").bindTo { it.personId }
 
-    @VARCHAR(256)
-    @COMMENT("用户名")
-    val name = varchar("name").bindTo { it.name }
-
-    @VARCHAR(256)
-    @COMMENT("用户邮箱")
-    val email = varchar("email").bindTo { it.email }
-
-    @VARCHAR(256)
-    @COMMENT("登录密码")
-    val password = varchar("password").bindTo { it.password }
+    @BIGINT
+    @COMMENT("项目组 ID")
+    val teamId = int("team_id").bindTo { it.teamId }
 
     @BOOL
     @COMMENT("逻辑删除")
@@ -53,4 +46,5 @@ internal object PersonDAO : Table<PersonPO>("person") {
     @DATETIME
     @COMMENT("更新时间")
     val updateTime = datetime("update_time").bindTo { it.updateTime }
+
 }

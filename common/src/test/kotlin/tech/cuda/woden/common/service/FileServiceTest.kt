@@ -25,6 +25,8 @@ import tech.cuda.woden.common.service.exception.DuplicateException
 import tech.cuda.woden.common.service.dao.FileDAO
 import tech.cuda.woden.common.service.dao.TeamDAO
 import tech.cuda.woden.common.service.dao.PersonDAO
+import tech.cuda.woden.common.service.dao.PersonTeamMappingDAO
+import tech.cuda.woden.common.service.dto.TeamDTO
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.exception.PermissionException
@@ -76,8 +78,20 @@ class FileServiceTest : TestWithMaria({
             val (files, count) = this
             files.size shouldBe 5
             count shouldBe 5
-            files.map { it.type } shouldContainInOrder listOf(FileType.DIR, FileType.SPARK_SQL, FileType.SPARK_SQL, FileType.SPARK_SQL, FileType.SPARK_SHELL)
-            files.map { it.name } shouldContainInOrder listOf("zwgjydgn", "kniovyqn", "ladlehnr", "yoglnkyc", "jldwzlys")
+            files.map { it.type } shouldContainInOrder listOf(
+                FileType.DIR,
+                FileType.SPARK_SQL,
+                FileType.SPARK_SQL,
+                FileType.SPARK_SQL,
+                FileType.SPARK_SHELL
+            )
+            files.map { it.name } shouldContainInOrder listOf(
+                "zwgjydgn",
+                "kniovyqn",
+                "ladlehnr",
+                "yoglnkyc",
+                "jldwzlys"
+            )
         }
 
         with(FileService.listChildren(4)) {
@@ -232,21 +246,29 @@ class FileServiceTest : TestWithMaria({
         // 项目组不存在
         shouldThrow<NotFoundException> {
             FileService.create(
-                teamId = 7,
+                teamId = 13,
                 person = PersonService.findById(1)!!,
                 name = "test create",
                 type = FileType.SPARK_SQL,
                 parentId = 1
             )
-        }.message shouldBe "项目组 7 不存在或已被删除"
+        }.message shouldBe "项目组 13 不存在或已被删除"
 
         // 归属用户已被删除
         shouldThrow<NotFoundException> {
+            val now = LocalDateTime.now()
             FileService.create(
                 teamId = 1,
                 person = PersonDTO(
                     id = 4,
-                    teams = setOf(3, 6, 5, 4, 7, 2),
+                    teams = setOf(3, 6, 5, 4, 7, 2).map {
+                        TeamDTO(
+                            id = it,
+                            name = it.toString(),
+                            createTime = now,
+                            updateTime = now
+                        )
+                    }.toSet(),
                     name = "NCiUmXrvkC",
                     email = "NCiUmXrvkC@sina.cn",
                     createTime = LocalDateTime.now(),
@@ -382,4 +404,4 @@ class FileServiceTest : TestWithMaria({
         }.message shouldBe "根目录 禁止删除"
     }
 
-}, FileDAO, TeamDAO, PersonDAO)
+}, FileDAO, TeamDAO, PersonDAO, PersonTeamMappingDAO)

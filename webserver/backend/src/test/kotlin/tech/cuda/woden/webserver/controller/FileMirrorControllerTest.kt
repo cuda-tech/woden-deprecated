@@ -22,7 +22,7 @@ import tech.cuda.woden.webserver.RestfulTestToolbox
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-open class FileMirrorControllerTest : RestfulTestToolbox("person", "file_mirror", "file") {
+open class FileMirrorControllerTest : RestfulTestToolbox("person", "file_mirror", "file", "team", "person_team_mapping") {
 
     @Test
     fun listing() {

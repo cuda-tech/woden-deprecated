@@ -11,22 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.woden.common.service.dto
+package tech.cuda.woden.common.service.po
 
-import tech.cuda.woden.annotation.pojo.DTO
-import tech.cuda.woden.common.service.po.PersonPO
+import me.liuwj.ktorm.entity.Entity
 import java.time.LocalDateTime
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-@DTO(PersonPO::class)
-data class PersonDTO(
-    val id: Int,
-    val teams: Set<TeamDTO>,
-    val name: String,
-    val email: String,
-    val createTime: LocalDateTime,
-    val updateTime: LocalDateTime
-)
+internal interface PersonTeamMappingPO : Entity<PersonTeamMappingPO> {
+    companion object : Entity.Factory<PersonTeamMappingPO>()
+
+    var personId: Int
+    var teamId: Int
+    var isRemove: Boolean
+    var createTime: LocalDateTime
+    var updateTime: LocalDateTime
+}

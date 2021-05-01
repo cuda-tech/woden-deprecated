@@ -23,11 +23,11 @@ import tech.cuda.woden.webserver.RestfulTestToolbox
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-open class TeamControllerTest : RestfulTestToolbox("person", "team") {
+open class TeamControllerTest : RestfulTestToolbox("person", "team", "person_team_mapping") {
 
     @Test
     fun listing() {
-        val validCount = 32
+        val validCount = 33
         with(postman.get("/api/team").shouldSuccess) {
             val teams = this.getList<TeamDTO>("teams")
             val count = this.get<Int>("count")
@@ -51,7 +51,7 @@ open class TeamControllerTest : RestfulTestToolbox("person", "team") {
     @Test
     fun search() {
         // 提供空或 null 的相似词
-        var validCount = 32
+        var validCount = 33
         var pageSize = 5
         var queryTimes = validCount / pageSize + 1
         var lastPageCount = validCount % pageSize
