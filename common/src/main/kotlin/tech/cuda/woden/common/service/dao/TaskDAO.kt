@@ -46,9 +46,9 @@ internal object TaskDAO : Table<TaskPO>("task") {
     @COMMENT("任务名")
     val name = varchar("name").bindTo { it.name }
 
-    @JSON
+    @BIGINT
     @COMMENT("负责人")
-    val owners = json("owners", typeRef<Set<Int>>()).bindTo { it.owners }
+    val ownerId = int("owner_id").bindTo { it.ownerId }
 
     @TEXT
     @COMMENT("执行参数")
@@ -81,14 +81,6 @@ internal object TaskDAO : Table<TaskPO>("task") {
     @INT
     @COMMENT("最大执行时间（分钟）")
     val runningTimeout = int("running_timeout").bindTo { it.runningTimeout }
-
-    @JSON
-    @COMMENT("父任务列表")
-    val parent = json("parent", typeRef<Map<Int, ScheduleDependencyInfo>>()).bindTo { it.parent }
-
-    @JSON
-    @COMMENT("子任务列表")
-    val children = json("children", typeRef<Set<Int>>()).bindTo { it.children }
 
     @SMALLINT
     @COMMENT("重试次数")

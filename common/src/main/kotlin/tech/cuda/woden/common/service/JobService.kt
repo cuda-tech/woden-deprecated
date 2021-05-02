@@ -91,9 +91,7 @@ object JobService : Service(JobDAO) {
         if (!task.isValid) {
             throw OperationNotAllowException(I18N.task, task.id, I18N.invalid)
         }
-        if (!task.format.isValid(task.period)) {
-            throw OperationNotAllowException(I18N.task, task.id, I18N.scheduleFormat, I18N.illegal)
-        }
+        task.format.requireValid(task.period)
         // 只有当天需要调度的任务才会生成作业, 如果当天的作业已生成，则跳过创建，直接返回
         if (task.format.shouldSchedule(task.period)) {
             val now = LocalDateTime.now()
@@ -195,7 +193,7 @@ object JobService : Service(JobDAO) {
         }
         val task = TaskService.findById(job.taskId)
             ?: throw NotFoundException(I18N.job, job.id, I18N.task, job.taskId, I18N.notExistsOrHasBeenRemove)
-        for (parent in TaskService.listingParent(task)) {
+        for (parent in TaskService.listingParent(task.id)) {
             val success = when (parent.period) {
                 SchedulePeriod.ONCE -> parent.successCount(end = job.createTime) == 1
                 SchedulePeriod.HOUR -> if (task.period == SchedulePeriod.HOUR) {

@@ -13,6 +13,7 @@
  */
 package tech.cuda.woden.common.service
 
+import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -40,10 +41,10 @@ class TaskServiceTest : TestWithMaria({
         task.mirrorId shouldBe 38
         task.teamId shouldBe 31
         task.name shouldBe "aniudyqv"
-        task.owners shouldContainExactlyInAnyOrder setOf(131, 163, 98, 108)
+        task.ownerId shouldBe 131
         task.period shouldBe SchedulePeriod.MONTH
         task.format shouldBe ScheduleFormat(day = 12, hour = 21, minute = 46)
-        task.format.isValid(task.period) shouldBe true
+        shouldNotThrowAny { task.format.requireValid(task.period) }
         task.isSoftFail shouldBe false
         task.queue shouldBe "vfukassr"
         task.priority shouldBe SchedulePriority.HIGH
@@ -66,7 +67,7 @@ class TaskServiceTest : TestWithMaria({
             val (tasks, count) = TaskService.listing(page, pageSize)
             count shouldBe validCount
             tasks.size shouldBe if (page == queryTimes) lastPagePersonCount else pageSize
-            tasks.forEach { it.format.isValid(it.period) }
+            tasks.forEach { shouldNotThrowAny { it.format.requireValid(it.period) } }
         }
     }
 
@@ -133,7 +134,6 @@ class TaskServiceTest : TestWithMaria({
                 count shouldBe validCount
             }
         }
-
     }
 
     "按项目组分页查询" {
@@ -146,27 +146,18 @@ class TaskServiceTest : TestWithMaria({
             count shouldBe validCount
             tasks.size shouldBe if (page == queryTimes) lastPagePersonCount else pageSize
         }
-
-        shouldThrow<NotFoundException> {
-            TaskService.listing(1, 100, teamId = 13)
-        }.message shouldBe "项目组 13 不存在或已被删除"
     }
 
     "按负责人分页查询" {
-        val validCount = 5
+        val validCount = 77
         val pageSize = 2
         val queryTimes = validCount / pageSize + 1
         val lastPagePersonCount = validCount % pageSize
         for (page in 1..queryTimes) {
-            val (tasks, count) = TaskService.listing(page, pageSize, ownerId = 3)
+            val (tasks, count) = TaskService.listing(page, pageSize, ownerId = 1)
             count shouldBe validCount
             tasks.size shouldBe if (page == queryTimes) lastPagePersonCount else pageSize
         }
-
-        shouldThrow<NotFoundException> {
-            TaskService.listing(1, 100, ownerId = 4)
-        }.message shouldBe "用户 4 不存在或已被删除"
-
     }
 
     "按调度周期分页查询" {
@@ -218,25 +209,27 @@ class TaskServiceTest : TestWithMaria({
     }
 
     "查询子任务" {
-        TaskService.listingChildren(TaskService.findById(42)!!).map { it.id } shouldContainExactlyInAnyOrder listOf(1, 2, 3, 4, 5)
-        TaskService.listingChildren(TaskService.findById(4)!!).map { it.id } shouldContainExactlyInAnyOrder listOf(3)
-        TaskService.listingChildren(TaskService.findById(5)!!).size shouldBe 0
+        TaskService.listingChildren(42).map { it.id } shouldContainExactlyInAnyOrder
+            listOf(3, 4, 5)
+        TaskService.listingChildren(4).map { it.id } shouldContainExactlyInAnyOrder listOf(3)
+        TaskService.listingChildren(5).size shouldBe 0
     }
 
     "查询父任务" {
-        TaskService.listingParent(TaskService.findById(35)!!).map { it.id } shouldContainExactlyInAnyOrder listOf(30, 34)
-        TaskService.listingParent(TaskService.findById(3)!!).map { it.id } shouldContainExactlyInAnyOrder listOf(4)
-        TaskService.listingParent(TaskService.findById(5)!!).size shouldBe 0
+        TaskService.listingParent(35).map { it.id } shouldContainExactlyInAnyOrder
+            listOf(30, 33, 34)
+        TaskService.listingParent(3).map { it.id } shouldContainExactlyInAnyOrder listOf(4, 42)
+        TaskService.listingParent(6).size shouldBe 0
     }
 
     "创建任务" {
-        TaskService.findById(3)!!.children shouldNotContain 461
-        TaskService.findById(4)!!.children shouldNotContain 461
+        TaskService.listingChildren(3).map { it.id } shouldNotContain 461
+        TaskService.listingChildren(4).map { it.id } shouldNotContain 461
         val nextId = 461
         val task = TaskService.create(
             mirrorId = 1,
             name = "test create",
-            ownerIds = setOf(3, 12, 15),
+            ownerId = 3,
             period = SchedulePeriod.DAY,
             format = ScheduleFormat(hour = 3),
             queue = "adhoc",
@@ -248,22 +241,22 @@ class TaskServiceTest : TestWithMaria({
         task.id shouldBe nextId
         task.teamId shouldBe 3
         task.name shouldBe "test create"
-        task.owners shouldContainExactlyInAnyOrder setOf(3, 12, 15)
+        task.ownerId shouldBe 3
         task.period shouldBe SchedulePeriod.DAY
         task.format shouldBe ScheduleFormat(hour = 3, minute = 0)
-        task.format.isValid(task.period) shouldBe true
-        task.parent.keys shouldContainExactlyInAnyOrder setOf(3, 4)
         task.queue shouldBe "adhoc"
+        shouldNotThrowAny { task.format.requireValid(task.period) }
         task.priority shouldBe SchedulePriority.VERY_LOW
-        TaskService.findById(3)!!.children shouldContain 461
-        TaskService.findById(4)!!.children shouldContain 461
+        TaskService.listingParent(task.id).map { it.id } shouldContainExactlyInAnyOrder setOf(3, 4)
+        TaskService.listingChildren(3).map { it.id } shouldContain 461
+        TaskService.listingChildren(4).map { it.id } shouldContain 461
 
         // 镜像不存在
         shouldThrow<NotFoundException> {
             TaskService.create(
                 mirrorId = 5,
                 name = "test create",
-                ownerIds = setOf(3, 12, 15),
+                ownerId = 3,
                 period = SchedulePeriod.DAY,
                 format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
@@ -279,7 +272,7 @@ class TaskServiceTest : TestWithMaria({
             TaskService.create(
                 mirrorId = 23,
                 name = "test create",
-                ownerIds = setOf(3, 12, 15),
+                ownerId = 3,
                 period = SchedulePeriod.DAY,
                 format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
@@ -295,7 +288,7 @@ class TaskServiceTest : TestWithMaria({
             TaskService.create(
                 mirrorId = 1,
                 name = "test create",
-                ownerIds = setOf(3, 12, 15, 27),
+                ownerId = 27,
                 period = SchedulePeriod.DAY,
                 format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
@@ -311,7 +304,7 @@ class TaskServiceTest : TestWithMaria({
             TaskService.create(
                 mirrorId = 1,
                 name = "test create",
-                ownerIds = setOf(3, 12, 15, 4),
+                ownerId = 4,
                 period = SchedulePeriod.DAY,
                 format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
@@ -327,7 +320,7 @@ class TaskServiceTest : TestWithMaria({
             TaskService.create(
                 mirrorId = 1,
                 name = "test create",
-                ownerIds = setOf(3, 12, 15),
+                ownerId = 3,
                 period = SchedulePeriod.DAY,
                 format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
@@ -343,7 +336,7 @@ class TaskServiceTest : TestWithMaria({
             TaskService.create(
                 mirrorId = 1,
                 name = "test create",
-                ownerIds = setOf(3, 12, 15),
+                ownerId = 3,
                 period = SchedulePeriod.DAY,
                 format = ScheduleFormat(hour = 3),
                 queue = "adhoc",
@@ -359,7 +352,7 @@ class TaskServiceTest : TestWithMaria({
             TaskService.create(
                 mirrorId = 1,
                 name = "test create",
-                ownerIds = setOf(3, 12, 15),
+                ownerId = 3,
                 period = SchedulePeriod.DAY,
                 format = ScheduleFormat(hour = 24),
                 queue = "adhoc",
@@ -374,7 +367,7 @@ class TaskServiceTest : TestWithMaria({
             TaskService.create(
                 mirrorId = 1,
                 name = "test create",
-                ownerIds = setOf(3, 12, 15),
+                ownerId = 3,
                 period = SchedulePeriod.DAY,
                 format = ScheduleFormat(year = 2020, hour = 3),
                 queue = "adhoc",
@@ -389,15 +382,15 @@ class TaskServiceTest : TestWithMaria({
     }
 
     "更新任务" {
-        TaskService.findById(30)!!.children shouldContain 35
-        TaskService.findById(34)!!.children shouldContain 35
-        TaskService.findById(4)!!.children shouldNotContain 35
-        TaskService.findById(8)!!.children shouldNotContain 35
+        TaskService.listingChildren(30).map { it.id } shouldContain 35
+        TaskService.listingChildren(34).map { it.id } shouldContain 35
+        TaskService.listingChildren(4).map { it.id } shouldNotContain 35
+        TaskService.listingChildren(8).map { it.id } shouldNotContain 35
         TaskService.update(
             id = 35,
             mirrorId = 203,
             name = "test update",
-            ownerIds = setOf(14, 16, 17),
+            ownerId = 14,
             period = SchedulePeriod.DAY,
             format = ScheduleFormat(hour = 3),
             queue = "adhoc",
@@ -411,16 +404,16 @@ class TaskServiceTest : TestWithMaria({
         val task = TaskService.findById(35)!!
         task.mirrorId shouldBe 203
         task.name shouldBe "test update"
-        task.owners shouldContainExactlyInAnyOrder setOf(14, 16, 17)
+        task.ownerId shouldBe 14
         task.period shouldBe SchedulePeriod.DAY
         task.queue shouldBe "adhoc"
         task.priority shouldBe SchedulePriority.HIGH
-        task.parent.keys shouldContainExactlyInAnyOrder setOf(4, 8)
         task.isValid shouldBe false
-        TaskService.findById(4)!!.children shouldContain 35
-        TaskService.findById(8)!!.children shouldContain 35
-        TaskService.findById(30)!!.children shouldNotContain 35
-        TaskService.findById(34)!!.children shouldNotContain 35
+        TaskService.listingParent(task.id).map { it.id } shouldContainExactlyInAnyOrder setOf(4, 8)
+        TaskService.listingChildren(4).map { it.id } shouldContain 35
+        TaskService.listingChildren(8).map { it.id } shouldContain 35
+        TaskService.listingChildren(30).map { it.id } shouldNotContain 35
+        TaskService.listingChildren(34).map { it.id } shouldNotContain 35
 
         // 任务不存在
         shouldThrow<NotFoundException> {
@@ -428,7 +421,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 461,
                 mirrorId = 203,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17),
+                ownerId = 14,
                 period = SchedulePeriod.DAY,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
@@ -446,7 +439,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 35,
                 mirrorId = 301,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17),
+                ownerId = 14,
                 period = SchedulePeriod.DAY,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
@@ -464,7 +457,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 35,
                 mirrorId = 203,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17),
+                ownerId = 14,
                 period = SchedulePeriod.DAY,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
@@ -482,7 +475,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 35,
                 mirrorId = 203,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17),
+                ownerId = 14,
                 period = SchedulePeriod.DAY,
                 format = ScheduleFormat(year = 2020, hour = 3),
                 queue = "adhoc",
@@ -501,7 +494,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 35,
                 mirrorId = 203,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17),
+                ownerId = 14,
                 format = ScheduleFormat(year = 2020, hour = 3),
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
@@ -519,7 +512,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 43,
                 mirrorId = 111,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17),
+                ownerId = 14,
                 period = SchedulePeriod.DAY,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
@@ -537,7 +530,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 35,
                 mirrorId = 204,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17),
+                ownerId = 14,
                 period = SchedulePeriod.DAY,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
@@ -555,7 +548,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 35,
                 mirrorId = 203,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17, 180),
+                ownerId = 180,
                 period = SchedulePeriod.DAY,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
@@ -565,7 +558,7 @@ class TaskServiceTest : TestWithMaria({
                 ),
                 isValid = false
             )
-        }
+        }.message shouldBe "用户 180 不存在或已被删除"
 
         // 用户无权限
         shouldThrow<PermissionException> {
@@ -573,7 +566,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 35,
                 mirrorId = 203,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17, 46),
+                ownerId = 46,
                 period = SchedulePeriod.DAY,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
@@ -591,7 +584,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 35,
                 mirrorId = 203,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17),
+                ownerId = 14,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
                 parent = mapOf(
@@ -608,7 +601,7 @@ class TaskServiceTest : TestWithMaria({
                 id = 35,
                 mirrorId = 203,
                 name = "test update",
-                ownerIds = setOf(14, 16, 17),
+                ownerId = 14,
                 queue = "adhoc",
                 priority = SchedulePriority.HIGH,
                 parent = mapOf(
@@ -619,27 +612,13 @@ class TaskServiceTest : TestWithMaria({
             )
         }.message shouldBe "父任务 37 已失效 , 禁止依赖"
 
-        // 子任务未失效，并检查事务
-        TaskService.findById(4)!!.children shouldContain 3
-        shouldThrow<OperationNotAllowException> {
-            TaskService.update(
-                id = 3,
-                parent = mapOf(
-                    4 to ScheduleDependencyInfo(),
-                    8 to ScheduleDependencyInfo()
-                ),
-                isValid = false
-            )
-        }.message shouldBe "子任务 5 未失效 , 父任务 禁止失效"
-        TaskService.findById(4)!!.children shouldContain 3
-
         TaskService.update(
             id = 3,
             parent = mapOf(
                 8 to ScheduleDependencyInfo()
             )
         )
-        TaskService.findById(4)!!.children shouldNotContain 3
+        TaskService.listingChildren(4).map { it.id } shouldNotContain 3
     }
 
     "删除任务" {
@@ -672,7 +651,7 @@ class TaskServiceTest : TestWithMaria({
 
         shouldThrow<OperationNotAllowException> {
             TaskService.remove(33)
-        }.message shouldBe "子任务 未失效 , 禁止删除"
+        }.message shouldBe "子任务 35,118 未失效 , 禁止删除"
     }
 
-}, TaskDAO, JobDAO, InstanceDAO, TeamDAO, PersonDAO, FileMirrorDAO, FileDAO, PersonTeamMappingDAO)
+}, TaskDAO, JobDAO, InstanceDAO, TeamDAO, PersonDAO, FileMirrorDAO, FileDAO, PersonTeamMappingDAO, TaskDependencyDAO)

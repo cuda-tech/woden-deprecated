@@ -17,10 +17,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import tech.cuda.woden.common.service.dao.InstanceDAO
-import tech.cuda.woden.common.service.dao.JobDAO
-import tech.cuda.woden.common.service.dao.ContainerDAO
-import tech.cuda.woden.common.service.dao.TaskDAO
+import tech.cuda.woden.common.service.dao.*
 import tech.cuda.woden.common.service.dto.TaskDTO
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
@@ -167,14 +164,16 @@ class JobServiceTest : TestWithMaria({
         }.message shouldBe "调度任务 33 已失效"
 
         shouldThrow<OperationNotAllowException> {
-            JobService.create(TaskDTO(
-                id = 1, mirrorId = 1, teamId = 1, name = "", owners = setOf(), args = mapOf(), isSoftFail = false,
-                period = SchedulePeriod.DAY, format = ScheduleFormat(year = 2020),  // 非法的格式
-                queue = "", priority = SchedulePriority.HIGH, pendingTimeout = 0, runningTimeout = 0, parent = mapOf(),
-                children = setOf(), retries = 0, retryDelay = 0, isValid = true, createTime = LocalDateTime.now(),
-                updateTime = LocalDateTime.now()
-            ))
-        }.message shouldBe "调度任务 1 调度时间格式 非法"
+            JobService.create(
+                TaskDTO(
+                    id = 1, mirrorId = 1, teamId = 1, name = "", ownerId = 1, args = mapOf(), isSoftFail = false,
+                    period = SchedulePeriod.DAY, format = ScheduleFormat(year = 2020),  // 非法的格式
+                    queue = "", priority = SchedulePriority.HIGH, pendingTimeout = 0, runningTimeout = 0,
+                    retries = 0, retryDelay = 0, isValid = true, createTime = LocalDateTime.now(),
+                    updateTime = LocalDateTime.now()
+                )
+            )
+        }.message shouldBe "调度时间格式 非法"
     }
 
     "更新作业" {
@@ -212,8 +211,10 @@ class JobServiceTest : TestWithMaria({
 
         // 通过 taskId 删除
         val jobIds = JobService.listing(pageId = 1, pageSize = 100, taskId = 3).first.map { it.id }
-        jobIds shouldContainExactlyInAnyOrder listOf(23, 24, 25, 26, 27, 56, 57, 58, 59, 76,
-            77, 78, 79, 80, 100, 101, 102, 112, 137, 138, 171, 172, 173, 174, 175, 176)
+        jobIds shouldContainExactlyInAnyOrder listOf(
+            23, 24, 25, 26, 27, 56, 57, 58, 59, 76,
+            77, 78, 79, 80, 100, 101, 102, 112, 137, 138, 171, 172, 173, 174, 175, 176
+        )
         jobIds.map { InstanceService.listing(1, 100, jobId = it).second }.sum() shouldBe 47
         JobService.remove(taskId = 3)
         JobService.listing(pageId = 1, pageSize = 100, taskId = 3).second shouldBe 0
@@ -289,4 +290,4 @@ class JobServiceTest : TestWithMaria({
         }
     }
 
-}, TaskDAO, JobDAO, InstanceDAO, ContainerDAO)
+}, TaskDAO, JobDAO, InstanceDAO, ContainerDAO, TaskDependencyDAO)

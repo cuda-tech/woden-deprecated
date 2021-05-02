@@ -32,7 +32,7 @@ internal interface TaskPO : Entity<TaskPO> {
     var mirrorId: Int
     var teamId: Int
     var name: String
-    var owners: Set<Int>
+    var ownerId: Int
     var args: Map<String, Any>
     var isSoftFail: Boolean
     var period: SchedulePeriod
@@ -41,8 +41,6 @@ internal interface TaskPO : Entity<TaskPO> {
     var priority: SchedulePriority
     var pendingTimeout: Int
     var runningTimeout: Int
-    var parent: Map<Int, ScheduleDependencyInfo>
-    var children: Set<Int>
     var retries: Int
     var retryDelay: Int
     var isValid: Boolean
