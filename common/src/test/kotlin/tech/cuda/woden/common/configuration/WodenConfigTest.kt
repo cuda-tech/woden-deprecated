@@ -70,4 +70,8 @@ class WodenConfigTest : StringSpec({
         Woden.scheduler.bashPath shouldNotBe null
     }
 
+    "git config"{
+        Woden.gitPath.toString().replace("\\", "/") shouldBe "/tmp/git"
+    }
+
 })

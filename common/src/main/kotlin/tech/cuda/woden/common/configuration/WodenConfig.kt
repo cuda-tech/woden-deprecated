@@ -18,10 +18,13 @@ import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.pool.HikariPool
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.hocon.Hocon
 import tech.cuda.woden.common.configuration.datasource.DataSourceConfig
 import tech.cuda.woden.common.configuration.email.EmailConfig
 import tech.cuda.woden.common.configuration.scheduler.SchedulerConfig
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.sql.DriverManager
 import javax.sql.DataSource
 
@@ -33,7 +36,8 @@ import javax.sql.DataSource
 data class WodenConfig(
     @SerialName("datasource") private val datasourceConfig: DataSourceConfig,
     val email: EmailConfig,
-    val scheduler: SchedulerConfig
+    val scheduler: SchedulerConfig,
+    @SerialName("git") private val _git: String,
 ) {
     val datasource: DataSource by lazy {
         try {
@@ -53,6 +57,9 @@ data class WodenConfig(
             }
         }
     }
+
+    @Transient
+    val gitPath: Path = Paths.get(_git)
 }
 
 val Woden = Hocon.decodeFromConfig(
