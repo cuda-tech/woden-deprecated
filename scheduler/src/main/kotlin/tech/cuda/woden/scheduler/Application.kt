@@ -15,7 +15,6 @@ package tech.cuda.woden.scheduler
 
 import tech.cuda.woden.common.configuration.Woden
 import tech.cuda.woden.common.service.Database
-import tech.cuda.woden.scheduler.tracker.ClusterTracker
 import tech.cuda.woden.scheduler.tracker.InstanceTracker
 import tech.cuda.woden.scheduler.tracker.JobTracker
 import tech.cuda.woden.scheduler.tracker.ContainerTracker
@@ -27,7 +26,6 @@ import tech.cuda.woden.scheduler.tracker.ContainerTracker
 fun main() {
     Database.connect(Woden.datasource)
     val containerTracker = ContainerTracker(afterStarted = {
-        ClusterTracker(it.container).start()
         JobTracker().start()
         InstanceTracker(it.container).start()
     })
