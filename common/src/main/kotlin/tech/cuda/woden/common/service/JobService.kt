@@ -14,9 +14,12 @@
 package tech.cuda.woden.common.service
 
 import me.liuwj.ktorm.database.Database
+import me.liuwj.ktorm.database.TransactionIsolation
 import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.global.add
 import me.liuwj.ktorm.global.global
+import me.liuwj.ktorm.global.update
+import org.jetbrains.kotlin.kotlinx.coroutines.Job
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.dao.JobDAO
 import tech.cuda.woden.common.service.dto.JobDTO
@@ -111,7 +114,13 @@ object JobService : Service(JobDAO) {
                 return when (existsCount) {
                     0 -> JobDAO.add(job).run { listOf(job.toJobDTO()) }
                     1 -> existsJobs
-                    else -> throw DirtyDataException(I18N.task, task.id, task.period, I18N.job, existsJobs.map { it.id }.joinToString(", "))
+                    else -> throw DirtyDataException(
+                        I18N.task,
+                        task.id,
+                        task.period,
+                        I18N.job,
+                        existsJobs.map { it.id }.joinToString(", ")
+                    )
                 }
             } else { // 小时任务会生成 24 个作业
                 return when (existsCount) {
@@ -131,7 +140,13 @@ object JobService : Service(JobDAO) {
                         job.toJobDTO()
                     }
                     24 -> existsJobs
-                    else -> throw DirtyDataException(I18N.task, task.id, task.period, I18N.job, existsJobs.map { it.id }.joinToString(", "))
+                    else -> throw DirtyDataException(
+                        I18N.task,
+                        task.id,
+                        task.period,
+                        I18N.job,
+                        existsJobs.map { it.id }.joinToString(", ")
+                    )
                 }
             }
         }
@@ -139,31 +154,51 @@ object JobService : Service(JobDAO) {
     }
 
     /**
-     * 更新指定[id]的作业信息
-     * 如果指定[id]的作业不存在或已被删除，则抛出 NotFoundException
-     * 如果试图更新[containerId]，并且该容器不存在或已被删除，则抛出 NotFoundException
+     * 更新指定[jobId]的作业状态，并返回是否更新成功
      */
-    fun update(id: Int, status: JobStatus? = null, containerId: Int? = null, runCount: Int? = null): JobDTO {
-        val job = find<JobPO>(JobDAO.id eq id and (JobDAO.isRemove eq false))
-            ?: throw NotFoundException(I18N.job, id, I18N.notExistsOrHasBeenRemove)
-        status?.let {
-            // todo: 作业状态可达性判断
-            job.status = status
+    fun updateStatus(jobId: Int, status: JobStatus): Boolean = Database.global.useTransaction {
+        if (status == JobStatus.READY) {
+//            logger.error("cant not update status to ready, use JobService.allocate instead")
+            return false
         }
-        containerId?.let {
-            ContainerService.findById(containerId)
-                ?: throw NotFoundException(I18N.container, containerId, I18N.notExistsOrHasBeenRemove)
-            // todo: 容器存活性判断
-            job.containerId = containerId
+        val job = find<JobPO>(JobDAO.id eq jobId and (JobDAO.isRemove eq false))
+            ?: throw NotFoundException(I18N.job, jobId, I18N.notExistsOrHasBeenRemove)
+        if (!job.status.canChangeTo(status)) {
+//            logger.error("can not change ${job.status} to $status")
+            return false
         }
-        runCount?.let {
-            job.runCount = runCount
+        JobDAO.update { // 通过 status 实现乐观锁
+            it.status to status
+            it.updateTime to LocalDateTime.now()
+            where {
+                JobDAO.id eq jobId and (JobDAO.isRemove eq false) and (JobDAO.status eq job.status)
+            }
         }
-        anyNotNull(status, containerId, runCount)?.let {
-            job.updateTime = LocalDateTime.now()
-            job.flushChanges()
+        return find<JobPO>(JobDAO.id eq jobId and (JobDAO.isRemove eq false))?.status == status
+    }
+
+    /**
+     * 尝试将[jobId]分配给[containerId]，并返回是否分配成功
+     */
+    fun allocate(containerId: Int, jobId: Int): Boolean = Database.global.useTransaction {
+        try {
+            val container = ContainerService.findById(containerId)
+            check(container != null)
+            check(container.isActive)
+            JobDAO.update { // 通过 status 实现乐观锁
+                it.containerId to containerId
+                it.status to JobStatus.READY
+                it.runCount to it.runCount + 1
+                it.updateTime to LocalDateTime.now()
+                where {
+                    (JobDAO.isRemove eq false) and (JobDAO.id eq jobId) and (JobDAO.status eq JobStatus.INIT)
+                }
+            }
+            // 通过 containerId 判断是否更新成功
+            return find<JobPO>(JobDAO.id eq jobId and (JobDAO.isRemove eq false))?.containerId == containerId
+        } catch (e: Exception) {
+            return false
         }
-        return job.toJobDTO()
     }
 
     /**

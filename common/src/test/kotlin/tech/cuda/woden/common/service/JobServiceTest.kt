@@ -17,6 +17,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import kotlinx.coroutines.*
 import tech.cuda.woden.common.service.dao.*
 import tech.cuda.woden.common.service.dto.TaskDTO
 import tech.cuda.woden.common.service.exception.NotFoundException
@@ -176,29 +177,34 @@ class JobServiceTest : TestWithMaria({
         }.message shouldBe "调度时间格式 非法"
     }
 
-    "更新作业" {
-        JobService.update(4, status = JobStatus.INIT, containerId = 1, runCount = 123)
-        val job = JobService.findById(4)!!
-        job.status shouldBe JobStatus.INIT
-        job.containerId shouldBe 1
-        job.runCount shouldBe 123
-        job.updateTime shouldNotBe "2026-01-26 23:09:37".toLocalDateTime()
+    "更新作业状态" {
+        JobService.findById(9)!!.status shouldBe JobStatus.INIT
+        JobService.updateStatus(9, status = JobStatus.READY) shouldBe false // init -> ready
+        JobService.findById(9)!!.status shouldBe JobStatus.INIT
+
+        JobService.findById(4)!!.status shouldBe JobStatus.READY
+        JobService.updateStatus(4, status = JobStatus.RUNNING) shouldBe true // ready -> running
+        JobService.findById(4)!!.status shouldBe JobStatus.RUNNING
+
+        JobService.findById(13)!!.status shouldBe JobStatus.SUCCESS
+        JobService.updateStatus(13, status = JobStatus.SUCCESS) shouldBe false // success -> success
+        JobService.findById(13)!!.status shouldBe JobStatus.SUCCESS
+        JobService.updateStatus(13, status = JobStatus.INIT) shouldBe true // success -> success
+        JobService.findById(13)!!.status shouldBe JobStatus.INIT
 
         shouldThrow<NotFoundException> {
-            JobService.update(1, JobStatus.SUCCESS)
+            JobService.updateStatus(1, JobStatus.INIT)
         }.message shouldBe "调度作业 1 不存在或已被删除"
 
         shouldThrow<NotFoundException> {
-            JobService.update(10086, JobStatus.SUCCESS)
+            JobService.updateStatus(10086, JobStatus.SUCCESS)
         }.message shouldBe "调度作业 10086 不存在或已被删除"
 
-        shouldThrow<NotFoundException> {
-            JobService.update(4, containerId = 2)
-        }.message shouldBe "调度容器 2 不存在或已被删除"
-
-        shouldThrow<NotFoundException> {
-            JobService.update(4, containerId = 247)
-        }.message shouldBe "调度容器 247 不存在或已被删除"
+        // 并发测试
+        val updateResult = (1..2000).map {
+            GlobalScope.async { JobService.updateStatus(14, JobStatus.SUCCESS) }
+        }.map { it.await() }
+        updateResult.filter { it }.size shouldBe 1
     }
 
     "删除作业" {
@@ -215,10 +221,10 @@ class JobServiceTest : TestWithMaria({
             23, 24, 25, 26, 27, 56, 57, 58, 59, 76,
             77, 78, 79, 80, 100, 101, 102, 112, 137, 138, 171, 172, 173, 174, 175, 176
         )
-        jobIds.map { InstanceService.listing(1, 100, jobId = it).second }.sum() shouldBe 47
+        jobIds.sumOf { InstanceService.listing(1, 100, jobId = it).second } shouldBe 47
         JobService.remove(taskId = 3)
         JobService.listing(pageId = 1, pageSize = 100, taskId = 3).second shouldBe 0
-        jobIds.map { InstanceService.listing(1, 100, jobId = it).second }.sum() shouldBe 0
+        jobIds.sumOf { InstanceService.listing(1, 100, jobId = it).second } shouldBe 0
 
         shouldThrow<OperationNotAllowException> {
             JobService.remove()
@@ -287,6 +293,51 @@ class JobServiceTest : TestWithMaria({
         // job 已删除
         shouldThrow<NotFoundException> {
             JobService.canRetry(1)
+        }
+    }
+
+    "分配作业" {
+        // 容器被删除
+        JobService.allocate(2, 9) shouldBe false
+        // 容器不存在
+        JobService.allocate(247, 9) shouldBe false
+        // 容器已挂掉
+        JobService.allocate(11, 9) shouldBe false
+
+        // 作业被删除
+        JobService.allocate(23, 8) shouldBe false
+        // 作业不存在
+        JobService.allocate(23, 351) shouldBe false
+
+        // 作业不处于 INIT 状态
+        JobService.allocate(23, 4) shouldBe false // ready
+        JobService.allocate(23, 14) shouldBe false // running
+        JobService.allocate(23, 22) shouldBe false // success
+        JobService.allocate(23, 19) shouldBe false // failed
+        JobService.allocate(23, 15) shouldBe false // killed
+
+        // 正确分配
+        JobService.findById(11)!!.containerId shouldBe null
+        JobService.allocate(23, 11) shouldBe true
+        JobService.findById(11)!!.containerId shouldBe 23
+        JobService.findById(11)!!.runCount shouldBe 3
+
+        // 并发申请
+        val containerIds = (1..2000).map {
+            GlobalScope.async {
+                ContainerService.create("new_contain_$it").id
+            }
+        }.map { it.await() }
+        val allocateResult = containerIds.map { containerId ->
+            GlobalScope.async {
+                containerId to JobService.allocate(containerId, 9)
+            }
+        }.map { it.await() }
+        val executeContainer = allocateResult.filter { it.second }
+        executeContainer.size shouldBe 1
+        with(JobService.findById(9)!!) {
+            this.containerId shouldBe executeContainer[0].first
+            this.runCount shouldBe 1
         }
     }
 

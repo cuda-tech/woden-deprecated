@@ -71,8 +71,8 @@ class JobTracker(
             val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.INIT)
             jobs.forEach { job ->
                 if (JobService.isReady(job)) {
-                    val worker = ContainerService.findSlackContainer()
-                    JobService.update(job.id, JobStatus.READY, containerId = worker.id)
+                    val container = ContainerService.findSlackContainer()
+                    JobService.allocate(container.id, job.id)
                     readyJobs.add(job)
                 } else {
                     println(job)
@@ -97,7 +97,7 @@ class JobTracker(
             )
             if (count > 1) throw Exception("job ${job.id} has more than 1 instance: ${instances.map { it.id }}") // todo: 当节点失效时可能会出现一个 job 多个节点执行的情况
             if (count == 1) {
-                JobService.update(job.id, JobStatus.RUNNING)
+                JobService.updateStatus(jobId = job.id, status = JobStatus.RUNNING)
                 runningJobs[job.id] = instances.first().id
             }
         }
@@ -113,12 +113,14 @@ class JobTracker(
         runningJobs.forEach { (jobId, instanceId) ->
             val instance = InstanceService.findById(instanceId) ?: throw NotFoundException()
             if (instance.status != InstanceStatus.RUNNING) {
-                JobService.update(jobId, when (instance.status) {
-                    InstanceStatus.SUCCESS -> JobStatus.SUCCESS
-                    InstanceStatus.FAILED -> JobStatus.FAILED
-                    InstanceStatus.KILLED -> JobStatus.KILLED
-                    else -> throw Exception() // 这里肯定不会到达，所以直接抛异常就好了
-                })
+                JobService.updateStatus(
+                    jobId, when (instance.status) {
+                        InstanceStatus.SUCCESS -> JobStatus.SUCCESS
+                        InstanceStatus.FAILED -> JobStatus.FAILED
+                        InstanceStatus.KILLED -> JobStatus.KILLED
+                        else -> throw Exception() // 这里肯定不会到达，所以直接抛异常就好了
+                    }
+                )
                 runningJobs.remove(jobId)
             }
         }
@@ -133,8 +135,7 @@ class JobTracker(
             val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.FAILED)
             jobs.forEach { job ->
                 if (JobService.canRetry(job.id)) {
-                    val worker = ContainerService.findSlackContainer()
-                    JobService.update(job.id, JobStatus.READY, containerId = worker.id)
+                    JobService.updateStatus(job.id, JobStatus.INIT)
                     readyJobs.add(job)
                 }
             }

@@ -20,6 +20,7 @@ import me.liuwj.ktorm.expression.OrderByExpression
 import me.liuwj.ktorm.global.select
 import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.Table
+import org.apache.log4j.Logger
 import java.lang.IllegalArgumentException
 import kotlin.math.max
 
@@ -29,6 +30,8 @@ import kotlin.math.max
  */
 @Suppress("UNCHECKED_CAST")
 abstract class Service(private val table: Table<*>) {
+
+    protected val logger: Logger = Logger.getLogger(this::class.java)
 
     /**
      * 生成字符串匹配过滤条件, 其中, [pattern] 是以空格(可连续)间隔的一个或多个字符串, NULL 字符串会被过滤掉

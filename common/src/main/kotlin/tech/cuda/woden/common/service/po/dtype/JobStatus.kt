@@ -23,5 +23,14 @@ enum class JobStatus {
     RUNNING, // 执行中
     SUCCESS,
     FAILED, // 执行失败后，如果允许后续会自动重试
-    KILLED, // Kill 后，后续不会自动重试
+    KILLED; // Kill 后，后续不会自动重试
+
+    fun canChangeTo(newStatus: JobStatus) = when (this) {
+        INIT -> newStatus == READY
+        READY -> newStatus == RUNNING
+        RUNNING -> newStatus == SUCCESS || newStatus == FAILED || newStatus == KILLED
+        SUCCESS -> newStatus == INIT // 重跑
+        FAILED -> newStatus == INIT || newStatus == SUCCESS // 重跑或直接置成功
+        KILLED -> newStatus == INIT || newStatus == SUCCESS // 重跑或直接置成功
+    }
 }
