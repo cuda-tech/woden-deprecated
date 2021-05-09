@@ -100,7 +100,7 @@ class DDLProcessor : AbstractProcessor() {
             return default.toString()
         }
         val value = StringEscapeUtils.unescapeJava((this.first() as JCTree.JCAssign).rhs.toString())
-        return if (value.isBlank()) default.toString() else value
+        return value.ifBlank { default.toString() }
     }
 
     override fun process(annotations: MutableSet<out TypeElement>?, env: RoundEnvironment): Boolean {
@@ -112,11 +112,13 @@ class DDLProcessor : AbstractProcessor() {
             trees.getTree(elem).accept(object : TreeTranslator() {
                 override fun visitClassDef(clzz: JCTree.JCClassDecl) {
                     super.visitClassDef(clzz)
-                    val ddl = clzz.defs.asSequence()
+                    val uniqueIndex = mutableListOf<String>()
+                    val columnsDefine = clzz.defs.asSequence()
                         .filter { it.tag.name == "METHODDEF" }
                         .map { it as JCTree.JCMethodDecl }
                         .filter { it.name.endsWith("\$annotations") }
                         .map {
+                            val columnName = sourceCode.columnName(it.name)
                             var autoIncrement = false
                             var isPrimaryKey = false
                             var isUnsigned = false
@@ -165,10 +167,18 @@ class DDLProcessor : AbstractProcessor() {
                                     // 其他
                                     BOOL::class.qualifiedName -> columnType = "bool"
                                     JSON::class.qualifiedName -> columnType = "json"
+
+                                    // 索引
+                                    UNIQUE_INDEX::class.qualifiedName -> {
+                                        val indexColumns = annotation.args.orDefault("")
+                                            .split(",")
+                                            .filter { prefix -> prefix.isNotBlank() } + columnName
+                                        uniqueIndex.add(indexColumns.joinToString(","))
+                                    }
                                 }
                             }
                             listOfNotNull(
-                                sourceCode.columnName(it.name),
+                                columnName,
                                 columnType,
                                 if (isUnsigned) "unsigned" else null,
                                 if (isNotNull) "not null" else null,
@@ -176,8 +186,14 @@ class DDLProcessor : AbstractProcessor() {
                                 if (autoIncrement) "auto_increment" else null,
                                 "comment", comment
                             ).joinToString(" ")
-                        }.joinToString(",\n", "\"\"\"create table if not exists $tableName(\n", "\n)default charset=utf8mb4\"\"\"")
-
+                        }.joinToString(",\n")
+                    val header = "\"\"\"create table if not exists $tableName(\n"
+                    var indexDefine = ""
+                    if (uniqueIndex.isNotEmpty()) {
+                        indexDefine += uniqueIndex.joinToString(",\n", ",\n") { "unique($it)" }
+                    }
+                    val footer = "\n)default charset=utf8mb4\"\"\""
+                    val ddl = header + columnsDefine + indexDefine + footer
                     if (isUnitTest) {
                         processingEnv.messager.printMessage(javax.tools.Diagnostic.Kind.NOTE, "\n" + ddl.replace("\"\"\"", ""))
                     } else {

@@ -19,4 +19,4 @@ package tech.cuda.woden.annotation.mysql
  */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(value = AnnotationRetention.SOURCE)
-annotation class UNIQUE_INDEX(val prefix: String)
+annotation class UNIQUE_INDEX(val prefix: String = "")
