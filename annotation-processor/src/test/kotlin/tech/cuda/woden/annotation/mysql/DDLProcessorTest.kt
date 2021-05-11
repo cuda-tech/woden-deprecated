@@ -28,15 +28,14 @@ class DDLProcessorTest : AnnotationSpec() {
 
     @Test
     fun testCreateTableStatement() = NoisyLog.shutUp {
-        val kotlinSource = SourceFile.kotlin("FileDAO.kt", """
+        val kotlinSource = SourceFile.kotlin("PersonDAO.kt", """
             package tech.cuda.woden.common.service.dao
 
             import tech.cuda.woden.annotation.mysql.*
-            import tech.cuda.woden.common.service.po.FilePO
-            import tech.cuda.woden.common.service.po.dtype.FileType
+            import tech.cuda.woden.common.service.po.PersonPO
 
             @STORE_IN_MYSQL
-            internal object FileDAO : Table<FilePO>("files") {
+            internal object PersonDAO : Table<PersonPO>("person") {
                 @BIGINT
                 @AUTO_INCREMENT
                 @PRIMARY_KEY
@@ -178,6 +177,27 @@ class DDLProcessorTest : AnnotationSpec() {
                 @UNSIGNED
                 @COMMENT("无符号修饰符")
                 val unsignedColumn = int("unsignedColumn").bindTo {it.unsignedColumn}
+
+                // 索引
+                @INT
+                @UNIQUE_INDEX
+                @COMMENT("唯一索引")
+                val uniqueIndexColumn = int("unique_index").bindTo { it.uniqueIndexColumn }
+
+                @INT
+                @UNIQUE_INDEX("bigint_column,int_column")
+                @COMMENT("联合唯一索引")
+                val unionUniqueIndexColumn = int("union_unique_index").bindTo { it.unionUniqueIndexColumn }
+
+                @INT
+                @INDEX
+                @COMMENT("普通索引")
+                val normalIndexColumn = int("normal_index").bindTo { it.normalIndexColumn }
+
+                @INT
+                @INDEX("bigint_column,int_column")
+                @COMMENT("联合普通索引")
+                val unionNormalIndexColumn = int("union_normal_index").bindTo { it.unionNormalIndexColumn }
             }
         """.trimIndent())
 
@@ -190,7 +210,7 @@ class DDLProcessorTest : AnnotationSpec() {
             suppressWarnings = true
         }.compile()
         result.messages.replace("\r\n", "\n") shouldContain """
-            |  create table if not exists files(
+            |  create table if not exists person(
             |  primary_key_column bigint(20) primary key auto_increment comment "主键",
             |  bigint_column bigint(20) comment "bigint 类型",
             |  bigint25_column bigint(25) comment "bigint25 类型",
@@ -222,7 +242,15 @@ class DDLProcessorTest : AnnotationSpec() {
             |  bool_column bool comment "bool 类型",
             |  json_column json comment "json 类型",
             |  not_null_column int(11) not null comment "非空修饰符",
-            |  unsignedColumn int(11) unsigned comment "无符号修饰符"
+            |  unsignedColumn int(11) unsigned comment "无符号修饰符",
+            |  unique_index int(11) comment "唯一索引",
+            |  union_unique_index int(11) comment "联合唯一索引",
+            |  normal_index int(11) comment "普通索引",
+            |  union_normal_index int(11) comment "联合普通索引",
+            |  unique(unique_index),
+            |  unique(bigint_column,int_column,union_unique_index),
+            |  index(normal_index),
+            |  index(bigint_column,int_column,union_normal_index)
             |  )default charset=utf8mb4
         """.trimMargin()
     }

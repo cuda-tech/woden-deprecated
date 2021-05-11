@@ -113,6 +113,7 @@ class DDLProcessor : AbstractProcessor() {
                 override fun visitClassDef(clzz: JCTree.JCClassDecl) {
                     super.visitClassDef(clzz)
                     val uniqueIndex = mutableListOf<String>()
+                    val normalIndex = mutableListOf<String>()
                     val columnsDefine = clzz.defs.asSequence()
                         .filter { it.tag.name == "METHODDEF" }
                         .map { it as JCTree.JCMethodDecl }
@@ -171,9 +172,17 @@ class DDLProcessor : AbstractProcessor() {
                                     // 索引
                                     UNIQUE_INDEX::class.qualifiedName -> {
                                         val indexColumns = annotation.args.orDefault("")
+                                            .trim('"')
                                             .split(",")
                                             .filter { prefix -> prefix.isNotBlank() } + columnName
                                         uniqueIndex.add(indexColumns.joinToString(","))
+                                    }
+                                    INDEX::class.qualifiedName -> {
+                                        val indexColumns = annotation.args.orDefault("")
+                                            .trim('"')
+                                            .split(",")
+                                            .filter { prefix -> prefix.isNotBlank() } + columnName
+                                        normalIndex.add(indexColumns.joinToString(","))
                                     }
                                 }
                             }
@@ -191,6 +200,9 @@ class DDLProcessor : AbstractProcessor() {
                     var indexDefine = ""
                     if (uniqueIndex.isNotEmpty()) {
                         indexDefine += uniqueIndex.joinToString(",\n", ",\n") { "unique($it)" }
+                    }
+                    if (normalIndex.isNotEmpty()) {
+                        indexDefine += normalIndex.joinToString(",\n", ",\n") { "index($it)" }
                     }
                     val footer = "\n)default charset=utf8mb4\"\"\""
                     val ddl = header + columnsDefine + indexDefine + footer
