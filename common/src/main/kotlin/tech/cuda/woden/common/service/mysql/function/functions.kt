@@ -16,6 +16,7 @@ package tech.cuda.woden.common.service.mysql.function
 import me.liuwj.ktorm.expression.ArgumentExpression
 import me.liuwj.ktorm.expression.FunctionExpression
 import me.liuwj.ktorm.schema.*
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -43,4 +44,8 @@ fun ColumnDeclaring<LocalDateTime>.toDate(): FunctionExpression<LocalDate> {
         ),
         sqlType = LocalDateSqlType
     )
+}
+
+fun unixTimestamp(): FunctionExpression<Long> {
+    return FunctionExpression(functionName = "unix_timestamp", arguments = emptyList(), sqlType = LongSqlType)
 }

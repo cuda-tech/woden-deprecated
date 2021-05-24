@@ -36,7 +36,7 @@ data class DataSourceConfig(
 ) {
     @Transient
     val hikariConfig = HikariConfig().also {
-        it.jdbcUrl = "jdbc:mysql://${host}:${port}/${dbName}?characterEncoding=UTF-8"
+        it.jdbcUrl = "jdbc:mysql://${host}:${port}/${dbName}?characterEncoding=UTF-8&useAffectedRows=true"
         it.poolName = name
         it.username = username
         it.password = password
