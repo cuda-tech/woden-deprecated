@@ -55,7 +55,7 @@ class JobTracker(
         logger.info("generate today's jobs")
         batchExecute { batch, batchSize ->
             val (tasks, total) = TaskService.listing(batch, batchSize, isValid = true)
-            tasks.forEach { JobService.create(it) }
+            tasks.forEach { JobService.create(it.id) }
             tasks.size over total
         }
         logger.info("generate today's jobs done")

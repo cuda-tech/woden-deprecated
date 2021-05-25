@@ -29,7 +29,7 @@ object DataSourceMocker {
     fun mock() {
         val db = DB.newEmbeddedDB(DBConfigurationBuilder.newBuilder().also {
             it.port = 0
-            it.baseDir = System.getProperty("java.io.tmpdir") + this.javaClass.simpleName
+            it.baseDir = System.getProperty("java.io.tmpdir") + "/" + this.javaClass.simpleName
         }.build()).also { it.start() }
         mockkObject(Woden)
         every { Woden.datasource } returns HikariDataSource().also { ds ->

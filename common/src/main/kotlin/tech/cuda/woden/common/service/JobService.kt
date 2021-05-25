@@ -14,18 +14,14 @@
 package tech.cuda.woden.common.service
 
 import me.liuwj.ktorm.database.Database
-import me.liuwj.ktorm.database.TransactionIsolation
 import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.global.add
-import me.liuwj.ktorm.global.global
-import me.liuwj.ktorm.global.update
-import org.jetbrains.kotlin.kotlinx.coroutines.Job
+import me.liuwj.ktorm.global.*
+import me.liuwj.ktorm.support.mysql.bulkInsert
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.dao.JobDAO
 import tech.cuda.woden.common.service.dto.JobDTO
 import tech.cuda.woden.common.service.dto.toJobDTO
 import tech.cuda.woden.common.service.dto.TaskDTO
-import tech.cuda.woden.common.service.exception.DirtyDataException
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.mysql.function.toDate
@@ -84,73 +80,61 @@ object JobService : Service(JobDAO) {
     }
 
     /**
-     * 根据[task]的信息生成当天的调度作业，并返回生成的作业列表
+     * 根据[taskId]的信息生成当天的调度作业，并返回生成的作业列表
      * 如果任务当天应该调度，并且是小时级任务，则返回 24 个作业，否则返回一个作业
      * 如果任务当天不应该调度，则返回空列表
-     * 如果[task]已失效，则抛出 OperationNotAllowException
-     * 如果[task]调度时间格式非法，则抛出 OperationNotAllowException
+     * 如果[taskId]已失效，则抛出 OperationNotAllowException
+     * 如果[taskId]调度时间格式非法，则抛出 OperationNotAllowException
      */
-    fun create(task: TaskDTO): List<JobDTO> = Database.global.useTransaction {
-        if (!task.isValid) {
-            throw OperationNotAllowException(I18N.task, task.id, I18N.invalid)
-        }
-        task.format.requireValid(task.period)
-        // 只有当天需要调度的任务才会生成作业, 如果当天的作业已生成，则跳过创建，直接返回
-        if (task.format.shouldSchedule(task.period)) {
+    fun create(taskId: Int): List<JobDTO> {
+        val lock = LockService.lock("create job for task $taskId") ?: return listOf()
+        Database.global.useTransaction {
+            val task = TaskService.findById(taskId) ?: throw NotFoundException()
+            if (!task.isValid) {
+                throw OperationNotAllowException(I18N.task, task.id, I18N.invalid)
+            }
+            task.format.requireValid(task.period)
+            check(task.format.shouldSchedule(task.period)) { "任务 ${task.id} 不需要调度" }
             val now = LocalDateTime.now()
-            val (existsJobs, existsCount) = listing(1, 25, taskId = task.id, after = now, before = now)
-            if (task.period != SchedulePeriod.HOUR) { // 非小时任务只会生成一个作业
-                val job = JobPO {
-                    taskId = task.id
-                    containerId = null
-                    status = JobStatus.INIT
-                    hour = task.format.hour!! // 非小时 hour 一定不为 null
-                    minute = task.format.minute
-                    runCount = 0
-                    isRemove = false
-                    createTime = now
-                    updateTime = now
-                }
-                return when (existsCount) {
-                    0 -> JobDAO.add(job).run { listOf(job.toJobDTO()) }
-                    1 -> existsJobs
-                    else -> throw DirtyDataException(
-                        I18N.task,
-                        task.id,
-                        task.period,
-                        I18N.job,
-                        existsJobs.map { it.id }.joinToString(", ")
-                    )
-                }
-            } else { // 小时任务会生成 24 个作业
-                return when (existsCount) {
-                    0 -> (0..23).map { hr ->
-                        val job = JobPO {
-                            taskId = task.id
-                            containerId = null
-                            status = JobStatus.INIT
-                            hour = hr
-                            minute = task.format.minute
-                            runCount = 0
-                            isRemove = false
-                            createTime = now
-                            updateTime = now
-                        }
-                        JobDAO.add(job)
-                        job.toJobDTO()
+            if (listing(1, 25, taskId = task.id, after = now, before = now).second > 0) {
+                return listOf()
+            }
+            JobDAO.bulkInsert {
+                if (task.period != SchedulePeriod.HOUR) { // 非小时任务只会生成一个作业
+                    item {
+                        it.taskId to task.id
+                        it.containerId to null
+                        it.status to JobStatus.INIT
+                        it.hour to task.format.hour!! // 非小时 hour 一定不为 null
+                        it.minute to task.format.minute
+                        it.runCount to 0
+                        it.isRemove to false
+                        it.createTime to now
+                        it.updateTime to now
                     }
-                    24 -> existsJobs
-                    else -> throw DirtyDataException(
-                        I18N.task,
-                        task.id,
-                        task.period,
-                        I18N.job,
-                        existsJobs.map { it.id }.joinToString(", ")
-                    )
+                } else { // 小时任务会生成 24 个作业
+                    (0..23).map { hr ->
+                        item {
+                            it.taskId to task.id
+                            it.containerId to null
+                            it.status to JobStatus.INIT
+                            it.hour to hr
+                            it.minute to task.format.minute
+                            it.runCount to 0
+                            it.isRemove to false
+                            it.createTime to now
+                            it.updateTime to now
+                        }
+                    }
                 }
             }
+            return if (LockService.unlock(lock)) {
+                listing(1, 25, taskId = task.id, after = now, before = now).first
+            } else {
+                it.rollback()
+                listOf()
+            }
         }
-        return listOf() // 如果任务当天不应该调度，则直接返回空列表
     }
 
     /**
@@ -158,13 +142,13 @@ object JobService : Service(JobDAO) {
      */
     fun updateStatus(jobId: Int, status: JobStatus): Boolean = Database.global.useTransaction {
         if (status == JobStatus.READY) {
-//            logger.error("cant not update status to ready, use JobService.allocate instead")
+            logger.error("cant not update status to ready, use JobService.allocate instead")
             return false
         }
         val job = find<JobPO>(JobDAO.id eq jobId and (JobDAO.isRemove eq false))
             ?: throw NotFoundException(I18N.job, jobId, I18N.notExistsOrHasBeenRemove)
         if (!job.status.canChangeTo(status)) {
-//            logger.error("can not change ${job.status} to $status")
+            logger.error("can not change ${job.status} to $status")
             return false
         }
         JobDAO.update { // 通过 status 实现乐观锁

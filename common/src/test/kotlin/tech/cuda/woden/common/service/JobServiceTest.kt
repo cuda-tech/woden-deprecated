@@ -19,13 +19,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.*
 import tech.cuda.woden.common.service.dao.*
-import tech.cuda.woden.common.service.dto.TaskDTO
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.po.dtype.JobStatus
-import tech.cuda.woden.common.service.po.dtype.ScheduleFormat
-import tech.cuda.woden.common.service.po.dtype.SchedulePeriod
-import tech.cuda.woden.common.service.po.dtype.SchedulePriority
+import java.lang.IllegalStateException
 import java.time.LocalDateTime
 
 /**
@@ -116,11 +113,12 @@ class JobServiceTest : TestWithMaria({
         val now = LocalDateTime.now()
 
         // 小时级任务
-        JobService.create(TaskService.findById(8)!!).size shouldBe 24
+        val ret = JobService.create(8)
+        ret.size shouldBe 24
         with(JobService.listing(1, 100, taskId = 8, before = now, after = now)) {
             this.second shouldBe 24
             val jobs = this.first.map { it.hour to it }.toMap()
-            val existsJobsTimestamp = (0..23).map { hr ->
+            (0..23).forEach { hr ->
                 val job = jobs[hr]
                 job shouldNotBe null
                 job!!
@@ -131,17 +129,11 @@ class JobServiceTest : TestWithMaria({
                 job.status shouldBe JobStatus.INIT
                 job.createTime
             }
-            // 再次创建只会返回已创建的作业
-            Thread.sleep(1000)
-            val jobsCreateAgain = JobService.create(TaskService.findById(8)!!)
-            jobsCreateAgain.size shouldBe 24
-            jobsCreateAgain.forEach {
-                it.createTime shouldBe existsJobsTimestamp[it.hour]
-            }
+            JobService.create(8).size shouldBe 0
         }
 
         // 非小时级任务
-        JobService.create(TaskService.findById(112)!!).size shouldBe 1
+        JobService.create(112).size shouldBe 1
         with(JobService.listing(1, 100, taskId = 112, before = now, after = now)) {
             this.second shouldBe 1
             val job = this.first.first()
@@ -150,31 +142,44 @@ class JobServiceTest : TestWithMaria({
             job.hour shouldBe 16
             job.runCount shouldBe 0
             job.minute shouldBe 59
-            Thread.sleep(1000)
-            val jobCreateAgain = JobService.create(TaskService.findById(112)!!)
-            jobCreateAgain.size shouldBe 1
-            jobCreateAgain.first().createTime shouldBe job.createTime
+            JobService.create(112).size shouldBe 0
+        }
+
+        // 小时级并发测试
+        val createdHourlyJobs = (1..100).map { _ ->
+            GlobalScope.async {
+                JobService.create(10)
+            }
+        }.map { it.await() }
+        with(createdHourlyJobs.filter { it.isNotEmpty() }) {
+            this.size shouldBe 1
+            this.first().size shouldBe 24
+        }
+
+        // 非小时级并发测试
+        val createdNotHourlyJobs = (1..100).map { _ ->
+            GlobalScope.async {
+                JobService.create(105)
+            }
+        }.map { it.await() }
+        with(createdNotHourlyJobs.filter { it.isNotEmpty() }) {
+            this.size shouldBe 1
+            this.first().size shouldBe 1
         }
 
         // 当天不应调度的任务
-        JobService.create(TaskService.findById(139)!!).size shouldBe 0
+        shouldThrow<IllegalStateException> {
+            JobService.create(139)
+        }.message shouldBe "任务 139 不需要调度"
 
         // 非法操作
         shouldThrow<OperationNotAllowException> {
-            JobService.create(TaskService.findById(33)!!)
+            JobService.create(33)
         }.message shouldBe "调度任务 33 已失效"
 
-        shouldThrow<OperationNotAllowException> {
-            JobService.create(
-                TaskDTO(
-                    id = 1, mirrorId = 1, teamId = 1, name = "", ownerId = 1, args = mapOf(), isSoftFail = false,
-                    period = SchedulePeriod.DAY, format = ScheduleFormat(year = 2020),  // 非法的格式
-                    queue = "", priority = SchedulePriority.HIGH, pendingTimeout = 0, runningTimeout = 0,
-                    retries = 0, retryDelay = 0, isValid = true, createTime = LocalDateTime.now(),
-                    updateTime = LocalDateTime.now()
-                )
-            )
-        }.message shouldBe "调度时间格式 非法"
+        shouldThrow<NotFoundException> {
+            JobService.create(1)
+        }
     }
 
     "更新作业状态" {
