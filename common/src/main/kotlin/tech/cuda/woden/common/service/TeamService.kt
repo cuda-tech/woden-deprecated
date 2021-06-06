@@ -19,6 +19,7 @@ import me.liuwj.ktorm.dsl.asc
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.dsl.inList
 import me.liuwj.ktorm.global.add
+import me.liuwj.ktorm.global.addEntity
 import me.liuwj.ktorm.global.global
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.dao.TeamDAO
@@ -81,7 +82,7 @@ object TeamService : Service(TeamDAO) {
             this.createTime = LocalDateTime.now()
             this.updateTime = LocalDateTime.now()
         }
-        TeamDAO.add(team)
+        TeamDAO.addEntity(team)
         return team.toTeamDTO()
     }
 

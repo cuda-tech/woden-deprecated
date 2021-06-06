@@ -18,6 +18,7 @@ import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.asc
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.global.add
+import me.liuwj.ktorm.global.addEntity
 import me.liuwj.ktorm.global.global
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.dao.ContainerDAO
@@ -111,7 +112,7 @@ object ContainerService : Service(ContainerDAO) {
             this.memLoad = 0
             this.diskUsage = 0
         }
-        ContainerDAO.add(container)
+        ContainerDAO.addEntity(container)
         return container.toContainerDTO()
     }
 

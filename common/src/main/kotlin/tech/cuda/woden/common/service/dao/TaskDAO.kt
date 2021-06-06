@@ -52,7 +52,7 @@ internal object TaskDAO : Table<TaskPO>("task") {
 
     @TEXT
     @COMMENT("执行参数")
-    val args = json("args", typeRef<Map<String, Any>>()).bindTo { it.args }
+    val args = json<Map<String, Any>>("args").bindTo { it.args }
 
     @BOOL
     @COMMENT("执行失败是否跳过")
@@ -60,11 +60,11 @@ internal object TaskDAO : Table<TaskPO>("task") {
 
     @VARCHAR(10)
     @COMMENT("调度周期")
-    val period = enum("period", typeRef<SchedulePeriod>()).bindTo { it.period }
+    val period = enum<SchedulePeriod>("period").bindTo { it.period }
 
     @JSON
     @COMMENT("调度时间格式")
-    val format = json("format", typeRef<ScheduleFormat>()).bindTo { it.format }
+    val format = json<ScheduleFormat>("format").bindTo { it.format }
 
     @VARCHAR(32)
     @COMMENT("执行队列")
@@ -72,7 +72,7 @@ internal object TaskDAO : Table<TaskPO>("task") {
 
     @VARCHAR(10)
     @COMMENT("调度优先级")
-    val priority = enum("priority", typeRef<SchedulePriority>()).bindTo { it.priority }
+    val priority = enum<SchedulePriority>("priority").bindTo { it.priority }
 
     @INT
     @COMMENT("最大等待时间（分钟）")

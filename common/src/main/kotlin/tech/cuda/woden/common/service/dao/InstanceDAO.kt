@@ -40,7 +40,7 @@ internal object InstanceDAO : Table<InstancePO>("instance") {
 
     @VARCHAR(10)
     @COMMENT("实例状态")
-    val status = enum("status", typeRef<InstanceStatus>()).bindTo { it.status }
+    val status = enum<InstanceStatus>("status").bindTo { it.status }
 
     @LONGTEXT
     @COMMENT("执行日志")

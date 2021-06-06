@@ -49,7 +49,7 @@ internal object ContainerDAO : Table<ContainerPO>("container") {
 
     @VARCHAR(8)
     @COMMENT("容器角色: MASTER/SLAVE")
-    val role = enum("role", typeRef<ContainerRole>()).bindTo { it.role }
+    val role = enum<ContainerRole>("role").bindTo { it.role }
 
     @BOOL
     @COMMENT("容器是否存活")

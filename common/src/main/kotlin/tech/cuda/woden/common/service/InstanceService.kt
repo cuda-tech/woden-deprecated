@@ -18,6 +18,7 @@ import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.desc
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.global.add
+import me.liuwj.ktorm.global.addEntity
 import me.liuwj.ktorm.global.global
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.dao.InstanceDAO
@@ -78,7 +79,7 @@ object InstanceService : Service(InstanceDAO) {
             createTime = LocalDateTime.now()
             updateTime = LocalDateTime.now()
         }
-        InstanceDAO.add(instance)
+        InstanceDAO.addEntity(instance)
         return instance.toInstanceDTO()
     }
 

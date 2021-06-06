@@ -15,10 +15,7 @@ package tech.cuda.woden.common.service
 
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.global.add
-import me.liuwj.ktorm.global.global
-import me.liuwj.ktorm.global.select
-import me.liuwj.ktorm.global.update
+import me.liuwj.ktorm.global.*
 import tech.cuda.woden.common.i18n.I18N
 import tech.cuda.woden.common.service.dao.TaskDAO
 import tech.cuda.woden.common.service.dao.TaskDependencyDAO
@@ -198,10 +195,10 @@ object TaskService : Service(TaskDAO) {
             this.isRemove = false
             this.createTime = now
             this.updateTime = now
-        }.also { t -> TaskDAO.add(t) }
+        }.also { t -> TaskDAO.addEntity(t) }
 
         parent.map { (parentId, dependency) ->
-            TaskDependencyDAO.add(
+            TaskDependencyDAO.addEntity(
                 TaskDependencyPO {
                     this.parentId = parentId
                     this.childId = task.id
@@ -285,14 +282,14 @@ object TaskService : Service(TaskDAO) {
             val toBeInsert = targetParentTask - currentParentTask
             val toBeUpdate = currentParentTask.filter { targetParentTask.contains(it) }
             TaskDependencyDAO.update {
-                it.isRemove to true
-                it.updateTime to now
+                set(it.isRemove, true)
+                set(it.updateTime, now)
                 where {
                     (it.parentId.inList(toBeRemove) eq true) and (it.childId eq task.id)
                 }
             }
             toBeInsert.forEach {
-                TaskDependencyDAO.add(
+                TaskDependencyDAO.addEntity(
                     TaskDependencyPO {
                         this.parentId = it
                         this.childId = task.id
@@ -306,9 +303,9 @@ object TaskService : Service(TaskDAO) {
             }
             toBeUpdate.forEach { parentId ->
                 TaskDependencyDAO.update {
-                    it.waitTimeout to parent[parentId]!!.waitTimeout
-                    it.offsetDay to parent[parentId]!!.offsetDay
-                    it.updateTime to now
+                    set(it.waitTimeout, parent[parentId]!!.waitTimeout)
+                    set(it.offsetDay, parent[parentId]!!.offsetDay)
+                    set(it.updateTime, now)
                     where {
                         (it.parentId eq parentId) and (it.childId eq task.id)
                     }

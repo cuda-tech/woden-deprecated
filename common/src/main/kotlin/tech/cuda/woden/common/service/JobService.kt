@@ -88,7 +88,7 @@ object JobService : Service(JobDAO) {
      */
     fun create(taskId: Int): List<JobDTO> {
         val lock = LockService.lock("create job for task $taskId") ?: return listOf()
-        Database.global.useTransaction {
+        Database.global.useTransaction { transaction ->
             val task = TaskService.findById(taskId) ?: throw NotFoundException()
             if (!task.isValid) {
                 throw OperationNotAllowException(I18N.task, task.id, I18N.invalid)
@@ -102,28 +102,28 @@ object JobService : Service(JobDAO) {
             JobDAO.bulkInsert {
                 if (task.period != SchedulePeriod.HOUR) { // 非小时任务只会生成一个作业
                     item {
-                        it.taskId to task.id
-                        it.containerId to null
-                        it.status to JobStatus.INIT
-                        it.hour to task.format.hour!! // 非小时 hour 一定不为 null
-                        it.minute to task.format.minute
-                        it.runCount to 0
-                        it.isRemove to false
-                        it.createTime to now
-                        it.updateTime to now
+                        set(it.taskId, task.id)
+                        set(it.containerId, null)
+                        set(it.status, JobStatus.INIT)
+                        set(it.hour, task.format.hour!!) // 非小时 hour 一定不为 null
+                        set(it.minute, task.format.minute)
+                        set(it.runCount, 0)
+                        set(it.isRemove, false)
+                        set(it.createTime, now)
+                        set(it.updateTime, now)
                     }
                 } else { // 小时任务会生成 24 个作业
                     (0..23).map { hr ->
                         item {
-                            it.taskId to task.id
-                            it.containerId to null
-                            it.status to JobStatus.INIT
-                            it.hour to hr
-                            it.minute to task.format.minute
-                            it.runCount to 0
-                            it.isRemove to false
-                            it.createTime to now
-                            it.updateTime to now
+                            set(it.taskId, task.id)
+                            set(it.containerId, null)
+                            set(it.status, JobStatus.INIT)
+                            set(it.hour, hr)
+                            set(it.minute, task.format.minute)
+                            set(it.runCount, 0)
+                            set(it.isRemove, false)
+                            set(it.createTime, now)
+                            set(it.updateTime, now)
                         }
                     }
                 }
@@ -131,7 +131,7 @@ object JobService : Service(JobDAO) {
             return if (LockService.unlock(lock)) {
                 listing(1, 25, taskId = task.id, after = now, before = now).first
             } else {
-                it.rollback()
+                transaction.rollback()
                 listOf()
             }
         }
@@ -152,8 +152,8 @@ object JobService : Service(JobDAO) {
             return false
         }
         JobDAO.update { // 通过 status 实现乐观锁
-            it.status to status
-            it.updateTime to LocalDateTime.now()
+            set(it.status, status)
+            set(it.updateTime, LocalDateTime.now())
             where {
                 JobDAO.id eq jobId and (JobDAO.isRemove eq false) and (JobDAO.status eq job.status)
             }
@@ -170,10 +170,10 @@ object JobService : Service(JobDAO) {
             check(container != null)
             check(container.isActive)
             JobDAO.update { // 通过 status 实现乐观锁
-                it.containerId to containerId
-                it.status to JobStatus.READY
-                it.runCount to it.runCount + 1
-                it.updateTime to LocalDateTime.now()
+                set(it.containerId, containerId)
+                set(it.status, JobStatus.READY)
+                set(it.runCount, it.runCount + 1)
+                set(it.updateTime, LocalDateTime.now())
                 where {
                     (JobDAO.isRemove eq false) and (JobDAO.id eq jobId) and (JobDAO.status eq JobStatus.INIT)
                 }

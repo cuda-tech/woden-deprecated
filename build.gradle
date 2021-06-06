@@ -29,7 +29,7 @@ buildscript {
         fuel_ersion = '2.2.2'
         oshi_version = '5.0.0'
         green_mail_version = '1.5.14'
-        ktorm_version = '3.0.0'
+        ktorm_version = '3.1.0'
         mysql_connector_version = '5.1.25'
         reflections_version = '0.9.12'
         jwt_version = '3.4.1'

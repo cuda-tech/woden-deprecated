@@ -232,9 +232,9 @@ object PersonService : Service(PersonDAO) {
                 this.createTime = now
                 this.updateTime = now
             }
-            PersonDAO.add(person)
+            PersonDAO.addEntity(person)
             teamIds.forEach {
-                PersonTeamMappingDAO.add(
+                PersonTeamMappingDAO.addEntity(
                     PersonTeamMappingPO {
                         personId = person.id
                         teamId = it
@@ -276,15 +276,15 @@ object PersonService : Service(PersonDAO) {
             val toBeInsert = targetTeams.map { it.id } - currentTeams.map { it.id }
             if (toBeRemove.isNotEmpty()) {
                 PersonTeamMappingDAO.update {
-                    it.isRemove to true
-                    it.updateTime to now
+                    set(it.isRemove, true)
+                    set(it.updateTime, now)
                     where {
                         (it.personId eq person.id) and (it.teamId.inList(toBeRemove) eq true)
                     }
                 }
             }
             toBeInsert.forEach {
-                PersonTeamMappingDAO.add(
+                PersonTeamMappingDAO.addEntity(
                     PersonTeamMappingPO {
                         personId = person.id
                         teamId = it
@@ -315,8 +315,8 @@ object PersonService : Service(PersonDAO) {
         ) ?: throw NotFoundException(I18N.person, id, I18N.notExistsOrHasBeenRemove)
         val now = LocalDateTime.now()
         PersonTeamMappingDAO.update {
-            it.isRemove to true
-            it.updateTime to now
+            set(it.isRemove, true)
+            set(it.updateTime, now)
             where { it.personId eq person.id }
         }
         person.isRemove = true

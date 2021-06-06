@@ -43,7 +43,7 @@ internal object JobDAO : Table<JobPO>("job") {
 
     @VARCHAR(10)
     @COMMENT("作业状态")
-    val status = enum("status", typeRef<JobStatus>()).bindTo { it.status }
+    val status = enum<JobStatus>("status").bindTo { it.status }
 
     @TINYINT
     @COMMENT("执行时间（小时)")
