@@ -1,4 +1,4 @@
-distributionUrl=https\://mirrors.aliyun.com/macports/distfiles/gradle/gradle-6.3-all.zip
+distributionUrl=https\://services.gradle.org/distributions/gradle-6.3-all.zip
 distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
 zipStorePath=wrapper/dists

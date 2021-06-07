@@ -1,17 +1,4 @@
-allprojects {
-    group = 'tech.cuda'
-    version = '0.1.0-SNAPSHOT'
-    allprojects {
-        repositories {
-//            maven { url 'https://archiva-maven-storage-prod.oss-cn-beijing.aliyuncs.com/repository/google/' }
-//            maven { url 'https://archiva-maven-storage-prod.oss-cn-beijing.aliyuncs.com/repository/jcenter/' }
-            maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
-            maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter' }
-            maven { url 'https://conjars.org/repo' }
-            jcenter()
-        }
-    }
-}
+apply from: 'gradle/allprojects.gradle'
 
 buildscript {
 
