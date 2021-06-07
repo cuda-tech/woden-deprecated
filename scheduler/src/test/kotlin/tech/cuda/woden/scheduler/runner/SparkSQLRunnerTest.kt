@@ -47,7 +47,7 @@ class SparkSQLRunnerTest : AnnotationSpec() {
             select
                 1 as int_column,
                 1.234 as double_col,
-                from_unixtime(1601141880) as datetime_col,
+                from_unixtime(unix_timestamp('2020-09-27 01:38:00')) as datetime_col,
                 "hello world" as string_col,
                 array(1, 2, 3) as list_col,
                 map("a", 1, "b", 2) as map_col,
@@ -69,7 +69,7 @@ class SparkSQLRunnerTest : AnnotationSpec() {
             select
                 1 as int_column,
                 1.234 as double_col,
-                from_unixtime(1601141880) as datetime_col,
+                from_unixtime(unix_timestamp('2020-09-27 01:38:00'))  as datetime_col,
                 "hello world" as string_col,
                 array(1, 2, 3) as list_col,
                 map("a", 1, "b", 2) as map_col,
@@ -78,7 +78,7 @@ class SparkSQLRunnerTest : AnnotationSpec() {
             select
                 2 as int_column,
                 5.678 as double_col,
-                from_unixtime(1601143106) as datetime_col,
+                from_unixtime(unix_timestamp('2020-09-27 01:58:26')) as datetime_col,
                 "show me the code" as string_col,
                 array(4, 5, 6) as list_col,
                 map("x", 5, "y", 6) as map_col,

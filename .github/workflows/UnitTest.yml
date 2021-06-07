@@ -1,0 +1,30 @@
+name: WodenUnitTest
+on: push
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Set up Java8
+        uses: actions/setup-java@v1
+        with:
+          java-version: '8.0.202'
+
+      - name: Set up Spark
+        uses: vemonet/setup-spark@v1
+        with:
+          spark-version: '3.0.2'
+          hadoop-version: '3.2'
+
+      - name: Checkout master
+        uses: actions/checkout@v2
+
+      - name: Unit Test
+        run: |
+          mv gradle/wrapper/gradle-wrapper.properties.default gradle/wrapper/gradle-wrapper.properties
+          mv gradle/allprojects.gradle.default gradle/allprojects.gradle
+          ./gradlew clean test
