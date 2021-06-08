@@ -19,6 +19,7 @@ import oshi.hardware.CentralProcessor
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.net.InetAddress
+import java.util.*
 import kotlin.math.ceil
 
 /**
@@ -38,7 +39,7 @@ object ContainerUtil {
 
     init {
         val hostname = InetAddress.getLocalHost().hostName
-        systemInfo = SystemInfo(hostname, System.getProperty("os.name").toLowerCase().contains("windows"))
+        systemInfo = SystemInfo(hostname, System.getProperty("os.name").lowercase(Locale.getDefault()).contains("windows"))
     }
 
 

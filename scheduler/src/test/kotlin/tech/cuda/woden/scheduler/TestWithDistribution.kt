@@ -23,6 +23,7 @@ import tech.cuda.woden.scheduler.util.ContainerUtil
 import tech.cuda.woden.common.service.exception.NotFoundException
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 
 /**
@@ -81,7 +82,7 @@ abstract class TestWithDistribution(private vararg val tables: String = arrayOf(
         val container = ContainerService.findById(id) ?: throw NotFoundException()
         every { ContainerUtil.systemInfo } returns ContainerUtil.SystemInfo( // container ID = 1
             hostname = container.hostname,
-            isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
+            isWindows = System.getProperty("os.name").lowercase(Locale.getDefault()).contains("windows")
         )
         block()
         unmockkObject(ContainerUtil)

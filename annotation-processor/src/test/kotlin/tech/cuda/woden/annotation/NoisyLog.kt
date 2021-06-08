@@ -14,6 +14,7 @@
 package tech.cuda.woden.annotation
 
 import java.io.PrintStream
+import kotlin.io.path.createTempFile
 
 /**
  * 关闭单测期间编译产生的错误日志
@@ -23,7 +24,7 @@ import java.io.PrintStream
 object NoisyLog {
     fun shutUp(block: () -> Unit) {
         val stdout = System.out
-        val tempFile = createTempFile("tmp_", "_compile.log")
+        val tempFile = createTempFile("tmp_", "_compile.log").toFile()
         System.setProperty("WODEN_UNITTEST", "true")
 
         System.setOut(PrintStream(tempFile.outputStream())) // Shut up compile error

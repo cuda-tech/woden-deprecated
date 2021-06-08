@@ -22,6 +22,7 @@ import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.Table
 import org.apache.log4j.Logger
 import java.lang.IllegalArgumentException
+import java.util.*
 import kotlin.math.max
 
 /**
@@ -39,7 +40,7 @@ abstract class Service(private val table: Table<*>) {
     protected fun Column<String>.match(pattern: String?): BinaryExpression<Boolean>? {
         if (pattern.isNullOrBlank()) return null
         val filters = pattern.trim().split("\\s+".toRegex())
-            .filter { it.toUpperCase() != "NULL" }
+            .filter { it.uppercase(Locale.getDefault()) != "NULL" }
             .map { this.like("%$it%") }
         if (filters.isEmpty()) return null
         return filters.reduce { a, b -> a and b }

@@ -26,6 +26,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.lang.Exception
 import java.nio.charset.Charset
+import java.util.*
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
@@ -86,7 +87,11 @@ class DDLProcessor : AbstractProcessor() {
     private fun String.columnName(varName: Name): String {
         val name = varName.toString()
             .replace("\$annotations", "")
-            .let { if(it.startsWith("get")) it.substring(3).decapitalize() else it }
+            .let {
+                if (it.startsWith("get")) it.substring(3)
+                    .replaceFirstChar { first -> first.lowercase(Locale.getDefault()) }
+                else it
+            }
         val pattern = listOf("val", name, "=", ".*", "\\(", "\"(.*?)\"", ".*", "\\)", ".*", "\\.bindTo").joinToString("\\s*", "\\s*", "\\s*")
         return Regex(pattern).find(this)?.groupValues?.lastOrNull() ?: throw Exception("无法解析 $name 列名")
     }

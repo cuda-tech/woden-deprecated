@@ -2,6 +2,8 @@ package tech.cuda.woden.scheduler.runner
 
 import io.mockk.*
 import java.io.File
+import java.util.*
+import kotlin.io.path.createTempDirectory
 
 object EnvSetter {
 
@@ -9,7 +11,7 @@ object EnvSetter {
      * 将 Windows 路径转为 WSL 路径，用于解决 WSL 下找不到文件的问题
      */
     fun autoConvertPathFromWindows2WSL(block: () -> Unit) {
-        val isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
+        val isWindows = System.getProperty("os.name").lowercase(Locale.getDefault()).contains("windows")
         if (isWindows) {
             // 先生成一个临时文件以及它的 mock
             val tempFile = File.createTempFile("__adhoc__", ".temp")
@@ -27,8 +29,8 @@ object EnvSetter {
     }
 
     fun autoSetLocalAndDerbyDir(block: () -> Unit) {
-        val tempLocalDir = createTempDir(prefix = "__adhoc__", suffix = ".spark.local")
-        val tempDerbyDir = createTempDir(prefix = "__adhoc__", suffix = ".derby")
+        val tempLocalDir = createTempDirectory(prefix = "__adhoc_spark_Local__").toFile()
+        val tempDerbyDir = createTempDirectory(prefix = "__adhoc_derby__").toFile()
         val sparkLocal = tempLocalDir.path.replace("\\", "/")
         val derbyHome = tempDerbyDir.path.replace("\\", "/")
 

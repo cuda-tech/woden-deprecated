@@ -16,6 +16,7 @@ package tech.cuda.woden.webserver.converter
 import org.springframework.core.convert.converter.Converter
 import org.springframework.stereotype.Component
 import tech.cuda.woden.common.service.po.dtype.FileType
+import java.util.*
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -23,5 +24,5 @@ import tech.cuda.woden.common.service.po.dtype.FileType
  */
 @Component
 class FileTypeConverter : Converter<String, FileType> {
-    override fun convert(typeName: String) = FileType.valueOf(typeName.toUpperCase())
+    override fun convert(typeName: String) = FileType.valueOf(typeName.uppercase(Locale.getDefault()))
 }
