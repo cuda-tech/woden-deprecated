@@ -21,6 +21,7 @@ import tech.cuda.woden.common.service.dao.TaskDAO
 import tech.cuda.woden.common.service.dao.TaskDependencyDAO
 import tech.cuda.woden.common.service.dto.TaskDTO
 import tech.cuda.woden.common.service.dto.toTaskDTO
+import tech.cuda.woden.common.service.enum.TaskType
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.po.TaskDependencyPO
@@ -61,7 +62,11 @@ object TaskService : Service(TaskDAO) {
         ownerId?.let { conditions.add(TaskDAO.ownerId eq ownerId) }
         period?.let { conditions.add(TaskDAO.period eq period) }
         queue?.let { conditions.add(TaskDAO.queue eq queue) }
-        teamId?.let { conditions.add(TaskDAO.teamId eq teamId) }
+        teamId?.let {
+            val team = TeamService.findById(teamId)
+            require(team != null)
+            conditions.add(TaskDAO.filePath.like("/${team.name}/%"))
+        }
         isValid?.let { conditions.add(TaskDAO.isValid eq isValid) }
         ids?.let { conditions.add(TaskDAO.id.inList(ids) eq true) }
         val (tasks, count) = batch<TaskPO>(
@@ -138,17 +143,27 @@ object TaskService : Service(TaskDAO) {
     }
 
     /**
+     * 通过[filePath]的后缀判断任务类型
+     */
+    fun getTaskTypeByFilePath(filePath: String): TaskType {
+        val fileName = filePath.split("/").last().also {
+            require(it.contains(".")) { "suffix missing" }
+        }
+        val suffix = fileName.split(".").last()
+        return TaskType.values().find { it.suffix == suffix }
+            ?: throw IllegalArgumentException("unsupported suffix $suffix")
+    }
+
+    /**
      * 创建任务，并返回 DTO
-     * 如果镜像[mirrorId]不存在或已被删除，则抛出 NotFoundException
-     * 如果镜像[mirrorId]对应的文件不存在或已删除，则抛出 NotFoundException
-     * 如果[ownerId]用户没有[mirrorId]所归属的项目组权限，则抛出 PermissionException
+     * 如果[ownerId]用户没有项目组权限，则抛出 PermissionException
      * 如果[ownerId]用户已被删除或查找不到，则抛出 NotFoundException
      * 如果依赖的父任务[parent]有失效的，则抛出 OperationNotAllowException
      * 如果依赖的父任务[parent]有被删除的或已失效的，则抛出 NotFoundException
      * 如果调度格式[format]非法，则抛出 OperationNotAllowException
      */
     fun create(
-        mirrorId: Int,
+        filePath: String,
         name: String,
         ownerId: Int,
         args: Map<String, String> = mapOf(),
@@ -163,22 +178,16 @@ object TaskService : Service(TaskDAO) {
         retries: Int = 0,
         retryDelay: Int = 5
     ): TaskDTO = Database.global.useTransaction {
-        // 查找项目组 ID
-        val mirror = FileMirrorService.findById(mirrorId)
-            ?: throw NotFoundException(I18N.fileMirror, mirrorId, I18N.notExistsOrHasBeenRemove)
-        val file = FileService.findById(mirror.fileId)
-            ?: throw NotFoundException(I18N.file, mirror.fileId, I18N.notExistsOrHasBeenRemove)
-        val teamId = file.teamId
-
         format.requireValid(period)
-        PersonService.requireExists(ownerId).requireTeamMember(ownerId, teamId)
+        val team = TeamService.findByFilePath(filePath)
+        require(team != null) { "team ${TeamService.findByFilePath(filePath)} not exists" }
+        PersonService.requireExists(ownerId).requireTeamMember(ownerId, team.id)
         checkParentAllValid(parent.keys)
 
         // 创建任务及依赖
         val now = LocalDateTime.now()
         val task = TaskPO {
-            this.mirrorId = mirrorId
-            this.teamId = teamId
+            this.filePath = filePath
             this.name = name
             this.ownerId = ownerId
             this.args = args
@@ -216,8 +225,6 @@ object TaskService : Service(TaskDAO) {
     /**
      * 更新指定任务[id]的信息
      * 如果任务[id]不存在或已删除，则抛出 NotFoundException
-     * 如果试图更新[mirrorId]，且镜像/文件不存在/已删除，则抛出 NotFoundException
-     * 如果试图更新[mirrorId]，且镜像归属的文件跟旧镜像归属的文件不是同一个，则抛出 OperationNotAllowException
      * 如果试图更新[ownerId]，且用户查找不到，则抛出 NotFoundException
      * 如果试图更新[ownerId]，且用户不归属于任务的项目组，则抛出 PermissionException
      * 如果试图更新[parent]，且列表中存在已删除的或不存在的任务，则抛出 NotFoundException
@@ -227,7 +234,6 @@ object TaskService : Service(TaskDAO) {
      */
     fun update(
         id: Int,
-        mirrorId: Int? = null,
         name: String? = null,
         ownerId: Int? = null,
         args: Map<String, Any>? = null,
@@ -247,16 +253,12 @@ object TaskService : Service(TaskDAO) {
             where = TaskDAO.isRemove eq false and (TaskDAO.id eq id)
         ) ?: throw NotFoundException(I18N.task, id, I18N.notExistsOrHasBeenRemove)
         val now = LocalDateTime.now()
-        mirrorId?.let {
-            val mirror = FileMirrorService.findById(mirrorId)
-                ?: throw NotFoundException(I18N.fileMirror, mirrorId, I18N.notExistsOrHasBeenRemove)
-            val file = FileService.findById(mirror.fileId)
-                ?: throw NotFoundException(I18N.file, mirror.fileId, I18N.notExistsOrHasBeenRemove)
-            if (file.id != FileMirrorService.findById(task.mirrorId)?.fileId) throw OperationNotAllowException(I18N.crossFileUpdateMirrorNotAllow)
-            task.mirrorId = mirrorId
-        }
         name?.let { task.name = name }
-        ownerId?.let { PersonService.requireExists(it).requireTeamMember(it, teamId = task.teamId) }
+        ownerId?.let {
+            val team = TeamService.findByFilePath(task.filePath)
+            require(team != null)
+            PersonService.requireExists(it).requireTeamMember(it, teamId = team.id)
+        }
         args?.let { task.args = args }
         isSoftFail?.let { task.isSoftFail = isSoftFail }
         when {
@@ -316,7 +318,7 @@ object TaskService : Service(TaskDAO) {
         retryDelay?.let { task.retryDelay = retryDelay }
         isValid?.let { task.isValid = isValid }
         anyNotNull(
-            mirrorId, name, ownerId, args, isSoftFail,
+            name, ownerId, args, isSoftFail,
             period, queue, priority, pendingTimeout, runningTimeout,
             retries, retryDelay, isValid
         )?.let {

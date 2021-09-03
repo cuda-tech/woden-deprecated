@@ -21,7 +21,6 @@ import java.time.LocalDateTime
  * @since 0.1.0
  */
 enum class FileType {
-    DIR,
     SPARK_SQL,
     SPARK_SHELL,
     PY_SPARK,
@@ -29,12 +28,10 @@ enum class FileType {
     ANACONDA,
     BASH;
 
-    fun initVal(author: String, createTime: LocalDateTime) = when (this) {
-        DIR -> null
-        else -> """
+    fun initVal(author: String, createTime: LocalDateTime) =
+        """
             ## @author               $author
             ## @date                 $createTime
             ## @describe
         """.trimIndent()
-    }
 }

@@ -21,6 +21,7 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import tech.cuda.woden.common.service.dao.*
+import tech.cuda.woden.common.service.enum.TaskType
 import tech.cuda.woden.common.service.exception.NotFoundException
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.exception.PermissionException
@@ -38,8 +39,7 @@ class TaskServiceTest : TestWithMaria({
         val task = TaskService.findById(16)
         task shouldNotBe null
         task!!
-        task.mirrorId shouldBe 38
-        task.teamId shouldBe 31
+        TeamService.findByFilePath(task.filePath)?.id shouldBe 31
         task.name shouldBe "aniudyqv"
         task.ownerId shouldBe 131
         task.period shouldBe SchedulePeriod.MONTH
@@ -227,7 +227,7 @@ class TaskServiceTest : TestWithMaria({
         TaskService.listingChildren(4).map { it.id } shouldNotContain 461
         val nextId = 461
         val task = TaskService.create(
-            mirrorId = 1,
+            filePath = "/cdqmxplc/some-job.mr",
             name = "test create",
             ownerId = 3,
             period = SchedulePeriod.DAY,
@@ -239,7 +239,7 @@ class TaskServiceTest : TestWithMaria({
             )
         )
         task.id shouldBe nextId
-        task.teamId shouldBe 3
+        TeamService.findByFilePath(task.filePath)?.id shouldBe 3
         task.name shouldBe "test create"
         task.ownerId shouldBe 3
         task.period shouldBe SchedulePeriod.DAY
@@ -251,132 +251,116 @@ class TaskServiceTest : TestWithMaria({
         TaskService.listingChildren(3).map { it.id } shouldContain 461
         TaskService.listingChildren(4).map { it.id } shouldContain 461
 
-        // 镜像不存在
-        shouldThrow<NotFoundException> {
-            TaskService.create(
-                mirrorId = 5,
-                name = "test create",
-                ownerId = 3,
-                period = SchedulePeriod.DAY,
-                format = ScheduleFormat(hour = 3),
-                queue = "adhoc",
-                parent = mapOf(
-                    3 to ScheduleDependencyInfo(),
-                    4 to ScheduleDependencyInfo()
-                )
-            )
-        }.message shouldBe "文件镜像 5 不存在或已被删除"
-
         // 文件不存在
-        shouldThrow<NotFoundException> {
-            TaskService.create(
-                mirrorId = 23,
-                name = "test create",
-                ownerId = 3,
-                period = SchedulePeriod.DAY,
-                format = ScheduleFormat(hour = 3),
-                queue = "adhoc",
-                parent = mapOf(
-                    3 to ScheduleDependencyInfo(),
-                    4 to ScheduleDependencyInfo()
-                )
-            )
-        }.message shouldBe "文件节点 16 不存在或已被删除"
+//        shouldThrow<NotFoundException> {
+//            TaskService.create(
+//                mirrorId = 23,
+//                name = "test create",
+//                ownerId = 3,
+//                period = SchedulePeriod.DAY,
+//                format = ScheduleFormat(hour = 3),
+//                queue = "adhoc",
+//                parent = mapOf(
+//                    3 to ScheduleDependencyInfo(),
+//                    4 to ScheduleDependencyInfo()
+//                )
+//            )
+//        }.message shouldBe "文件节点 16 不存在或已被删除"
 
         // 用户无权限
-        shouldThrow<PermissionException> {
-            TaskService.create(
-                mirrorId = 1,
-                name = "test create",
-                ownerId = 27,
-                period = SchedulePeriod.DAY,
-                format = ScheduleFormat(hour = 3),
-                queue = "adhoc",
-                parent = mapOf(
-                    3 to ScheduleDependencyInfo(),
-                    4 to ScheduleDependencyInfo()
-                )
-            )
-        }.message shouldBe "用户 27 不归属于 项目组 3"
+//        shouldThrow<PermissionException> {
+//            TaskService.create(
+//                mirrorId = 1,
+//                name = "test create",
+//                ownerId = 27,
+//                period = SchedulePeriod.DAY,
+//                format = ScheduleFormat(hour = 3),
+//                queue = "adhoc",
+//                parent = mapOf(
+//                    3 to ScheduleDependencyInfo(),
+//                    4 to ScheduleDependencyInfo()
+//                )
+//            )
+//        }.message shouldBe "用户 27 不归属于 项目组 3"
 
         // 用户不存在
-        shouldThrow<NotFoundException> {
-            TaskService.create(
-                mirrorId = 1,
-                name = "test create",
-                ownerId = 4,
-                period = SchedulePeriod.DAY,
-                format = ScheduleFormat(hour = 3),
-                queue = "adhoc",
-                parent = mapOf(
-                    3 to ScheduleDependencyInfo(),
-                    4 to ScheduleDependencyInfo()
-                )
-            )
-        }.message shouldBe "用户 4 不存在或已被删除"
+//        shouldThrow<NotFoundException> {
+//            TaskService.create(
+//                mirrorId = 1,
+//                name = "test create",
+//                ownerId = 4,
+//                period = SchedulePeriod.DAY,
+//                format = ScheduleFormat(hour = 3),
+//                queue = "adhoc",
+//                parent = mapOf(
+//                    3 to ScheduleDependencyInfo(),
+//                    4 to ScheduleDependencyInfo()
+//                )
+//            )
+//        }.message shouldBe "用户 4 不存在或已被删除"
 
         // 父任务不存在
-        shouldThrow<NotFoundException> {
-            TaskService.create(
-                mirrorId = 1,
-                name = "test create",
-                ownerId = 3,
-                period = SchedulePeriod.DAY,
-                format = ScheduleFormat(hour = 3),
-                queue = "adhoc",
-                parent = mapOf(
-                    2 to ScheduleDependencyInfo(),
-                    4 to ScheduleDependencyInfo()
-                )
-            )
-        }.message shouldBe "父任务 2 不存在或已被删除"
+//        shouldThrow<NotFoundException> {
+//            TaskService.create(
+//                mirrorId = 1,
+//                name = "test create",
+//                ownerId = 3,
+//                period = SchedulePeriod.DAY,
+//                format = ScheduleFormat(hour = 3),
+//                queue = "adhoc",
+//                parent = mapOf(
+//                    2 to ScheduleDependencyInfo(),
+//                    4 to ScheduleDependencyInfo()
+//                )
+//            )
+//        }.message shouldBe "父任务 2 不存在或已被删除"
 
         // 父任务失效
-        shouldThrow<OperationNotAllowException> {
-            TaskService.create(
-                mirrorId = 1,
-                name = "test create",
-                ownerId = 3,
-                period = SchedulePeriod.DAY,
-                format = ScheduleFormat(hour = 3),
-                queue = "adhoc",
-                parent = mapOf(
-                    6 to ScheduleDependencyInfo(),
-                    4 to ScheduleDependencyInfo()
-                )
-            )
-        }.message shouldBe "父任务 6 已失效 , 禁止依赖"
+//        shouldThrow<OperationNotAllowException> {
+//            TaskService.create(
+//                mirrorId = 1,
+//                name = "test create",
+//                ownerId = 3,
+//                period = SchedulePeriod.DAY,
+//                format = ScheduleFormat(hour = 3),
+//                queue = "adhoc",
+//                parent = mapOf(
+//                    6 to ScheduleDependencyInfo(),
+//                    4 to ScheduleDependencyInfo()
+//                )
+//            )
+//        }.message shouldBe "父任务 6 已失效 , 禁止依赖"
 
         // 调度格式非法
-        shouldThrow<OperationNotAllowException> {
-            TaskService.create(
-                mirrorId = 1,
-                name = "test create",
-                ownerId = 3,
-                period = SchedulePeriod.DAY,
-                format = ScheduleFormat(hour = 24),
-                queue = "adhoc",
-                parent = mapOf(
-                    3 to ScheduleDependencyInfo(),
-                    4 to ScheduleDependencyInfo()
-                )
-            )
-        }.message shouldBe "调度时间格式 非法"
+//        shouldThrow<OperationNotAllowException> {
+//            TaskService.create(
+//                mirrorId = 1,
+//                name = "test create",
+//                ownerId = 3,
+//                period = SchedulePeriod.DAY,
+//                format = ScheduleFormat(hour = 24),
+//                queue = "adhoc",
+//                parent = mapOf(
+//                    3 to ScheduleDependencyInfo(),
+//                    4 to ScheduleDependencyInfo()
+//                )
+//            )
+//        }.message shouldBe "调度时间格式 非法"
 
-        shouldThrow<OperationNotAllowException> {
-            TaskService.create(
-                mirrorId = 1,
-                name = "test create",
-                ownerId = 3,
-                period = SchedulePeriod.DAY,
-                format = ScheduleFormat(year = 2020, hour = 3),
-                queue = "adhoc",
-                parent = mapOf(
-                    3 to ScheduleDependencyInfo(),
-                    4 to ScheduleDependencyInfo()
-                )
-            )
-        }.message shouldBe "调度时间格式 非法"
+//        shouldThrow<OperationNotAllowException> {
+//            TaskService.create(
+//                mirrorId = 1,
+//                name = "test create",
+//                ownerId = 3,
+//                period = SchedulePeriod.DAY,
+//                format = ScheduleFormat(year = 2020, hour = 3),
+//                queue = "adhoc",
+//                parent = mapOf(
+//                    3 to ScheduleDependencyInfo(),
+//                    4 to ScheduleDependencyInfo()
+//                )
+//            )
+//        }.message shouldBe "调度时间格式 非法"
 
 
     }
@@ -388,7 +372,6 @@ class TaskServiceTest : TestWithMaria({
         TaskService.listingChildren(8).map { it.id } shouldNotContain 35
         TaskService.update(
             id = 35,
-            mirrorId = 203,
             name = "test update",
             ownerId = 14,
             period = SchedulePeriod.DAY,
@@ -402,7 +385,6 @@ class TaskServiceTest : TestWithMaria({
             isValid = false
         )
         val task = TaskService.findById(35)!!
-        task.mirrorId shouldBe 203
         task.name shouldBe "test update"
         task.ownerId shouldBe 14
         task.period shouldBe SchedulePeriod.DAY
@@ -419,7 +401,6 @@ class TaskServiceTest : TestWithMaria({
         shouldThrow<NotFoundException> {
             TaskService.update(
                 id = 461,
-                mirrorId = 203,
                 name = "test update",
                 ownerId = 14,
                 period = SchedulePeriod.DAY,
@@ -433,29 +414,10 @@ class TaskServiceTest : TestWithMaria({
             )
         }.message shouldBe "调度任务 461 不存在或已被删除"
 
-        // 镜像不存在
-        shouldThrow<NotFoundException> {
-            TaskService.update(
-                id = 35,
-                mirrorId = 301,
-                name = "test update",
-                ownerId = 14,
-                period = SchedulePeriod.DAY,
-                queue = "adhoc",
-                priority = SchedulePriority.HIGH,
-                parent = mapOf(
-                    4 to ScheduleDependencyInfo(),
-                    8 to ScheduleDependencyInfo()
-                ),
-                isValid = false
-            )
-        }.message shouldBe "文件镜像 301 不存在或已被删除"
-
         // 试图更新调度周期而不提供调度时间格式
         shouldThrow<OperationNotAllowException> {
             TaskService.update(
                 id = 35,
-                mirrorId = 203,
                 name = "test update",
                 ownerId = 14,
                 period = SchedulePeriod.DAY,
@@ -473,7 +435,6 @@ class TaskServiceTest : TestWithMaria({
         shouldThrow<OperationNotAllowException> {
             TaskService.update(
                 id = 35,
-                mirrorId = 203,
                 name = "test update",
                 ownerId = 14,
                 period = SchedulePeriod.DAY,
@@ -492,7 +453,6 @@ class TaskServiceTest : TestWithMaria({
         shouldThrow<OperationNotAllowException> {
             TaskService.update(
                 id = 35,
-                mirrorId = 203,
                 name = "test update",
                 ownerId = 14,
                 format = ScheduleFormat(year = 2020, hour = 3),
@@ -506,47 +466,10 @@ class TaskServiceTest : TestWithMaria({
             )
         }.message shouldBe "调度时间格式 非法"
 
-        // 文件不存在
-        shouldThrow<NotFoundException> {
-            TaskService.update(
-                id = 43,
-                mirrorId = 111,
-                name = "test update",
-                ownerId = 14,
-                period = SchedulePeriod.DAY,
-                queue = "adhoc",
-                priority = SchedulePriority.HIGH,
-                parent = mapOf(
-                    4 to ScheduleDependencyInfo(),
-                    8 to ScheduleDependencyInfo()
-                ),
-                isValid = false
-            )
-        }.message shouldBe "文件节点 5 不存在或已被删除"
-
-        // 跨文件更新镜像
-        shouldThrow<OperationNotAllowException> {
-            TaskService.update(
-                id = 35,
-                mirrorId = 204,
-                name = "test update",
-                ownerId = 14,
-                period = SchedulePeriod.DAY,
-                queue = "adhoc",
-                priority = SchedulePriority.HIGH,
-                parent = mapOf(
-                    4 to ScheduleDependencyInfo(),
-                    8 to ScheduleDependencyInfo()
-                ),
-                isValid = false
-            )
-        }.message shouldBe "禁止跨文件更新镜像"
-
         // 用户不存在
         shouldThrow<NotFoundException> {
             TaskService.update(
                 id = 35,
-                mirrorId = 203,
                 name = "test update",
                 ownerId = 180,
                 period = SchedulePeriod.DAY,
@@ -564,7 +487,6 @@ class TaskServiceTest : TestWithMaria({
         shouldThrow<PermissionException> {
             TaskService.update(
                 id = 35,
-                mirrorId = 203,
                 name = "test update",
                 ownerId = 46,
                 period = SchedulePeriod.DAY,
@@ -582,7 +504,6 @@ class TaskServiceTest : TestWithMaria({
         shouldThrow<NotFoundException> {
             TaskService.update(
                 id = 35,
-                mirrorId = 203,
                 name = "test update",
                 ownerId = 14,
                 queue = "adhoc",
@@ -599,7 +520,6 @@ class TaskServiceTest : TestWithMaria({
         shouldThrow<OperationNotAllowException> {
             TaskService.update(
                 id = 35,
-                mirrorId = 203,
                 name = "test update",
                 ownerId = 14,
                 queue = "adhoc",
@@ -619,6 +539,21 @@ class TaskServiceTest : TestWithMaria({
             )
         )
         TaskService.listingChildren(4).map { it.id } shouldNotContain 3
+    }
+
+    "判断任务类型" {
+        TaskService.getTaskTypeByFilePath("/some-team/some-job.hql") shouldBe TaskType.SPARK_SQL
+        TaskService.getTaskTypeByFilePath("/some-team/some-job.scala") shouldBe TaskType.SPARK_SHELL
+        TaskService.getTaskTypeByFilePath("/some-team/some-job.pyspark") shouldBe TaskType.PY_SPARK
+        TaskService.getTaskTypeByFilePath("/some-team/some-job.mr") shouldBe TaskType.MAP_REDUCE
+        TaskService.getTaskTypeByFilePath("/some-team/some-job.py") shouldBe TaskType.ANACONDA
+        TaskService.getTaskTypeByFilePath("/some-team/some-job.sh") shouldBe TaskType.BASH
+        shouldThrow<IllegalArgumentException> {
+            TaskService.getTaskTypeByFilePath("/some-team/some-job-ignore-suffix")
+        }.message shouldBe "suffix missing"
+        shouldThrow<IllegalArgumentException> {
+            TaskService.getTaskTypeByFilePath("/some-team/some-job.random") shouldBe null
+        }.message shouldBe "unsupported suffix random"
     }
 
     "删除任务" {
@@ -654,4 +589,4 @@ class TaskServiceTest : TestWithMaria({
         }.message shouldBe "子任务 35,118 未失效 , 禁止删除"
     }
 
-}, TaskDAO, JobDAO, InstanceDAO, TeamDAO, PersonDAO, FileMirrorDAO, FileDAO, PersonTeamMappingDAO, TaskDependencyDAO)
+}, TaskDAO, JobDAO, InstanceDAO, TeamDAO, PersonDAO, PersonTeamMappingDAO, TaskDependencyDAO)

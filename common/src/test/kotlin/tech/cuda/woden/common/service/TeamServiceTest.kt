@@ -158,6 +158,32 @@ class TeamServiceTest : TestWithMaria({
         TeamService.findByName("not exists") shouldBe null
     }
 
+    "按 filePath 查找项目组" {
+        with(TeamService.findByFilePath("/vijhgvhx/sub-dir1")) {
+            this shouldNotBe null
+            this!!
+            this.id shouldBe 2
+            this.createTime shouldBe "2029-05-26 23:17:01".toLocalDateTime()
+            this.updateTime shouldBe "2029-08-03 07:16:51".toLocalDateTime()
+        }
+        with(TeamService.findByFilePath("/vijhgvhx/sub-dir2")) {
+            this shouldNotBe null
+            this!!
+            this.id shouldBe 2
+            this.createTime shouldBe "2029-05-26 23:17:01".toLocalDateTime()
+            this.updateTime shouldBe "2029-08-03 07:16:51".toLocalDateTime()
+        }
+        with(TeamService.findByFilePath("/vijhgvhx/sub-dir/sub-dir")) {
+            this shouldNotBe null
+            this!!
+            this.id shouldBe 2
+            this.createTime shouldBe "2029-05-26 23:17:01".toLocalDateTime()
+            this.updateTime shouldBe "2029-08-03 07:16:51".toLocalDateTime()
+        }
+        TeamService.findByName("/zrltenul") shouldBe null
+        TeamService.findByName("/not-exists") shouldBe null
+    }
+
     "创建项目组" {
         val nextTeamId = 40
         val name = "test_create"

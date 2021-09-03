@@ -15,6 +15,7 @@ package tech.cuda.woden.scheduler.tracker
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import tech.cuda.woden.common.service.GitService
 import tech.cuda.woden.scheduler.TestWithDistribution
 import tech.cuda.woden.common.service.InstanceService
 import tech.cuda.woden.common.service.po.dtype.InstanceStatus
@@ -24,15 +25,21 @@ import tech.cuda.woden.scheduler.runner.EnvSetter
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class InstanceTrackerTest : TestWithDistribution("container", "job", "task", "file", "file_mirror") {
+class InstanceTrackerTest : TestWithDistribution("container", "job", "task") {
 
     @Test
     fun testCreateInstanceForReadyBashJob() = supposeImContainer(1) {
+        // Job Id = 4 -> task ID = 35 -> file_path = /rdiwafif/script.hql
+        GitService.writeFile("/rdiwafif/script.sh", "echo 'hello bash instance'", "bash job")
         EnvSetter.autoConvertPathFromWindows2WSL {
-            // (Job Id = 4, task ID = 35, mirror ID = 235, File ID = 13)
             val containerTracker = ContainerTracker(afterStarted = {
                 val instanceTracker = InstanceTracker(it.container, afterStarted = { self ->
-                    val (instances, count) = InstanceService.listing(pageId = 1, pageSize = 1000, jobId = 4, status = InstanceStatus.RUNNING)
+                    val (instances, count) = InstanceService.listing(
+                        pageId = 1,
+                        pageSize = 1000,
+                        jobId = 4,
+                        status = InstanceStatus.RUNNING
+                    )
                     count shouldBe 1
                     val instance = instances.first()
                     instance.id shouldBe 1
@@ -53,10 +60,16 @@ class InstanceTrackerTest : TestWithDistribution("container", "job", "task", "fi
 
     @Test
     fun testCreateInstanceForReadyPythonJob() = supposeImContainer(3) {
-        // (Job Id = 6, task ID = 59, mirror ID = 253, File ID = 15)
+        // Job Id = 6 -> task ID = 59 -> file_path = /vijhgvhx/script.py
+        GitService.writeFile("/vijhgvhx/script.py", "print('hello python instance')", "create py job")
         val containerTracker = ContainerTracker(afterStarted = {
             val instanceTracker = InstanceTracker(it.container, afterStarted = { self ->
-                val (instances, count) = InstanceService.listing(pageId = 1, pageSize = 1000, jobId = 6, status = InstanceStatus.RUNNING)
+                val (instances, count) = InstanceService.listing(
+                    pageId = 1,
+                    pageSize = 1000,
+                    jobId = 6,
+                    status = InstanceStatus.RUNNING
+                )
                 count shouldBe 1
                 val instance = instances.first()
                 instance.id shouldBe 1
@@ -76,11 +89,17 @@ class InstanceTrackerTest : TestWithDistribution("container", "job", "task", "fi
 
     @Test
     fun testCreateInstanceForReadySparkSqlJob() = supposeImContainer(10) {
+        // Job Id = 16 -> task ID = 49 -> file_path = /vijhgvhx/script.hql
+        GitService.writeFile("/vijhgvhx/script.hql", "select 'hello world' as string_column", "create hive job")
         EnvSetter.autoSetLocalAndDerbyDir {
-            // (Job Id = 16, task ID = 49, mirror ID = 290, File ID = 7)
             val containerTracker = ContainerTracker(afterStarted = { it ->
                 val instanceTracker = InstanceTracker(it.container, afterStarted = { self ->
-                    val (instances, count) = InstanceService.listing(pageId = 1, pageSize = 1000, jobId = 16, status = InstanceStatus.RUNNING)
+                    val (instances, count) = InstanceService.listing(
+                        pageId = 1,
+                        pageSize = 1000,
+                        jobId = 16,
+                        status = InstanceStatus.RUNNING
+                    )
                     count shouldBe 1
                     val instance = instances.first()
                     instance.id shouldBe 1

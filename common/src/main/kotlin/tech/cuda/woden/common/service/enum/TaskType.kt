@@ -11,28 +11,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.woden.common.service.po
+package tech.cuda.woden.common.service.enum
 
-import me.liuwj.ktorm.entity.Entity
-import tech.cuda.woden.common.service.po.dtype.FileType
 import java.time.LocalDateTime
 
 /**
- * 数据开发中创建的文件或文件夹
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-internal interface FilePO : Entity<FilePO> {
-    companion object : Entity.Factory<FilePO>()
+enum class TaskType(val suffix: String) {
+    SPARK_SQL("hql"),
+    SPARK_SHELL("scala"),
+    PY_SPARK("pyspark"),
+    MAP_REDUCE("mr"),
+    ANACONDA("py"),
+    BASH("sh");
 
-    val id: Int
-    var teamId: Int
-    var ownerId: Int
-    var name: String
-    var type: FileType
-    var parentId: Int?
-    var content: String?
-    var isRemove: Boolean
-    var createTime: LocalDateTime
-    var updateTime: LocalDateTime
+    fun initTemplate(author: String, createTime: LocalDateTime) =
+        """
+            ## @author               $author
+            ## @date                 $createTime
+            ## @describe
+        """.trimIndent()
 }

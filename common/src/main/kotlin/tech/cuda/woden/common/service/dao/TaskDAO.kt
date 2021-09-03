@@ -34,17 +34,13 @@ internal object TaskDAO : Table<TaskPO>("task") {
     @AUTO_INCREMENT
     val id = int("id").primaryKey().bindTo { it.id }
 
-    @BIGINT
-    @COMMENT("镜像 ID")
-    val mirrorId = int("mirror_id").bindTo { it.mirrorId }
-
-    @BIGINT
-    @COMMENT("项目组 ID")
-    val teamId = int("team_id").bindTo { it.teamId }
-
     @VARCHAR(512)
     @COMMENT("任务名")
     val name = varchar("name").bindTo { it.name }
+
+    @VARCHAR(256)
+    @COMMENT("文件路径")
+    val filePath = varchar("file_path").bindTo { it.filePath }
 
     @BIGINT
     @COMMENT("负责人")

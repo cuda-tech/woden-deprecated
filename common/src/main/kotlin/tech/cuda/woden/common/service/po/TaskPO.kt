@@ -29,9 +29,8 @@ internal interface TaskPO : Entity<TaskPO> {
     companion object : Entity.Factory<TaskPO>()
 
     val id: Int
-    var mirrorId: Int
-    var teamId: Int
     var name: String
+    var filePath: String
     var ownerId: Int
     var args: Map<String, Any>
     var isSoftFail: Boolean

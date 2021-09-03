@@ -16,6 +16,7 @@ package tech.cuda.woden.scheduler.tracker
 import tech.cuda.woden.common.service.dto.ContainerDTO
 import tech.cuda.woden.common.service.exception.OperationNotAllowException
 import tech.cuda.woden.common.service.*
+import tech.cuda.woden.common.service.enum.TaskType
 import tech.cuda.woden.common.service.po.dtype.FileType
 import tech.cuda.woden.common.service.po.dtype.InstanceStatus
 import tech.cuda.woden.common.service.po.dtype.JobStatus
@@ -48,26 +49,25 @@ class InstanceTracker(
 
     private fun createInstanceForReadyJob() {
         batchExecute { batch, batchSize ->
-            val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.READY, containerId = container.id)
+            val (jobs, total) = JobService.listing(
+                batch,
+                batchSize,
+                status = JobStatus.READY,
+                containerId = container.id
+            )
             jobs.filter { !runningJob.values.contains(it.id) }
                 .forEach { job ->
                     val task = TaskService.findById(job.taskId)
                         .logIfNull("task ${job.id} defined in job ${job.id} does not exist")
                         ?: return@forEach
-
-                    val mirror = FileMirrorService.findById(task.mirrorId)
-                        .logIfNull("mirror ${task.mirrorId} defined in task ${task.id} and job ${job.id} does not exists")
-                        ?: return@forEach
-
-                    val file = FileService.findById(mirror.fileId)
-                        .logIfNull("file ${mirror.fileId} defined in mirror ${mirror.id}, task ${task.id} and job ${job.id} does not exists")
-                        ?: return@forEach
-
-                    val runner = when (file.type) {
-                        FileType.SPARK_SQL -> SparkSQLRunner(code = mirror.content)
-                        FileType.ANACONDA -> AnacondaRunner(code = mirror.content)
-                        FileType.PY_SPARK -> PySparkRunner(code = mirror.content)
-                        FileType.BASH -> BashRunner(code = mirror.content)
+                    val content = GitService.readFile(task.filePath)
+                    val runner = when (TaskService.getTaskTypeByFilePath(task.filePath)) {
+                        TaskType.SPARK_SQL -> SparkSQLRunner(code = content)
+                        TaskType.SPARK_SHELL -> SparkShellRunner(code = content)
+                        TaskType.PY_SPARK -> PySparkRunner(code = content)
+                        TaskType.MAP_REDUCE -> BashRunner(code = content)
+                        TaskType.ANACONDA -> AnacondaRunner(code = content)
+                        TaskType.BASH -> BashRunner(code = content)
                         else -> throw OperationNotAllowException()
                     }
                     runner.start()

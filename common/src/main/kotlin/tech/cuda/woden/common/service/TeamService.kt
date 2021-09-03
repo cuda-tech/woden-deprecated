@@ -18,7 +18,6 @@ import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.asc
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.dsl.inList
-import me.liuwj.ktorm.global.add
 import me.liuwj.ktorm.global.addEntity
 import me.liuwj.ktorm.global.global
 import tech.cuda.woden.common.i18n.I18N
@@ -67,6 +66,12 @@ object TeamService : Service(TeamDAO) {
      */
     fun findByName(name: String) =
         find<TeamPO>(where = (TeamDAO.isRemove eq false) and (TeamDAO.name eq name))?.toTeamDTO()
+
+    /**
+     * 通过文件路径查找项目组
+     * 如果找不到或已被删除，则返回 null
+     */
+    fun findByFilePath(path: String) = findByName(path.trimStart('/').split('/').first())
 
     /**
      * 创建名称为[name]项目组

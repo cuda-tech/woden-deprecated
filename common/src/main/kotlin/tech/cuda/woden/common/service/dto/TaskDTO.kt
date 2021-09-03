@@ -28,9 +28,8 @@ import java.time.LocalDateTime
 @DTO(TaskPO::class)
 data class TaskDTO(
     val id: Int,
-    val mirrorId: Int,
-    val teamId: Int,
     val name: String,
+    val filePath: String,
     val ownerId: Int,
     val args: Map<String, Any>,
     val isSoftFail: Boolean,
