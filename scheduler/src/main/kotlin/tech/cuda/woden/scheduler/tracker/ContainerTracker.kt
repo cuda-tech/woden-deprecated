@@ -13,9 +13,9 @@
  */
 package tech.cuda.woden.scheduler.tracker
 
-import tech.cuda.woden.scheduler.util.ContainerUtil
 import tech.cuda.woden.common.service.ContainerService
 import tech.cuda.woden.common.service.dto.ContainerDTO
+import tech.cuda.woden.common.utils.SystemUtil
 
 /**
  * 负责容器注册 & 负载更新
@@ -33,9 +33,8 @@ class ContainerTracker(private val afterStarted: (ContainerTracker) -> Unit = {}
      * 最后更新容器的负载信息
      */
     override fun onStarted() {
-        val systemInfo = ContainerUtil.systemInfo
-        val loadInfo = ContainerUtil.loadInfo
-        container = ContainerService.findByHostname(systemInfo.hostname) ?: ContainerService.create(systemInfo.hostname)
+        val loadInfo = SystemUtil.loadInfo
+        container = ContainerService.findByHostname(SystemUtil.hostName) ?: ContainerService.create(SystemUtil.hostName)
         container = ContainerService.update(
             id = container.id,
             cpuLoad = loadInfo.cpu,
@@ -49,7 +48,7 @@ class ContainerTracker(private val afterStarted: (ContainerTracker) -> Unit = {}
      * 每次心跳检查容器负载并更新
      */
     override fun onHeartBeat() {
-        val loadInfo = ContainerUtil.loadInfo
+        val loadInfo = SystemUtil.loadInfo
         container = ContainerService.update(
             id = container.id,
             cpuLoad = loadInfo.cpu,

@@ -11,10 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.woden.scheduler.exception
+package tech.cuda.woden.common.utils
+
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.ints.shouldBeGreaterThan
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-class HardwareException(vararg message: Any) : Exception(message.joinToString(" "))
+class SystemUtilTest : StringSpec({
+    "获取硬件信息" {
+        SystemUtil.hostName.length shouldBeGreaterThan 0
+        Thread.sleep(1000L) // 为了统计 CPU 使用率，需要等待一会
+        val loadInfo = SystemUtil.loadInfo
+        loadInfo.cpu shouldBeGreaterThan 0
+        loadInfo.memory shouldBeGreaterThan 0
+        loadInfo.diskUsage shouldBeGreaterThan 0
+    }
+})

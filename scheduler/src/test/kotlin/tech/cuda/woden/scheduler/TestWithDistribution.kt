@@ -19,11 +19,10 @@ import tech.cuda.woden.common.configuration.DataSourceMocker
 import tech.cuda.woden.common.configuration.Woden
 import tech.cuda.woden.common.service.Database
 import tech.cuda.woden.common.service.ContainerService
-import tech.cuda.woden.scheduler.util.ContainerUtil
 import tech.cuda.woden.common.service.exception.NotFoundException
+import tech.cuda.woden.common.utils.SystemUtil
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
 
 
 /**
@@ -53,9 +52,11 @@ abstract class TestWithDistribution(private vararg val tables: String = arrayOf(
      * mock LocalDateTime 和 LocalDate 的 now 方法，返回期望的时间
      * 如果 [year], [month], [day], [hour], [minute], [second] 不指定，则采用当前的值
      */
-    protected fun supposeNowIs(year: Int? = null, month: Int? = null, day: Int? = null,
-                               hour: Int? = null, minute: Int? = null, second: Int? = null,
-                               block: () -> Unit) {
+    protected fun supposeNowIs(
+        year: Int? = null, month: Int? = null, day: Int? = null,
+        hour: Int? = null, minute: Int? = null, second: Int? = null,
+        block: () -> Unit
+    ) {
         val now = LocalDateTime.now()
         val mock = LocalDateTime.of(
             year ?: now.year,
@@ -78,14 +79,11 @@ abstract class TestWithDistribution(private vararg val tables: String = arrayOf(
      * mock 容器，假定自己是编号为[id]的容器
      */
     protected fun supposeImContainer(id: Int, block: () -> Unit) {
-        mockkObject(ContainerUtil)
+        mockkObject(SystemUtil)
         val container = ContainerService.findById(id) ?: throw NotFoundException()
-        every { ContainerUtil.systemInfo } returns ContainerUtil.SystemInfo( // container ID = 1
-            hostname = container.hostname,
-            isWindows = System.getProperty("os.name").lowercase(Locale.getDefault()).contains("windows")
-        )
+        every { SystemUtil.hostName } returns container.hostname
         block()
-        unmockkObject(ContainerUtil)
+        unmockkObject(SystemUtil)
     }
 }
 

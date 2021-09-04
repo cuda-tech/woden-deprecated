@@ -20,8 +20,8 @@ import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import tech.cuda.woden.common.service.toLocalDateTime
+import tech.cuda.woden.common.utils.SystemUtil
 import tech.cuda.woden.scheduler.TestWithDistribution
-import tech.cuda.woden.scheduler.util.ContainerUtil
 
 /**
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
@@ -31,8 +31,9 @@ class ContainerTrackerTest : TestWithDistribution("container") {
 
     @Test
     fun testStart() {
-        mockkObject(ContainerUtil)
-        every { ContainerUtil.systemInfo } returns ContainerUtil.SystemInfo("nknvleif", false)
+        mockkObject(SystemUtil)
+        every { SystemUtil.hostName } returns "nknvleif"
+        every { SystemUtil.isWindows } returns false
         val containerTracker = ContainerTracker(afterStarted = {
             it.container.id shouldBe 3
             it.container.hostname shouldBe "nknvleif"
@@ -44,13 +45,14 @@ class ContainerTrackerTest : TestWithDistribution("container") {
         })
         containerTracker.start()
         containerTracker.join()
-        unmockkObject(ContainerUtil)
+        unmockkObject(SystemUtil)
     }
 
     @Test
     fun testStartWhenNotRegister() {
-        mockkObject(ContainerUtil)
-        every { ContainerUtil.systemInfo } returns ContainerUtil.SystemInfo("HOSTNAME", false)
+        mockkObject(SystemUtil)
+        every { SystemUtil.hostName } returns "HOSTNAME"
+        every { SystemUtil.isWindows } returns false
         val containerTracker = ContainerTracker(afterStarted = {
             it.container.id shouldBe 247
             it.container.hostname shouldBe "HOSTNAME"
@@ -61,7 +63,7 @@ class ContainerTrackerTest : TestWithDistribution("container") {
         })
         containerTracker.start()
         containerTracker.join()
-        unmockkObject(ContainerUtil)
+        unmockkObject(SystemUtil)
     }
 
 }

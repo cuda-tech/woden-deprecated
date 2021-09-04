@@ -16,6 +16,8 @@ dependencies {
 
     implementation "org.eclipse.jgit:org.eclipse.jgit:5.11.0.202103091610-r"
 
+    implementation "com.github.oshi:oshi-core:$oshi_version"
+
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-hocon:$hocon_version"
 
 

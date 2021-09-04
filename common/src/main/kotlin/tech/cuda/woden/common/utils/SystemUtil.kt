@@ -11,9 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tech.cuda.woden.scheduler.util
+package tech.cuda.woden.common.utils
 
 import com.sun.management.OperatingSystemMXBean
+import com.sun.org.apache.xpath.internal.operations.Bool
 import oshi.SystemInfo
 import oshi.hardware.CentralProcessor
 import java.io.File
@@ -26,24 +27,17 @@ import kotlin.math.ceil
  * @author Jensen Qi <jinxiu.qi@alu.hit.edu.cn>
  * @since 0.1.0
  */
-object ContainerUtil {
-
-    data class SystemInfo(val hostname: String, val isWindows: Boolean = false)
-    data class LoadInfo(val cpu: Int, val memory: Int, val diskUsage: Int)
-
-    val systemInfo: SystemInfo
+object SystemUtil {
+    val hostName: String = InetAddress.getLocalHost().hostName
+    val isWindows: Boolean = System.getProperty("os.name").lowercase(Locale.getDefault()).contains("windows")
 
     private val processor = SystemInfo().hardware.processor
     private var prevTicks = processor.systemCpuLoadTicks
 
+    private fun percent(free: Number, total: Number) =
+        ceil(100.0 - (100.0 * free.toDouble() / total.toDouble())).toInt()
 
-    init {
-        val hostname = InetAddress.getLocalHost().hostName
-        systemInfo = SystemInfo(hostname, System.getProperty("os.name").lowercase(Locale.getDefault()).contains("windows"))
-    }
-
-
-    private fun percent(free: Number, total: Number) = ceil(100.0 - (100.0 * free.toDouble() / total.toDouble())).toInt()
+    data class LoadInfo(val cpu: Int, val memory: Int, val diskUsage: Int)
 
     val loadInfo: LoadInfo
         get() {
@@ -56,11 +50,15 @@ object ContainerUtil {
             }
             val nice = nextTicks[CentralProcessor.TickType.NICE.index] - prevTicks[CentralProcessor.TickType.NICE.index]
             val irq = nextTicks[CentralProcessor.TickType.IRQ.index] - prevTicks[CentralProcessor.TickType.IRQ.index]
-            val softIrq = nextTicks[CentralProcessor.TickType.SOFTIRQ.index] - prevTicks[CentralProcessor.TickType.SOFTIRQ.index]
-            val steal = nextTicks[CentralProcessor.TickType.STEAL.index] - prevTicks[CentralProcessor.TickType.STEAL.index]
-            val cSys = nextTicks[CentralProcessor.TickType.SYSTEM.index] - prevTicks[CentralProcessor.TickType.SYSTEM.index]
+            val softIrq =
+                nextTicks[CentralProcessor.TickType.SOFTIRQ.index] - prevTicks[CentralProcessor.TickType.SOFTIRQ.index]
+            val steal =
+                nextTicks[CentralProcessor.TickType.STEAL.index] - prevTicks[CentralProcessor.TickType.STEAL.index]
+            val cSys =
+                nextTicks[CentralProcessor.TickType.SYSTEM.index] - prevTicks[CentralProcessor.TickType.SYSTEM.index]
             val user = nextTicks[CentralProcessor.TickType.USER.index] - prevTicks[CentralProcessor.TickType.USER.index]
-            val ioWait = nextTicks[CentralProcessor.TickType.IOWAIT.index] - prevTicks[CentralProcessor.TickType.IOWAIT.index]
+            val ioWait =
+                nextTicks[CentralProcessor.TickType.IOWAIT.index] - prevTicks[CentralProcessor.TickType.IOWAIT.index]
             val idle = nextTicks[CentralProcessor.TickType.IDLE.index] - prevTicks[CentralProcessor.TickType.IDLE.index]
             val totalCpu = user + nice + cSys + idle + ioWait + irq + softIrq + steal
             prevTicks = nextTicks
@@ -77,6 +75,5 @@ object ContainerUtil {
                 diskUsage = percent(root.freeSpace, root.totalSpace)
             )
         }
-
 
 }
