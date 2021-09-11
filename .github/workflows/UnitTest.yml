@@ -1,4 +1,4 @@
-name: WodenUnitTest
+name: UnitTest
 on: push
 jobs:
   build-and-test:
