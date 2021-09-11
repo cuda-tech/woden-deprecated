@@ -53,24 +53,6 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
         }
     }
 
-    /**
-     * 分数表达式
-     */
-    protected infix fun Int.over(v: Int) = this to v
-
-    /**
-     * 按 [batchSize] 分批执行，避免大型 SQL 查询
-     * 其中 [block] 块需要返回当前批次执行的数量，以及总共需要执行的数量，e.g current over total
-     * 后续可优化为并发执行
-     */
-    protected fun batchExecute(batchSize: Int = 100, block: (batch: Int, batchSize: Int) -> Pair<Int, Int>) {
-        var batch = 0
-        do {
-            batch++
-            val (currentBatchProcessed, total) = block(batch, batchSize)
-        } while ((batch - 1) * batchSize + currentBatchProcessed < total)
-    }
-
     fun start() {
         if (this::thread.isInitialized) {
             logger.error("try to start $trackerName duplicate")

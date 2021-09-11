@@ -53,11 +53,7 @@ class JobTracker(
      */
     private fun generateTodayJob() {
         logger.info("generate today's jobs")
-        batchExecute { batch, batchSize ->
-            val (tasks, total) = TaskService.listing(batch, batchSize, isValid = true)
-            tasks.forEach { JobService.create(it.id) }
-            tasks.size over total
-        }
+        TaskService.listing(isValid = true).first.forEach { JobService.create(it.id) }
         logger.info("generate today's jobs done")
         afterJobGenerated(this)
     }
@@ -67,9 +63,8 @@ class JobTracker(
      * 如果是，则为其分配执行容器，并将状态置为 Ready
      */
     private fun makeReadyForInitedJob() {
-        batchExecute { batch, batchSize ->
-            val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.INIT)
-            jobs.forEach { job ->
+        JobService.listing(status = JobStatus.INIT).first
+            .forEach { job ->
                 if (JobService.isReady(job)) {
                     val container = ContainerService.findSlackContainer()
                     JobService.allocate(container.id, job.id)
@@ -78,8 +73,6 @@ class JobTracker(
                     println(job)
                 }
             }
-            jobs.size over total
-        }
         afterMakeReady(this)
     }
 
@@ -131,16 +124,13 @@ class JobTracker(
      * 对于可重试的作业将状态设置为 ready
      */
     private fun retryForFailedJob() {
-        batchExecute { batch, batchSize ->
-            val (jobs, total) = JobService.listing(batch, batchSize, status = JobStatus.FAILED)
-            jobs.forEach { job ->
+        JobService.listing(status = JobStatus.FAILED).first
+            .forEach { job ->
                 if (JobService.canRetry(job.id)) {
                     JobService.updateStatus(job.id, JobStatus.INIT)
                     readyJobs.add(job)
                 }
             }
-            jobs.size over total
-        }
         afterRetry(this)
     }
 

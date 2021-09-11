@@ -48,35 +48,27 @@ class InstanceTracker(
     }
 
     private fun createInstanceForReadyJob() {
-        batchExecute { batch, batchSize ->
-            val (jobs, total) = JobService.listing(
-                batch,
-                batchSize,
-                status = JobStatus.READY,
-                containerId = container.id
-            )
-            jobs.filter { !runningJob.values.contains(it.id) }
-                .forEach { job ->
-                    val task = TaskService.findById(job.taskId)
-                        .logIfNull("task ${job.id} defined in job ${job.id} does not exist")
-                        ?: return@forEach
-                    val content = GitService.readFile(task.filePath)
-                    val runner = when (TaskService.getTaskTypeByFilePath(task.filePath)) {
-                        TaskType.SPARK_SQL -> SparkSQLRunner(code = content)
-                        TaskType.SPARK_SHELL -> SparkShellRunner(code = content)
-                        TaskType.PY_SPARK -> PySparkRunner(code = content)
-                        TaskType.MAP_REDUCE -> BashRunner(code = content)
-                        TaskType.ANACONDA -> AnacondaRunner(code = content)
-                        TaskType.BASH -> BashRunner(code = content)
-                        else -> throw OperationNotAllowException()
-                    }
-                    runner.start()
-                    val instance = InstanceService.create(job)
-                    runnerQueue[instance.id] = runner
-                    runningJob[instance.id] = job.id
+        JobService.listing(status = JobStatus.READY, containerId = container.id).first
+            .filter { !runningJob.values.contains(it.id) }
+            .forEach { job ->
+                val task = TaskService.findById(job.taskId)
+                    .logIfNull("task ${job.id} defined in job ${job.id} does not exist")
+                    ?: return@forEach
+                val content = GitService.readFile(task.filePath)
+                val runner = when (TaskService.getTaskTypeByFilePath(task.filePath)) {
+                    TaskType.SPARK_SQL -> SparkSQLRunner(code = content)
+                    TaskType.SPARK_SHELL -> SparkShellRunner(code = content)
+                    TaskType.PY_SPARK -> PySparkRunner(code = content)
+                    TaskType.MAP_REDUCE -> BashRunner(code = content)
+                    TaskType.ANACONDA -> AnacondaRunner(code = content)
+                    TaskType.BASH -> BashRunner(code = content)
+                    else -> throw OperationNotAllowException()
                 }
-            jobs.size over total
-        }
+                runner.start()
+                val instance = InstanceService.create(job)
+                runnerQueue[instance.id] = runner
+                runningJob[instance.id] = job.id
+            }
     }
 
     private fun checkStatusForRunningInstance() {
