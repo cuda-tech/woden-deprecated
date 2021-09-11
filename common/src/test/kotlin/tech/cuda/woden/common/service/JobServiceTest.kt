@@ -49,6 +49,7 @@ class JobServiceTest : TestWithMaria({
 
     "分页查询" {
         val total = 279
+        JobService.listing().second shouldBe total
         val pageSize = 13
         val queryTimes = total / pageSize + 1
         val lastPageCount = total % pageSize

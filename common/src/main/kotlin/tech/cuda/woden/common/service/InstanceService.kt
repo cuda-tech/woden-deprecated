@@ -49,7 +49,12 @@ object InstanceService : Service(InstanceDAO) {
      * 如果提供了[jobId]，则只返回该任务的作业
      * 如果提供了[status]，则只返回对应状态的作业
      */
-    fun listing(pageId: Int, pageSize: Int, jobId: Int? = null, status: InstanceStatus? = null): Pair<List<InstanceDTO>, Int> {
+    fun listing(
+        pageId: Int? = null,
+        pageSize: Int? = null,
+        jobId: Int? = null,
+        status: InstanceStatus? = null
+    ): Pair<List<InstanceDTO>, Int> {
         val conditions = mutableListOf(InstanceDAO.isRemove eq false)
         jobId?.let { conditions.add(InstanceDAO.jobId eq jobId) }
         status?.let { conditions.add(InstanceDAO.status eq status) }
@@ -89,24 +94,32 @@ object InstanceService : Service(InstanceDAO) {
      * 为了保证状态的单向性，状态只能从 Running -> Success | Failed
      * 因此如果试图将状态[status]更新为 Running，或者实例[id]的状态不为 Running， 则抛出 OperationNotAllowException
      */
-    fun update(id: Int, status: InstanceStatus? = null, log: String? = null): InstanceDTO = Database.global.useTransaction {
-        val instance = find<InstancePO>(InstanceDAO.id eq id and (InstanceDAO.isRemove eq false))
-            ?: throw NotFoundException(I18N.instance, I18N.notExistsOrHasBeenRemove)
-        status?.let {
-            if (status == InstanceStatus.RUNNING || instance.status != InstanceStatus.RUNNING) {
-                throw OperationNotAllowException(I18N.instance, id, I18N.status, instance.status, I18N.canNotUpdateTo, status)
+    fun update(id: Int, status: InstanceStatus? = null, log: String? = null): InstanceDTO =
+        Database.global.useTransaction {
+            val instance = find<InstancePO>(InstanceDAO.id eq id and (InstanceDAO.isRemove eq false))
+                ?: throw NotFoundException(I18N.instance, I18N.notExistsOrHasBeenRemove)
+            status?.let {
+                if (status == InstanceStatus.RUNNING || instance.status != InstanceStatus.RUNNING) {
+                    throw OperationNotAllowException(
+                        I18N.instance,
+                        id,
+                        I18N.status,
+                        instance.status,
+                        I18N.canNotUpdateTo,
+                        status
+                    )
+                }
+                instance.status = status
             }
-            instance.status = status
+            log?.let {
+                instance.log = log
+            }
+            anyNotNull(status, log)?.let {
+                instance.updateTime = LocalDateTime.now()
+                instance.flushChanges()
+            }
+            return instance.toInstanceDTO()
         }
-        log?.let {
-            instance.log = log
-        }
-        anyNotNull(status, log)?.let {
-            instance.updateTime = LocalDateTime.now()
-            instance.flushChanges()
-        }
-        return instance.toInstanceDTO()
-    }
 
     /**
      * 清理 ID 为[id]或者归属作业 ID 为[jobId]的实例
@@ -137,7 +150,13 @@ object InstanceService : Service(InstanceDAO) {
         val instance = find<InstancePO>(InstanceDAO.id eq id and (InstanceDAO.isRemove eq false))
             ?: throw NotFoundException(I18N.instance, id, I18N.notExistsOrHasBeenRemove)
         if (instance.status != InstanceStatus.RUNNING) {
-            throw OperationNotAllowException(I18N.instance, instance.id, I18N.status, instance.status, I18N.updateNotAllow)
+            throw OperationNotAllowException(
+                I18N.instance,
+                instance.id,
+                I18N.status,
+                instance.status,
+                I18N.updateNotAllow
+            )
         }
         instance.log = instance.log + logBuffer
         instance.updateTime = LocalDateTime.now()

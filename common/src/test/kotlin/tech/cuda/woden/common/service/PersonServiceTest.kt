@@ -76,6 +76,7 @@ class PersonServiceTest : TestWithMaria({
 
     "分页查询" {
         val validPersonCount = 143
+        PersonService.listing().second shouldBe validPersonCount
         val pageSize = 13
         val queryTimes = validPersonCount / pageSize + 1
         val lastPagePersonCount = validPersonCount % pageSize

@@ -29,6 +29,7 @@ class TeamServiceTest : TestWithMaria({
 
     "分页查询" {
         val validTeamCount = 33
+        TeamService.listing().second shouldBe validTeamCount
         val pageSize = 7
         val queryTimes = validTeamCount / pageSize + 1
         val lastPageTeamCount = validTeamCount % pageSize

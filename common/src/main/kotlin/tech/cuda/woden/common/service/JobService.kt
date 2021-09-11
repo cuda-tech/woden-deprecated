@@ -53,8 +53,8 @@ object JobService : Service(JobDAO) {
      * 如果提供了[before]，则只返回创建日期早于或等于它的记录
      */
     fun listing(
-        pageId: Int,
-        pageSize: Int,
+        pageId: Int? = null,
+        pageSize: Int? = null,
         taskId: Int? = null,
         containerId: Int? = null,
         status: JobStatus? = null,

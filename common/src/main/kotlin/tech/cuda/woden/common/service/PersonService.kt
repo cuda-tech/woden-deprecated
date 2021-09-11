@@ -99,7 +99,7 @@ object PersonService : Service(PersonDAO) {
     /**
      * 分页查询用户列表，支持模糊搜索
      */
-    fun listing(page: Int, pageSize: Int, pattern: String? = null): Pair<List<PersonDTO>, Int> {
+    fun listing(page: Int? = null, pageSize: Int? = null, pattern: String? = null): Pair<List<PersonDTO>, Int> {
         val (persons, count) = batch<PersonPO>(
             page,
             pageSize,

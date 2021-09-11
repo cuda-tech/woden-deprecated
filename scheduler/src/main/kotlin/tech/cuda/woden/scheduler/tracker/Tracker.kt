@@ -27,9 +27,9 @@ import java.time.LocalDateTime
  */
 abstract class Tracker : TrackerLifeCycleListener, ClockListener {
     protected val logger: Logger = Logger.getLogger(this::class.java)
-    private val className: String get() = this.javaClass.simpleName
+    private val trackerName: String get() = this.javaClass.simpleName
     private val heartbeat = 500L
-    private lateinit var job: Deferred<Unit> // 因为要捕获 AssertionError，因此需要使用 Deferred
+    private lateinit var thread: Deferred<Unit> // 因为要捕获 AssertionError，因此需要使用 Deferred
     private lateinit var datetimeSnapshot: LocalDateTime
     private var alive = true
 
@@ -72,11 +72,11 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
     }
 
     fun start() {
-        if (this::job.isInitialized) {
-            logger.error("try to start $className duplicate")
+        if (this::thread.isInitialized) {
+            logger.error("try to start $trackerName duplicate")
             return
         }
-        this.job = GlobalScope.async {
+        this.thread = GlobalScope.async {
             try {
                 onStarted()
                 datetimeSnapshot = LocalDateTime.now()
@@ -87,7 +87,7 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
                     dealWithHeartBeat()
                     delay(heartbeat)
                     datetimeSnapshot = current
-                    logger.debug("$className alive")
+                    logger.debug("$trackerName alive")
                 }
             } catch (exception: Throwable) {
                 when (exception) {
@@ -101,16 +101,16 @@ abstract class Tracker : TrackerLifeCycleListener, ClockListener {
                 onDestroyed()
             }
         }
-        logger.info("$className started")
+        logger.info("$trackerName started")
     }
 
     fun join() {
-        if (this::job.isInitialized && !job.isCompleted) {
+        if (this::thread.isInitialized && !thread.isCompleted) {
             runBlocking {
-                job.await()
+                thread.await()
             }
         } else {
-            logger.error("try to join a not started $className")
+            logger.error("try to join a not started $trackerName")
         }
     }
 

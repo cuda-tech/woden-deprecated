@@ -48,8 +48,8 @@ object TaskService : Service(TaskDAO) {
      * 如果提供了[isValid]，则过滤出调度生效/不生效的任务
      */
     fun listing(
-        page: Int = 1,
-        pageSize: Int = Int.MAX_VALUE,
+        page: Int? = null,
+        pageSize: Int? = null,
         nameLike: String? = null,
         ownerId: Int? = null,
         period: SchedulePeriod? = null,

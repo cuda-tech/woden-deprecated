@@ -39,7 +39,12 @@ object TeamService : Service(TeamDAO) {
      * 分页查询项目组信息
      * 如果提供了[pattern]，则进行模糊查询
      */
-    fun listing(page: Int, pageSize: Int, pattern: String? = null, ids: List<Int>? = null): Pair<List<TeamDTO>, Int> {
+    fun listing(
+        page: Int? = null,
+        pageSize: Int? = null,
+        pattern: String? = null,
+        ids: List<Int>? = null
+    ): Pair<List<TeamDTO>, Int> {
         val conditions = mutableListOf(TeamDAO.isRemove eq false)
         if (ids != null && ids.isNotEmpty()) {
             conditions.add(TeamDAO.id.inList(ids) eq true)

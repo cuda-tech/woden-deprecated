@@ -60,6 +60,7 @@ class TaskServiceTest : TestWithMaria({
 
     "批量查询" {
         val validCount = 377
+        TaskService.listing().second shouldBe validCount
         val pageSize = 13
         val queryTimes = validCount / pageSize + 1
         val lastPagePersonCount = validCount % pageSize

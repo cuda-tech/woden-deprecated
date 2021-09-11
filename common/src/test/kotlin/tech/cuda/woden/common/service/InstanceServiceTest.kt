@@ -42,6 +42,7 @@ class InstanceServiceTest : TestWithMaria({
 
     "分页查询" {
         val total = 362
+        InstanceService.listing().second shouldBe total
         val pageSize = 13
         val queryTimes = total / pageSize + 1
         val lastPageCount = total % pageSize
