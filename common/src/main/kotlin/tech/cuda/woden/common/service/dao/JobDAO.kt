@@ -41,6 +41,12 @@ internal object JobDAO : Table<JobPO>("job") {
     @COMMENT("执行容器 ID")
     val containerId = int("container_id").bindTo { it.containerId }
 
+    @BIGINT
+    @UNSIGNED
+    @COMMENT("当前执行实例 ID")
+    val currentInstanceId = int("current_instance_id").bindTo { it.currentInstanceId }
+
+
     @VARCHAR(10)
     @COMMENT("作业状态")
     val status = enum<JobStatus>("status").bindTo { it.status }

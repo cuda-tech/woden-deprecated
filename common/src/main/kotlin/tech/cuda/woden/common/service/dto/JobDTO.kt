@@ -27,6 +27,7 @@ data class JobDTO(
     val id: Int,
     val taskId: Int,
     val containerId: Int?,
+    val currentInstanceId: Int?,
     val status: JobStatus,
     val hour: Int,
     val minute: Int,

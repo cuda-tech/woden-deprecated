@@ -15,6 +15,7 @@ package tech.cuda.woden.common.service
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.*
@@ -36,6 +37,7 @@ class JobServiceTest : TestWithMaria({
         job!!
         job.taskId shouldBe 35
         job.containerId shouldBe 1
+        job.currentInstanceId shouldBe null
         job.status shouldBe JobStatus.READY
         job.hour shouldBe 16
         job.runCount shouldBe 1
@@ -124,6 +126,7 @@ class JobServiceTest : TestWithMaria({
                 job shouldNotBe null
                 job!!
                 job.containerId shouldBe null
+                job.currentInstanceId shouldBe null
                 job.hour shouldBe hr
                 job.minute shouldBe 38
                 job.runCount shouldBe 0
@@ -211,6 +214,32 @@ class JobServiceTest : TestWithMaria({
             GlobalScope.async { JobService.updateStatus(14, JobStatus.SUCCESS) }
         }.map { it.await() }
         updateResult.filter { it }.size shouldBe 1
+    }
+
+    "更新作业当前实例" {
+        val job = JobService.findById(3)!!
+        job.currentInstanceId shouldBe 438
+        JobService.setCurrentInstanceId(3, 57) shouldBe true
+        JobService.findById(3)?.currentInstanceId shouldBe 57
+
+        shouldThrow<NotFoundException> { JobService.setCurrentInstanceId(3, 186) } // instance 已删除
+        shouldThrow<IllegalStateException> { JobService.setCurrentInstanceId(3, 1) } // instance 的 jobID 不匹配
+
+        // 并发测试
+        val coreNum = Runtime.getRuntime().availableProcessors()
+
+        val readyJob = JobService.findById(4)!!
+        readyJob.currentInstanceId shouldBe null
+
+        val instanceBatch = (1..coreNum).map { InstanceService.create(readyJob) }
+        instanceBatch.size shouldBe coreNum
+        instanceBatch.first().id shouldBeGreaterThan 457
+
+        val updateResult = instanceBatch.map { instance ->
+            GlobalScope.async { JobService.setCurrentInstanceId(readyJob.id, instance.id) }
+        }.map { it.await() }
+        updateResult.filter { it }.size shouldBe 1
+        JobService.findById(4)?.currentInstanceId shouldNotBe null
     }
 
     "删除作业" {

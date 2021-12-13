@@ -15,6 +15,7 @@ package tech.cuda.woden.common.service
 
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.*
+import me.liuwj.ktorm.expression.ScalarExpression
 import me.liuwj.ktorm.global.*
 import me.liuwj.ktorm.support.mysql.bulkInsert
 import tech.cuda.woden.common.i18n.I18N
@@ -85,6 +86,7 @@ object JobService : Service(JobDAO) {
      * 如果任务当天不应该调度，则返回空列表
      * 如果[taskId]已失效，则抛出 OperationNotAllowException
      * 如果[taskId]调度时间格式非法，则抛出 OperationNotAllowException
+     * 并发安全，通过分布式锁保证一致性
      */
     fun create(taskId: Int): List<JobDTO> {
         val lock = LockService.lock("create job for task $taskId") ?: return listOf()
@@ -104,6 +106,7 @@ object JobService : Service(JobDAO) {
                     item {
                         set(it.taskId, task.id)
                         set(it.containerId, null)
+                        set(it.currentInstanceId, null)
                         set(it.status, JobStatus.INIT)
                         set(it.hour, task.format.hour!!) // 非小时 hour 一定不为 null
                         set(it.minute, task.format.minute)
@@ -117,6 +120,7 @@ object JobService : Service(JobDAO) {
                         item {
                             set(it.taskId, task.id)
                             set(it.containerId, null)
+                            set(it.currentInstanceId, null)
                             set(it.status, JobStatus.INIT)
                             set(it.hour, hr)
                             set(it.minute, task.format.minute)
@@ -139,14 +143,14 @@ object JobService : Service(JobDAO) {
 
     /**
      * 更新指定[jobId]的作业状态，并返回是否更新成功
+     * 并发安全，通过乐观锁实现一致性
      */
     fun updateStatus(jobId: Int, status: JobStatus): Boolean = Database.global.useTransaction {
         if (status == JobStatus.READY) {
             logger.error("cant not update status to ready, use JobService.allocate instead")
             return false
         }
-        val job = find<JobPO>(JobDAO.id eq jobId and (JobDAO.isRemove eq false))
-            ?: throw NotFoundException(I18N.job, jobId, I18N.notExistsOrHasBeenRemove)
+        val job = findById(jobId) ?: throw NotFoundException(I18N.job, jobId, I18N.notExistsOrHasBeenRemove)
         if (!job.status.canChangeTo(status)) {
             logger.error("can not change ${job.status} to $status")
             return false
@@ -158,11 +162,34 @@ object JobService : Service(JobDAO) {
                 JobDAO.id eq jobId and (JobDAO.isRemove eq false) and (JobDAO.status eq job.status)
             }
         }
-        return find<JobPO>(JobDAO.id eq jobId and (JobDAO.isRemove eq false))?.status == status
+        return findById(jobId)?.status == status
     }
 
     /**
-     * 尝试将[jobId]分配给[containerId]，并返回是否分配成功
+     * 更新指定[jobId]的 currentInstanceId 为[instanceId]，并返回是否更新成功
+     * 并发安全，通过乐观锁实现一致性
+     */
+    fun setCurrentInstanceId(jobId: Int, instanceId: Int): Boolean = Database.global.useTransaction {
+        val instance = InstanceService.findById(instanceId) ?: throw NotFoundException()
+        val job = findById(jobId) ?: throw NotFoundException()
+        check(job.id == instance.jobId)
+        val conditionList = mutableListOf<ScalarExpression<Boolean>>(JobDAO.id eq jobId, JobDAO.isRemove eq false)
+        if (job.currentInstanceId == null) {
+            conditionList.add(JobDAO.currentInstanceId.isNull())
+        } else {
+            conditionList.add(JobDAO.currentInstanceId eq job.currentInstanceId)
+        }
+        JobDAO.update {
+            set(it.currentInstanceId, instance.id)
+            set(it.updateTime, LocalDateTime.now())
+            where { conditionList.reduce { a, b -> a and b } }
+        }
+        return findById(jobId)?.currentInstanceId == instance.id
+    }
+
+    /**
+     * 尝试将[jobId]分配给[containerId]，并将状态更新为 Ready，并返回是否分配成功
+     * 并发安全，通过乐观锁保证一致性
      */
     fun allocate(containerId: Int, jobId: Int): Boolean = Database.global.useTransaction {
         try {
